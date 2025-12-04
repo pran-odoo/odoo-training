@@ -38,9 +38,331 @@
         }
 
         .sidebar-header {
-            padding: 15px 20px 25px 20px;
+            padding: 15px 20px 20px 20px;
             border-bottom: 1px solid #334155;
-            margin-bottom: 15px;
+            margin-bottom: 10px;
+        }
+
+        /* ==================== SEARCH BAR ==================== */
+        .search-container {
+            padding: 0 15px 15px 15px;
+            border-bottom: 1px solid #334155;
+            margin-bottom: 10px;
+        }
+
+        .search-input {
+            width: 100%;
+            padding: 10px 15px;
+            padding-left: 38px;
+            border: none;
+            border-radius: 8px;
+            background: #334155;
+            color: white;
+            font-size: 14px;
+            outline: none;
+            transition: all 0.2s ease;
+        }
+
+        .search-input::placeholder {
+            color: #64748b;
+        }
+
+        .search-input:focus {
+            background: #475569;
+            box-shadow: 0 0 0 2px rgba(113, 75, 103, 0.5);
+        }
+
+        .search-wrapper {
+            position: relative;
+        }
+
+        .search-icon {
+            position: absolute;
+            left: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #64748b;
+            font-size: 14px;
+            pointer-events: none;
+        }
+
+        .search-results {
+            max-height: 300px;
+            overflow-y: auto;
+            margin-top: 10px;
+        }
+
+        .search-results:empty {
+            display: none;
+        }
+
+        .search-result-item {
+            padding: 10px 12px;
+            background: #334155;
+            margin: 5px 0;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .search-result-item:hover {
+            background: #475569;
+        }
+
+        .search-result-title {
+            color: #f0abfc;
+            font-size: 13px;
+            font-weight: 600;
+        }
+
+        .search-result-context {
+            color: #94a3b8;
+            font-size: 12px;
+            margin-top: 3px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .search-highlight {
+            background: rgba(251, 191, 36, 0.3);
+            color: #fbbf24;
+            padding: 0 2px;
+            border-radius: 2px;
+        }
+
+        .no-results {
+            color: #64748b;
+            font-size: 13px;
+            text-align: center;
+            padding: 15px;
+        }
+
+        /* ==================== TOOLBAR (Dark Mode, Font Size) ==================== */
+        .toolbar {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            padding: 10px 15px;
+            border-bottom: 1px solid #334155;
+            margin-bottom: 10px;
+        }
+
+        .toolbar-btn {
+            background: #334155;
+            border: none;
+            color: #94a3b8;
+            padding: 8px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .toolbar-btn:hover {
+            background: #475569;
+            color: white;
+        }
+
+        .toolbar-btn.active {
+            background: #714B67;
+            color: white;
+        }
+
+        /* ==================== DARK MODE ==================== */
+        body.dark-mode {
+            background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+        }
+
+        body.dark-mode .container {
+            background: #1e293b;
+            color: #e2e8f0;
+        }
+
+        body.dark-mode h1,
+        body.dark-mode h2,
+        body.dark-mode h3,
+        body.dark-mode h4,
+        body.dark-mode strong {
+            color: #f1f5f9;
+        }
+
+        body.dark-mode h2 {
+            border-bottom-color: #714B67;
+        }
+
+        body.dark-mode h3 {
+            background: #334155;
+            color: #f1f5f9;
+        }
+
+        body.dark-mode p,
+        body.dark-mode li,
+        body.dark-mode td {
+            color: #cbd5e1;
+        }
+
+        body.dark-mode table {
+            box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+        }
+
+        body.dark-mode td {
+            border-color: #334155;
+        }
+
+        body.dark-mode tr:nth-child(even) {
+            background: #293548;
+        }
+
+        body.dark-mode tr:hover {
+            background: #334155;
+        }
+
+        body.dark-mode .toc {
+            background: #334155;
+        }
+
+        body.dark-mode .toc a {
+            color: #f0abfc;
+        }
+
+        body.dark-mode code {
+            background: #334155;
+            color: #f0abfc;
+        }
+
+        body.dark-mode .critical-box,
+        body.dark-mode .technical-box,
+        body.dark-mode .foundation-box,
+        body.dark-mode .success-box,
+        body.dark-mode .mechanism-box,
+        body.dark-mode .analogy-box,
+        body.dark-mode .warning-box,
+        body.dark-mode .info-box,
+        body.dark-mode .odoo-box {
+            background: #293548;
+        }
+
+        body.dark-mode .diagram {
+            background: #293548;
+            border-color: #714B67;
+        }
+
+        body.dark-mode .comparison-card.good {
+            background: #1e3a2f;
+            border-color: #10b981;
+        }
+
+        body.dark-mode .comparison-card.bad {
+            background: #3b1f1f;
+            border-color: #ef4444;
+        }
+
+        /* ==================== FONT SIZE CONTROLS ==================== */
+        body.font-small .container { font-size: 14px; }
+        body.font-small h1 { font-size: 36px; }
+        body.font-small h2 { font-size: 28px; }
+        body.font-small h3 { font-size: 20px; }
+        body.font-small h4 { font-size: 17px; }
+        body.font-small p, body.font-small li, body.font-small td { font-size: 14px; }
+
+        body.font-large .container { font-size: 20px; }
+        body.font-large h1 { font-size: 48px; }
+        body.font-large h2 { font-size: 38px; }
+        body.font-large h3 { font-size: 28px; }
+        body.font-large h4 { font-size: 24px; }
+        body.font-large p, body.font-large li, body.font-large td { font-size: 20px; }
+
+        /* ==================== KEYBOARD SHORTCUT HINT ==================== */
+        .keyboard-hint {
+            position: fixed;
+            bottom: 90px;
+            right: 30px;
+            background: rgba(30, 41, 59, 0.95);
+            color: #94a3b8;
+            padding: 15px 20px;
+            border-radius: 12px;
+            font-size: 13px;
+            z-index: 996;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+        }
+
+        .keyboard-hint.visible {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .keyboard-hint kbd {
+            background: #475569;
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-family: monospace;
+            color: #f0abfc;
+            margin: 0 3px;
+        }
+
+        .keyboard-hint-row {
+            margin: 5px 0;
+        }
+
+        /* ==================== RESUME READING BANNER ==================== */
+        .resume-banner {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%) translateX(130px);
+            background: linear-gradient(135deg, #714B67 0%, #9f7aea 100%);
+            color: white;
+            padding: 12px 25px;
+            border-radius: 30px;
+            font-size: 14px;
+            z-index: 1001;
+            box-shadow: 0 4px 20px rgba(113, 75, 103, 0.4);
+            display: none;
+            align-items: center;
+            gap: 15px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .resume-banner:hover {
+            transform: translateX(-50%) translateX(130px) scale(1.02);
+            box-shadow: 0 6px 25px rgba(113, 75, 103, 0.5);
+        }
+
+        .resume-banner-close {
+            background: rgba(255,255,255,0.2);
+            border: none;
+            color: white;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .resume-banner-close:hover {
+            background: rgba(255,255,255,0.3);
+        }
+
+        @media (max-width: 1024px) {
+            .resume-banner {
+                transform: translateX(-50%);
+                left: 50%;
+            }
+            .resume-banner:hover {
+                transform: translateX(-50%) scale(1.02);
+            }
         }
 
         .sidebar-logo {
@@ -301,9 +623,11 @@
         }
         /* ==================== PRINT / PDF OPTIMIZATION ==================== */
         @media print {
-            /* Hide interactive elements */
+            /* Hide ALL interactive elements - including search, toolbar, resume banner, keyboard hints */
             .sidebar, .progress-container, .back-to-top, .current-section,
-            .mobile-menu-toggle, .sidebar-overlay {
+            .mobile-menu-toggle, .sidebar-overlay,
+            .search-container, .toolbar, .resume-banner, .keyboard-hint-overlay,
+            .search-results, .keyboard-hint-badge {
                 display: none !important;
             }
 
@@ -323,6 +647,35 @@
                 padding: 30px !important;
                 max-width: 100% !important;
                 border-radius: 0 !important;
+            }
+
+            /* Reset dark mode colors for print */
+            body.dark-mode,
+            body.dark-mode .container {
+                background: white !important;
+                color: #1e293b !important;
+            }
+            body.dark-mode h1,
+            body.dark-mode h2,
+            body.dark-mode h3,
+            body.dark-mode h4,
+            body.dark-mode strong {
+                color: #1e293b !important;
+            }
+            body.dark-mode p,
+            body.dark-mode li,
+            body.dark-mode td {
+                color: #475569 !important;
+            }
+            body.dark-mode .critical-box,
+            body.dark-mode .technical-box,
+            body.dark-mode .foundation-box,
+            body.dark-mode .success-box,
+            body.dark-mode .mechanism-box,
+            body.dark-mode .analogy-box,
+            body.dark-mode .info-box,
+            body.dark-mode .odoo-box {
+                background: inherit !important;
             }
 
             /* Page breaks - each major section on new page */
@@ -531,6 +884,21 @@
     <!-- Sidebar Overlay (for mobile) -->
     <div class="sidebar-overlay" id="sidebarOverlay"></div>
 
+    <!-- Resume Reading Banner -->
+    <div class="resume-banner" id="resumeBanner">
+        <span>📖 Continue reading?</span>
+        <span id="resumeSection"></span>
+        <button class="resume-banner-close" id="resumeClose" aria-label="Close">&times;</button>
+    </div>
+
+    <!-- Keyboard Shortcuts Hint -->
+    <div class="keyboard-hint" id="keyboardHint">
+        <div class="keyboard-hint-row"><kbd>←</kbd> <kbd>→</kbd> Previous / Next section</div>
+        <div class="keyboard-hint-row"><kbd>/</kbd> Focus search</div>
+        <div class="keyboard-hint-row"><kbd>D</kbd> Toggle dark mode</div>
+        <div class="keyboard-hint-row"><kbd>?</kbd> Show/hide shortcuts</div>
+    </div>
+
     <!-- Sidebar Navigation -->
     <aside class="sidebar" id="sidebar">
         <div class="sidebar-header">
@@ -540,6 +908,24 @@
             </div>
             <div class="sidebar-subtitle">Functional Consultant Guide</div>
         </div>
+
+        <!-- Search Bar -->
+        <div class="search-container">
+            <div class="search-wrapper">
+                <span class="search-icon">🔍</span>
+                <input type="text" class="search-input" id="searchInput" placeholder="Search topics... (Press /)" autocomplete="off">
+            </div>
+            <div class="search-results" id="searchResults"></div>
+        </div>
+
+        <!-- Toolbar -->
+        <div class="toolbar">
+            <button class="toolbar-btn" id="darkModeBtn" title="Toggle dark mode (D)">🌙</button>
+            <button class="toolbar-btn" id="fontSmallBtn" title="Smaller text">A-</button>
+            <button class="toolbar-btn" id="fontLargeBtn" title="Larger text">A+</button>
+            <button class="toolbar-btn" id="helpBtn" title="Keyboard shortcuts (?)">⌨️</button>
+        </div>
+
         <nav>
             <div class="sidebar-section-title">Getting Started</div>
             <a href="#intro">Introduction</a>
@@ -2905,13 +3291,36 @@
             const sidebarOverlay = document.getElementById('sidebarOverlay');
             const currentSectionIndicator = document.getElementById('currentSection');
             const sections = document.querySelectorAll('h2[id]');
+            const sectionsArray = Array.from(sections);
+
+            // New feature elements
+            const searchInput = document.getElementById('searchInput');
+            const searchResults = document.getElementById('searchResults');
+            const darkModeBtn = document.getElementById('darkModeBtn');
+            const fontSmallBtn = document.getElementById('fontSmallBtn');
+            const fontLargeBtn = document.getElementById('fontLargeBtn');
+            const helpBtn = document.getElementById('helpBtn');
+            const keyboardHint = document.getElementById('keyboardHint');
+            const resumeBanner = document.getElementById('resumeBanner');
+            const resumeSection = document.getElementById('resumeSection');
+            const resumeClose = document.getElementById('resumeClose');
+
+            // ==================== LOCAL STORAGE KEYS ====================
+            const STORAGE_KEYS = {
+                darkMode: 'odoo_training_dark_mode',
+                fontSize: 'odoo_training_font_size',
+                lastSection: 'odoo_training_last_section',
+                lastScrollPos: 'odoo_training_scroll_pos'
+            };
 
             // ==================== PROGRESS BAR ====================
             function updateProgressBar() {
                 const scrollTop = window.scrollY;
                 const docHeight = document.documentElement.scrollHeight - window.innerHeight;
-                const progress = (scrollTop / docHeight) * 100;
-                progressBar.style.width = progress + '%';
+                if (docHeight > 0) {
+                    const progress = (scrollTop / docHeight) * 100;
+                    progressBar.style.width = Math.min(100, Math.max(0, progress)) + '%';
+                }
             }
 
             // ==================== BACK TO TOP ====================
@@ -2928,31 +3337,49 @@
             });
 
             // ==================== ACTIVE SECTION TRACKING ====================
+            let currentActiveSection = null;
+
             function updateActiveSection() {
-                let currentSection = null;
-                const scrollPos = window.scrollY + 100;
+                let foundSection = null;
+                const scrollPos = window.scrollY + 150;
 
-                sections.forEach(section => {
-                    if (section.offsetTop <= scrollPos) {
-                        currentSection = section;
+                for (let i = sectionsArray.length - 1; i >= 0; i--) {
+                    if (sectionsArray[i].offsetTop <= scrollPos) {
+                        foundSection = sectionsArray[i];
+                        break;
                     }
-                });
+                }
 
-                // Update sidebar active state
-                sidebarLinks.forEach(link => {
-                    link.classList.remove('active');
-                    if (currentSection && link.getAttribute('href') === '#' + currentSection.id) {
-                        link.classList.add('active');
+                if (foundSection && foundSection !== currentActiveSection) {
+                    currentActiveSection = foundSection;
 
-                        // Update current section indicator
-                        const sectionText = link.textContent;
-                        currentSectionIndicator.textContent = sectionText;
+                    // Update sidebar active state
+                    sidebarLinks.forEach(link => {
+                        link.classList.remove('active');
+                        if (link.getAttribute('href') === '#' + foundSection.id) {
+                            link.classList.add('active');
+                            // Scroll sidebar to show active link
+                            const sidebarNav = sidebar.querySelector('nav');
+                            if (sidebarNav) {
+                                const linkRect = link.getBoundingClientRect();
+                                const sidebarRect = sidebar.getBoundingClientRect();
+                                if (linkRect.top < sidebarRect.top + 150 || linkRect.bottom > sidebarRect.bottom - 50) {
+                                    link.scrollIntoView({ block: 'center', behavior: 'smooth' });
+                                }
+                            }
+                        }
+                    });
+
+                    // Update current section indicator
+                    const activeLink = sidebar.querySelector('nav a.active');
+                    if (activeLink) {
+                        currentSectionIndicator.textContent = activeLink.textContent;
                         currentSectionIndicator.classList.add('visible');
-
-                        // Scroll sidebar to show active link
-                        link.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
                     }
-                });
+
+                    // Save to localStorage
+                    saveReadingProgress(foundSection.id);
+                }
 
                 // Hide indicator at top
                 if (window.scrollY < 300) {
@@ -2983,32 +3410,278 @@
                 });
             });
 
-            // ==================== SCROLL EVENT LISTENER ====================
-            let ticking = false;
-            window.addEventListener('scroll', function() {
-                if (!ticking) {
-                    window.requestAnimationFrame(function() {
-                        updateProgressBar();
-                        toggleBackToTop();
-                        updateActiveSection();
-                        ticking = false;
+            // ==================== SEARCH FUNCTIONALITY ====================
+            const searchableContent = [];
+
+            // Build search index
+            function buildSearchIndex() {
+                const container = document.querySelector('.container');
+                const headings = container.querySelectorAll('h2, h3, h4');
+
+                headings.forEach(heading => {
+                    const id = heading.id || heading.closest('h2[id]')?.id || '';
+                    const text = heading.textContent.trim();
+                    const parent = heading.closest('h2[id]');
+                    const parentText = parent ? parent.textContent.trim() : '';
+
+                    searchableContent.push({
+                        title: text,
+                        id: id,
+                        parentId: parent?.id || '',
+                        parentTitle: parentText,
+                        element: heading
                     });
-                    ticking = true;
+                });
+
+                // Also index important paragraphs and list items
+                const importantTexts = container.querySelectorAll('.critical-box h4, .technical-box h4, .success-box h4, .warning-box h4');
+                importantTexts.forEach(el => {
+                    const parent = el.closest('h2[id]') || el.closest('[id]');
+                    if (parent) {
+                        searchableContent.push({
+                            title: el.textContent.trim(),
+                            id: parent.id,
+                            parentId: parent.id,
+                            parentTitle: parent.textContent?.substring(0, 50) || '',
+                            element: el
+                        });
+                    }
+                });
+            }
+
+            function performSearch(query) {
+                if (!query || query.length < 2) {
+                    searchResults.innerHTML = '';
+                    return;
+                }
+
+                const lowerQuery = query.toLowerCase();
+                const results = searchableContent.filter(item =>
+                    item.title.toLowerCase().includes(lowerQuery)
+                ).slice(0, 8);
+
+                if (results.length === 0) {
+                    searchResults.innerHTML = '<div class="no-results">No results found</div>';
+                    return;
+                }
+
+                searchResults.innerHTML = results.map(item => {
+                    const highlightedTitle = item.title.replace(
+                        new RegExp(`(${escapeRegex(query)})`, 'gi'),
+                        '<span class="search-highlight">$1</span>'
+                    );
+                    return `
+                        <div class="search-result-item" data-id="${item.id || item.parentId}">
+                            <div class="search-result-title">${highlightedTitle}</div>
+                            ${item.parentTitle && item.parentTitle !== item.title ?
+                                `<div class="search-result-context">in ${item.parentTitle.substring(0, 40)}...</div>` : ''}
+                        </div>
+                    `;
+                }).join('');
+
+                // Add click handlers
+                searchResults.querySelectorAll('.search-result-item').forEach(item => {
+                    item.addEventListener('click', function() {
+                        const targetId = this.dataset.id;
+                        if (targetId) {
+                            const target = document.getElementById(targetId);
+                            if (target) {
+                                target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                                searchInput.value = '';
+                                searchResults.innerHTML = '';
+                                closeMobileMenu();
+                            }
+                        }
+                    });
+                });
+            }
+
+            function escapeRegex(string) {
+                return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+            }
+
+            let searchTimeout;
+            searchInput.addEventListener('input', function() {
+                clearTimeout(searchTimeout);
+                searchTimeout = setTimeout(() => {
+                    performSearch(this.value.trim());
+                }, 200);
+            });
+
+            searchInput.addEventListener('keydown', function(e) {
+                if (e.key === 'Escape') {
+                    this.value = '';
+                    searchResults.innerHTML = '';
+                    this.blur();
+                }
+                if (e.key === 'Enter') {
+                    const firstResult = searchResults.querySelector('.search-result-item');
+                    if (firstResult) {
+                        firstResult.click();
+                    }
                 }
             });
 
-            // ==================== KEYBOARD NAVIGATION ====================
-            document.addEventListener('keydown', function(e) {
-                // Press 'T' to toggle sidebar on desktop
-                if (e.key === 't' && !e.ctrlKey && !e.metaKey && document.activeElement.tagName !== 'INPUT') {
-                    sidebar.style.display = sidebar.style.display === 'none' ? 'block' : 'none';
-                    document.body.style.paddingLeft = sidebar.style.display === 'none' ? '20px' : '280px';
+            // ==================== DARK MODE ====================
+            function toggleDarkMode() {
+                document.body.classList.toggle('dark-mode');
+                const isDark = document.body.classList.contains('dark-mode');
+                darkModeBtn.textContent = isDark ? '☀️' : '🌙';
+                darkModeBtn.classList.toggle('active', isDark);
+                localStorage.setItem(STORAGE_KEYS.darkMode, isDark ? 'true' : 'false');
+            }
+
+            function loadDarkMode() {
+                const saved = localStorage.getItem(STORAGE_KEYS.darkMode);
+                if (saved === 'true') {
+                    document.body.classList.add('dark-mode');
+                    darkModeBtn.textContent = '☀️';
+                    darkModeBtn.classList.add('active');
+                }
+            }
+
+            darkModeBtn.addEventListener('click', toggleDarkMode);
+
+            // ==================== FONT SIZE ====================
+            function setFontSize(size) {
+                document.body.classList.remove('font-small', 'font-large');
+                fontSmallBtn.classList.remove('active');
+                fontLargeBtn.classList.remove('active');
+
+                if (size === 'small') {
+                    document.body.classList.add('font-small');
+                    fontSmallBtn.classList.add('active');
+                } else if (size === 'large') {
+                    document.body.classList.add('font-large');
+                    fontLargeBtn.classList.add('active');
                 }
 
-                // Press Escape to close mobile menu
+                localStorage.setItem(STORAGE_KEYS.fontSize, size || 'normal');
+            }
+
+            function loadFontSize() {
+                const saved = localStorage.getItem(STORAGE_KEYS.fontSize);
+                if (saved && saved !== 'normal') {
+                    setFontSize(saved);
+                }
+            }
+
+            fontSmallBtn.addEventListener('click', function() {
+                const isActive = this.classList.contains('active');
+                setFontSize(isActive ? 'normal' : 'small');
+            });
+
+            fontLargeBtn.addEventListener('click', function() {
+                const isActive = this.classList.contains('active');
+                setFontSize(isActive ? 'normal' : 'large');
+            });
+
+            // ==================== KEYBOARD SHORTCUTS ====================
+            function toggleKeyboardHint() {
+                keyboardHint.classList.toggle('visible');
+            }
+
+            helpBtn.addEventListener('click', toggleKeyboardHint);
+
+            function navigateSection(direction) {
+                const currentIndex = sectionsArray.findIndex(s => s === currentActiveSection);
+                let newIndex = currentIndex + direction;
+
+                if (newIndex < 0) newIndex = 0;
+                if (newIndex >= sectionsArray.length) newIndex = sectionsArray.length - 1;
+
+                const targetSection = sectionsArray[newIndex];
+                if (targetSection) {
+                    targetSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }
+            }
+
+            document.addEventListener('keydown', function(e) {
+                // Ignore if typing in search
+                if (document.activeElement === searchInput) {
+                    return;
+                }
+
+                // Press '/' to focus search
+                if (e.key === '/' && !e.ctrlKey && !e.metaKey) {
+                    e.preventDefault();
+                    searchInput.focus();
+                    return;
+                }
+
+                // Press 'D' for dark mode
+                if ((e.key === 'd' || e.key === 'D') && !e.ctrlKey && !e.metaKey) {
+                    toggleDarkMode();
+                    return;
+                }
+
+                // Press '?' for help
+                if (e.key === '?' || (e.key === '/' && e.shiftKey)) {
+                    toggleKeyboardHint();
+                    return;
+                }
+
+                // Arrow keys for navigation
+                if (e.key === 'ArrowLeft') {
+                    e.preventDefault();
+                    navigateSection(-1);
+                    return;
+                }
+                if (e.key === 'ArrowRight') {
+                    e.preventDefault();
+                    navigateSection(1);
+                    return;
+                }
+
+                // Press Escape to close things
                 if (e.key === 'Escape') {
                     closeMobileMenu();
+                    keyboardHint.classList.remove('visible');
+                    searchInput.blur();
+                    searchResults.innerHTML = '';
                 }
+            });
+
+            // ==================== READING PROGRESS (localStorage) ====================
+            function saveReadingProgress(sectionId) {
+                if (sectionId) {
+                    localStorage.setItem(STORAGE_KEYS.lastSection, sectionId);
+                    localStorage.setItem(STORAGE_KEYS.lastScrollPos, window.scrollY.toString());
+                }
+            }
+
+            function loadReadingProgress() {
+                const lastSection = localStorage.getItem(STORAGE_KEYS.lastSection);
+                const lastScrollPos = parseInt(localStorage.getItem(STORAGE_KEYS.lastScrollPos) || '0', 10);
+
+                // Only show resume banner if user scrolled past intro and not at top
+                if (lastSection && lastSection !== 'intro' && lastScrollPos > 500) {
+                    const sectionElement = document.getElementById(lastSection);
+                    if (sectionElement) {
+                        const link = sidebar.querySelector(`a[href="#${lastSection}"]`);
+                        const sectionName = link ? link.textContent : lastSection;
+                        resumeSection.textContent = sectionName;
+                        resumeBanner.style.display = 'flex';
+                    }
+                }
+            }
+
+            // Resume banner click - go to saved section
+            resumeBanner.addEventListener('click', function(e) {
+                if (e.target === resumeClose) return;
+                const lastSection = localStorage.getItem(STORAGE_KEYS.lastSection);
+                if (lastSection) {
+                    const target = document.getElementById(lastSection);
+                    if (target) {
+                        target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    }
+                }
+                resumeBanner.style.display = 'none';
+            });
+
+            resumeClose.addEventListener('click', function(e) {
+                e.stopPropagation();
+                resumeBanner.style.display = 'none';
             });
 
             // ==================== SMOOTH SCROLL FOR SIDEBAR LINKS ====================
@@ -3019,16 +3692,51 @@
                     const targetElement = document.querySelector(targetId);
                     if (targetElement) {
                         targetElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                        // Update URL without jumping
                         history.pushState(null, null, targetId);
                     }
                 });
             });
 
-            // ==================== INITIAL CALLS ====================
-            updateProgressBar();
-            toggleBackToTop();
-            updateActiveSection();
+            // ==================== SCROLL EVENT LISTENER ====================
+            let ticking = false;
+            let lastSaveTime = 0;
+
+            window.addEventListener('scroll', function() {
+                if (!ticking) {
+                    window.requestAnimationFrame(function() {
+                        updateProgressBar();
+                        toggleBackToTop();
+                        updateActiveSection();
+
+                        // Save scroll position periodically (every 2 seconds while scrolling)
+                        const now = Date.now();
+                        if (now - lastSaveTime > 2000) {
+                            if (currentActiveSection) {
+                                saveReadingProgress(currentActiveSection.id);
+                            }
+                            lastSaveTime = now;
+                        }
+
+                        ticking = false;
+                    });
+                    ticking = true;
+                }
+            });
+
+            // ==================== INITIALIZATION ====================
+            function init() {
+                buildSearchIndex();
+                loadDarkMode();
+                loadFontSize();
+                updateProgressBar();
+                toggleBackToTop();
+                updateActiveSection();
+
+                // Show resume banner after a short delay
+                setTimeout(loadReadingProgress, 500);
+            }
+
+            init();
         });
     </script>
 </body>
