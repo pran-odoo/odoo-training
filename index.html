@@ -1986,40 +1986,105 @@
             </tr>
         </table>
 
-        <h3>The Four Configurations of Computed Fields</h3>
+        <h3>The Five Configurations of Computed Fields</h3>
 
         <table>
             <tr>
                 <th>Configuration</th>
                 <th>Stored?</th>
-                <th>Can Group By?</th>
-                <th>When Used?</th>
+                <th>Editable?</th>
+                <th>Can Filter/Group?</th>
+                <th>When to Use</th>
             </tr>
             <tr>
-                <td><strong>Computed, Not Stored</strong></td>
+                <td><strong>Computed, Not Stored</strong><br><small><code>compute='_compute_x'</code></small></td>
                 <td>No</td>
                 <td>No</td>
-                <td>Values that change often (age, days until deadline)</td>
+                <td>No</td>
+                <td>Dynamic values (age, days remaining, real-time status)</td>
             </tr>
             <tr>
-                <td><strong>Computed, Stored</strong></td>
+                <td><strong>Computed, Stored</strong><br><small><code>compute='...', store=True</code></small></td>
                 <td>Yes</td>
+                <td>No</td>
                 <td>Yes</td>
-                <td>Calculated once, rarely changes (margin, total)</td>
+                <td>Calculated values for reporting (totals, margins)</td>
             </tr>
             <tr>
-                <td><strong>Computed, Stored, with Depends</strong></td>
+                <td><strong>Computed, Stored, Editable</strong><br><small><code>compute='...', store=True, readonly=False</code></small></td>
                 <td>Yes</td>
+                <td>Yes (overwrite)</td>
                 <td>Yes</td>
-                <td>Recalculates when dependencies change</td>
+                <td>Default value that user can override (e.g., pricelist, journal)</td>
             </tr>
             <tr>
-                <td><strong>Computed with Inverse</strong></td>
+                <td><strong>Computed with Inverse</strong><br><small><code>compute='...', inverse='_inverse_x'</code></small></td>
+                <td>Optional</td>
+                <td>Yes (bidirectional)</td>
+                <td>If stored</td>
+                <td>Two-way binding (edit the computed value to update source)</td>
+            </tr>
+            <tr>
+                <td><strong>Computed with Precompute</strong><br><small><code>compute='...', store=True, precompute=True</code></small></td>
                 <td>Yes</td>
+                <td>Optional</td>
                 <td>Yes</td>
-                <td>Can be edited and works backward (rare)</td>
+                <td>Compute BEFORE record creation for performance (Odoo 16+)</td>
             </tr>
         </table>
+
+        <div class="info-box">
+            <h4>Key Behaviors to Remember</h4>
+            <ul>
+                <li><strong>Default store:</strong> Computed fields are <code>store=False</code> by default</li>
+                <li><strong>Default readonly:</strong> Computed fields are readonly UNLESS they have an <code>inverse</code></li>
+                <li><strong>Default copy:</strong> Computed fields are NOT copied on duplicate, unless stored AND not readonly</li>
+                <li><strong>Precompute:</strong> Only works on stored fields - computes value BEFORE record creation (faster)</li>
+                <li><strong>@api.depends:</strong> Required for stored computed fields to know when to recalculate</li>
+            </ul>
+        </div>
+
+        <div class="success-box">
+            <h4>Real Examples in Odoo</h4>
+            <table>
+                <tr>
+                    <th>Where</th>
+                    <th>Field</th>
+                    <th>Configuration</th>
+                    <th>Why?</th>
+                </tr>
+                <tr>
+                    <td>Sales Order</td>
+                    <td>Pricelist</td>
+                    <td>Computed, Stored, Editable, Precompute</td>
+                    <td>Default from customer, user can change</td>
+                </tr>
+                <tr>
+                    <td>Sales Order</td>
+                    <td>Currency</td>
+                    <td>Computed, Stored, Editable, Precompute</td>
+                    <td>Default from pricelist, editable</td>
+                </tr>
+                <tr>
+                    <td>Event Track</td>
+                    <td>Track Date</td>
+                    <td>Computed, Inverse, Stored</td>
+                    <td>Edit track date → updates event timing</td>
+                </tr>
+                <tr>
+                    <td>Link Tracker</td>
+                    <td>Short URL Code</td>
+                    <td>Computed, Inverse, Editable</td>
+                    <td>Auto-generated code, but customizable</td>
+                </tr>
+                <tr>
+                    <td>HR Work Entry</td>
+                    <td>Is Working Time</td>
+                    <td>Computed, Inverse, Editable</td>
+                    <td>Calculated, but HR can override</td>
+                </tr>
+            </table>
+        </div>
 
         <div class="mechanism-box">
             <h4>The @api.depends Decorator - What Triggers Recalculation?</h4>
