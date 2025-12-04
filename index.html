@@ -3874,84 +3874,135 @@
             });
 
             // ==================== SEARCH FUNCTIONALITY ====================
-            const searchableContent = [];
+            let searchIndex = [];
 
-            // Build search index - find the nearest section ID for any element
-            function findNearestSectionId(element) {
-                // First try to find parent h2 with id
-                let current = element;
-                while (current && current !== document.body) {
-                    if (current.tagName === 'H2' && current.id) {
-                        return current.id;
-                    }
-                    current = current.parentElement;
+            // Fuzzy match scoring - returns score (higher = better match), 0 = no match
+            function fuzzyMatch(text, query) {
+                text = text.toLowerCase();
+                query = query.toLowerCase();
+
+                // Exact match - highest score
+                if (text === query) return 1000;
+
+                // Contains exact query - high score
+                if (text.includes(query)) {
+                    // Bonus for match at start
+                    if (text.startsWith(query)) return 800;
+                    // Bonus for word boundary match
+                    if (text.includes(' ' + query) || text.includes('.' + query)) return 700;
+                    return 600;
                 }
 
-                // If not found, search backwards through siblings
-                let sibling = element.previousElementSibling;
-                while (sibling) {
-                    if (sibling.tagName === 'H2' && sibling.id) {
-                        return sibling.id;
+                // Word-based matching
+                const queryWords = query.split(/\s+/).filter(w => w.length > 0);
+                const textWords = text.split(/\s+/).filter(w => w.length > 0);
+
+                let matchedWords = 0;
+                let partialScore = 0;
+
+                for (const qWord of queryWords) {
+                    for (const tWord of textWords) {
+                        if (tWord === qWord) {
+                            matchedWords++;
+                            partialScore += 100;
+                        } else if (tWord.startsWith(qWord)) {
+                            matchedWords++;
+                            partialScore += 80;
+                        } else if (tWord.includes(qWord)) {
+                            matchedWords++;
+                            partialScore += 50;
+                        }
                     }
-                    // Also check inside the sibling
-                    const h2 = sibling.querySelector ? sibling.querySelector('h2[id]') : null;
-                    if (h2) return h2.id;
-                    sibling = sibling.previousElementSibling;
                 }
 
-                return '';
+                // All query words must match something
+                if (matchedWords >= queryWords.length) {
+                    return partialScore;
+                }
+
+                // Subsequence matching (for typos/partial)
+                let qi = 0;
+                let consecutive = 0;
+                let maxConsecutive = 0;
+
+                for (let ti = 0; ti < text.length && qi < query.length; ti++) {
+                    if (text[ti] === query[qi]) {
+                        qi++;
+                        consecutive++;
+                        maxConsecutive = Math.max(maxConsecutive, consecutive);
+                    } else {
+                        consecutive = 0;
+                    }
+                }
+
+                // If we matched all query characters in sequence
+                if (qi === query.length) {
+                    // Score based on how consecutive the matches were
+                    return 20 + (maxConsecutive / query.length) * 30;
+                }
+
+                return 0;
             }
 
             function buildSearchIndex() {
+                searchIndex = [];
                 const container = document.querySelector('.container');
-                if (!container) return;
+                if (!container) {
+                    console.warn('Search: .container not found');
+                    return;
+                }
 
-                // Index all h2 sections first (these have IDs)
-                const h2s = container.querySelectorAll('h2[id]');
-                h2s.forEach(h2 => {
-                    searchableContent.push({
-                        title: h2.textContent.trim(),
-                        id: h2.id,
-                        sectionTitle: '',
-                        element: h2
+                // Get all h2 elements with IDs (main sections)
+                const allH2s = Array.from(container.querySelectorAll('h2[id]'));
+
+                // Index each h2
+                allH2s.forEach((h2, h2Index) => {
+                    const sectionId = h2.id;
+                    const sectionTitle = h2.textContent.trim();
+
+                    // Add the h2 itself
+                    searchIndex.push({
+                        title: sectionTitle,
+                        section: sectionTitle,
+                        element: h2,
+                        type: 'section'
                     });
-                });
 
-                // Index h3 and h4 headings
-                const subheadings = container.querySelectorAll('h3, h4');
-                subheadings.forEach(heading => {
-                    const sectionId = findNearestSectionId(heading);
-                    if (sectionId) {
-                        const sectionH2 = document.getElementById(sectionId);
-                        searchableContent.push({
-                            title: heading.textContent.trim(),
-                            id: sectionId,
-                            sectionTitle: sectionH2 ? sectionH2.textContent.trim().substring(0, 40) : '',
-                            element: heading
-                        });
-                    }
-                });
+                    // Find all elements between this h2 and the next h2
+                    const nextH2 = allH2s[h2Index + 1];
+                    let current = h2.nextElementSibling;
 
-                // Also index important box titles
-                const boxTitles = container.querySelectorAll('.critical-box h4, .technical-box h4, .success-box h4, .warning-box h4, .mechanism-box h4, .analogy-box h4, .info-box h4');
-                boxTitles.forEach(el => {
-                    const sectionId = findNearestSectionId(el);
-                    if (sectionId) {
-                        const sectionH2 = document.getElementById(sectionId);
-                        // Avoid duplicates
-                        const exists = searchableContent.some(item =>
-                            item.title === el.textContent.trim() && item.id === sectionId
-                        );
-                        if (!exists) {
-                            searchableContent.push({
-                                title: el.textContent.trim(),
-                                id: sectionId,
-                                sectionTitle: sectionH2 ? sectionH2.textContent.trim().substring(0, 40) : '',
-                                element: el
+                    while (current && current !== nextH2) {
+                        // Index h3 and h4 headings
+                        if (current.tagName === 'H3' || current.tagName === 'H4') {
+                            searchIndex.push({
+                                title: current.textContent.trim(),
+                                section: sectionTitle.substring(0, 35),
+                                element: current,
+                                type: 'heading'
                             });
                         }
+
+                        // Index headings inside divs (boxes)
+                        const innerHeadings = current.querySelectorAll ? current.querySelectorAll('h3, h4') : [];
+                        innerHeadings.forEach(heading => {
+                            const title = heading.textContent.trim();
+                            // Avoid duplicates
+                            if (!searchIndex.some(item => item.title === title && item.section === sectionTitle.substring(0, 35))) {
+                                searchIndex.push({
+                                    title: title,
+                                    section: sectionTitle.substring(0, 35),
+                                    element: heading,
+                                    type: 'box-title'
+                                });
+                            }
+                        });
+
+                        current = current.nextElementSibling;
                     }
                 });
+
+                console.log('Search index built:', searchIndex.length, 'items');
             }
 
             function performSearch(query) {
@@ -3960,57 +4011,90 @@
                     return;
                 }
 
-                const lowerQuery = query.toLowerCase();
-                const results = searchableContent.filter(item =>
-                    item.title.toLowerCase().includes(lowerQuery)
-                ).slice(0, 10);
+                // Score all items
+                const scored = searchIndex.map(item => ({
+                    ...item,
+                    score: fuzzyMatch(item.title, query)
+                })).filter(item => item.score > 0);
+
+                // Sort by score descending
+                scored.sort((a, b) => b.score - a.score);
+
+                // Take top 12 results
+                const results = scored.slice(0, 12);
 
                 if (results.length === 0) {
-                    searchResults.innerHTML = '<div class="no-results">No results found</div>';
+                    searchResults.innerHTML = '<div class="no-results">No results found for "' + escapeHtml(query) + '"</div>';
                     return;
                 }
 
                 // Build results HTML
-                let html = '';
-                results.forEach((item, index) => {
-                    const highlightedTitle = item.title.replace(
-                        new RegExp(`(${escapeRegex(query)})`, 'gi'),
-                        '<span class="search-highlight">$1</span>'
-                    );
-                    html += `
+                const html = results.map((item, index) => {
+                    const highlighted = highlightMatch(item.title, query);
+                    return `
                         <div class="search-result-item" data-index="${index}">
-                            <div class="search-result-title">${highlightedTitle}</div>
-                            ${item.sectionTitle ? `<div class="search-result-context">in ${item.sectionTitle}...</div>` : ''}
+                            <div class="search-result-title">${highlighted}</div>
+                            ${item.section && item.type !== 'section' ?
+                                `<div class="search-result-context">in ${escapeHtml(item.section)}...</div>` : ''}
                         </div>
                     `;
-                });
+                }).join('');
+
                 searchResults.innerHTML = html;
-
-                // Store results for click handling
                 searchResults._results = results;
+            }
 
-                // Add click handlers using event delegation
-                searchResults.onclick = function(e) {
-                    const resultItem = e.target.closest('.search-result-item');
-                    if (resultItem) {
-                        const index = parseInt(resultItem.dataset.index, 10);
-                        const result = searchResults._results[index];
-                        if (result && result.element) {
-                            // Scroll to the actual element, not just the section
-                            result.element.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                            // Clear search
-                            searchInput.value = '';
-                            searchResults.innerHTML = '';
-                            searchResults._results = null;
-                            closeMobileMenu();
-                        }
+            function highlightMatch(text, query) {
+                const escaped = escapeHtml(text);
+                const queryLower = query.toLowerCase();
+                const textLower = text.toLowerCase();
+
+                // Try exact substring match first
+                const idx = textLower.indexOf(queryLower);
+                if (idx !== -1) {
+                    const before = escapeHtml(text.substring(0, idx));
+                    const match = escapeHtml(text.substring(idx, idx + query.length));
+                    const after = escapeHtml(text.substring(idx + query.length));
+                    return before + '<span class="search-highlight">' + match + '</span>' + after;
+                }
+
+                // Highlight individual matching words
+                const queryWords = query.toLowerCase().split(/\s+/);
+                let result = escaped;
+                for (const word of queryWords) {
+                    if (word.length >= 2) {
+                        const regex = new RegExp('(' + escapeRegex(word) + ')', 'gi');
+                        result = result.replace(regex, '<span class="search-highlight">$1</span>');
                     }
-                };
+                }
+                return result;
+            }
+
+            function escapeHtml(text) {
+                const div = document.createElement('div');
+                div.textContent = text;
+                return div.innerHTML;
             }
 
             function escapeRegex(string) {
                 return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
             }
+
+            // Click handler using event delegation
+            searchResults.addEventListener('click', function(e) {
+                const resultItem = e.target.closest('.search-result-item');
+                if (resultItem && searchResults._results) {
+                    const index = parseInt(resultItem.dataset.index, 10);
+                    const result = searchResults._results[index];
+                    if (result && result.element) {
+                        result.element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                        searchInput.value = '';
+                        searchResults.innerHTML = '';
+                        searchResults._results = null;
+                        closeMobileMenu();
+                    }
+                }
+            });
 
             // Search on input with debounce
             let searchTimeout;
@@ -4018,7 +4102,7 @@
                 clearTimeout(searchTimeout);
                 searchTimeout = setTimeout(() => {
                     performSearch(this.value.trim());
-                }, 150);
+                }, 100);
             });
 
             // Also trigger search on focus if there's already text
@@ -4042,7 +4126,7 @@
                         firstResult.click();
                     }
                 }
-                // Arrow key navigation
+                // Arrow key navigation in search results
                 if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
                     e.preventDefault();
                     const items = searchResults.querySelectorAll('.search-result-item');
