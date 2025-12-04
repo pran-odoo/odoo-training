@@ -3947,24 +3947,13 @@
             function buildSearchIndex() {
                 searchIndex = [];
                 const container = document.querySelector('.container');
-                console.log('Building search index...');
-                console.log('Container found:', !!container);
+                if (!container) return;
 
-                if (!container) {
-                    console.error('Search: .container not found');
-                    return;
-                }
-
-                // Get all h2 elements with IDs (main sections)
                 const allH2s = Array.from(container.querySelectorAll('h2[id]'));
-                console.log('Found H2 sections:', allH2s.length);
 
-                // Index each h2
                 allH2s.forEach((h2, h2Index) => {
-                    const sectionId = h2.id;
                     const sectionTitle = h2.textContent.trim();
 
-                    // Add the h2 itself
                     searchIndex.push({
                         title: sectionTitle,
                         section: sectionTitle,
@@ -3972,12 +3961,10 @@
                         type: 'section'
                     });
 
-                    // Find all elements between this h2 and the next h2
                     const nextH2 = allH2s[h2Index + 1];
                     let current = h2.nextElementSibling;
 
                     while (current && current !== nextH2) {
-                        // Index h3 and h4 headings
                         if (current.tagName === 'H3' || current.tagName === 'H4') {
                             searchIndex.push({
                                 title: current.textContent.trim(),
@@ -3987,11 +3974,9 @@
                             });
                         }
 
-                        // Index headings inside divs (boxes)
                         const innerHeadings = current.querySelectorAll ? current.querySelectorAll('h3, h4') : [];
                         innerHeadings.forEach(heading => {
                             const title = heading.textContent.trim();
-                            // Avoid duplicates
                             if (!searchIndex.some(item => item.title === title && item.section === sectionTitle.substring(0, 35))) {
                                 searchIndex.push({
                                     title: title,
@@ -4005,19 +3990,14 @@
                         current = current.nextElementSibling;
                     }
                 });
-
-                console.log('Search index built:', searchIndex.length, 'items');
             }
 
             function performSearch(query) {
-                console.log('Searching for:', query, '| Index size:', searchIndex.length);
-
                 if (!query || query.length < 2) {
                     searchResults.innerHTML = '';
                     return;
                 }
 
-                // Score all items
                 const scored = searchIndex.map(item => ({
                     ...item,
                     score: fuzzyMatch(item.title, query)
@@ -4026,9 +4006,7 @@
                 // Sort by score descending
                 scored.sort((a, b) => b.score - a.score);
 
-                // Take top 12 results
                 const results = scored.slice(0, 12);
-                console.log('Results found:', results.length, results.map(r => r.title + '(' + r.score + ')').slice(0,3));
 
                 if (results.length === 0) {
                     searchResults.innerHTML = '<div class="no-results">No results found for "' + escapeHtml(query) + '"</div>';
