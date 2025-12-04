@@ -3947,13 +3947,17 @@
             function buildSearchIndex() {
                 searchIndex = [];
                 const container = document.querySelector('.container');
+                console.log('Building search index...');
+                console.log('Container found:', !!container);
+
                 if (!container) {
-                    console.warn('Search: .container not found');
+                    console.error('Search: .container not found');
                     return;
                 }
 
                 // Get all h2 elements with IDs (main sections)
                 const allH2s = Array.from(container.querySelectorAll('h2[id]'));
+                console.log('Found H2 sections:', allH2s.length);
 
                 // Index each h2
                 allH2s.forEach((h2, h2Index) => {
@@ -4006,6 +4010,8 @@
             }
 
             function performSearch(query) {
+                console.log('Searching for:', query, '| Index size:', searchIndex.length);
+
                 if (!query || query.length < 2) {
                     searchResults.innerHTML = '';
                     return;
@@ -4022,6 +4028,7 @@
 
                 // Take top 12 results
                 const results = scored.slice(0, 12);
+                console.log('Results found:', results.length, results.map(r => r.title + '(' + r.score + ')').slice(0,3));
 
                 if (results.length === 0) {
                     searchResults.innerHTML = '<div class="no-results">No results found for "' + escapeHtml(query) + '"</div>';
