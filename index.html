@@ -445,13 +445,21 @@
 
         /* ==================== MAIN CONTAINER ==================== */
         .container {
-            max-width: 1100px;
+            max-width: calc(100vw - 320px);
+            width: 100%;
             margin: 0 auto;
             background: white;
             padding: 50px 60px;
             border-radius: 20px;
             box-shadow: 0 10px 40px rgba(0,0,0,0.3);
             position: relative;
+            box-sizing: border-box;
+        }
+
+        @media (min-width: 1500px) {
+            .container {
+                max-width: 1200px;
+            }
         }
 
         /* ==================== BACK TO TOP BUTTON ==================== */
@@ -553,11 +561,16 @@
         code { background: #f1f5f9; padding: 2px 8px; border-radius: 4px; font-family: 'Courier New', monospace; font-size: 14px; color: #714B67; }
 
         /* ==================== TABLES ==================== */
-        table { width: 100%; border-collapse: collapse; margin: 25px 0; box-shadow: 0 2px 8px rgba(0,0,0,0.1); border-radius: 12px; overflow: hidden; }
-        th { background: #714B67; color: white; padding: 18px; text-align: left; font-size: 16px; font-weight: 600; }
+        table { width: 100%; border-collapse: collapse; margin: 25px 0; box-shadow: 0 2px 8px rgba(0,0,0,0.1); border-radius: 12px; overflow: hidden; display: block; overflow-x: auto; }
+        th { background: #714B67; color: white; padding: 18px; text-align: left; font-size: 16px; font-weight: 600; white-space: nowrap; }
         td { padding: 16px; border: 1px solid #e2e8f0; font-size: 15px; vertical-align: top; }
         tr:nth-child(even) { background: #f8fafc; }
         tr:hover { background: #f1f5f9; transition: background 0.2s ease; }
+
+        @media (min-width: 900px) {
+            table { display: table; }
+            th { white-space: normal; }
+        }
 
         /* ==================== LISTS ==================== */
         ul, ol { margin: 20px 0; padding-left: 40px; }
