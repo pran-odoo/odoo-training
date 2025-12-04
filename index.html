@@ -967,8 +967,7 @@
     <!-- Main Content -->
     <div class="container">
         <h1>Complete Odoo Framework Training</h1>
-        <p class="subtitle">The Ultimate Guide for Functional Consultants - Belgium & India Teams<br>
-        <span class="badge badge-new">Odoo 17/18/19 Compatible</span>
+        <p class="subtitle"><span class="badge badge-new">Odoo 17/18/19 Compatible</span>
         <span class="badge badge-enterprise">Community & Enterprise</span></p>
 
         <div class="foundation-box" style="margin-top: 0;">
@@ -1188,9 +1187,9 @@
 
         <div class="success-box">
             <h4>Method 2: URL Inspection</h4>
-            <p>Look at the URL in your browser. For example:</p>
-            <p><code>https://mycompany.odoo.com/web#id=5&model=<strong>sale.order</strong>&view_type=form</code></p>
-            <p>The model name is shown in the URL!</p>
+            <p>Look at the URL in your browser. In Odoo 17+, URLs use path segments:</p>
+            <p><code>https://mycompany.odoo.com/odoo/<strong>sale.order</strong>/5</code></p>
+            <p>The model name appears in the URL path! (Older versions used hash format: <code>#model=sale.order&id=5</code>)</p>
         </div>
 
         <!-- ==================== SECTION 3: FIELD TYPES ==================== -->
