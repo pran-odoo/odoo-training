@@ -2324,6 +2324,12 @@
                 <td>Location-based data</td>
             </tr>
             <tr>
+                <td><strong>Cohort</strong> <span class="badge badge-enterprise">Enterprise</span></td>
+                <td><code>&lt;cohort&gt;</code></td>
+                <td>Cohort analysis</td>
+                <td>Retention, churn analysis</td>
+            </tr>
+            <tr>
                 <td><strong>Activity</strong></td>
                 <td><code>&lt;activity&gt;</code></td>
                 <td>Activity scheduling</td>
@@ -2613,7 +2619,30 @@
                 <td><code>[('categ_id', 'parent_of', 10)]</code></td>
                 <td>Parents of category 10</td>
             </tr>
+            <tr>
+                <td><code>any</code></td>
+                <td>Relational subdomain</td>
+                <td><code>[('order_line', 'any', [('product_id.type', '=', 'service')])]</code></td>
+                <td>Orders with service products</td>
+            </tr>
+            <tr>
+                <td><code>not any</code></td>
+                <td>Negated subdomain</td>
+                <td><code>[('order_line', 'not any', [('qty_delivered', '>', 0)])]</code></td>
+                <td>Orders with no delivered lines</td>
+            </tr>
         </table>
+
+        <div class="info-box">
+            <h4>The "any" Operator (Odoo 17+)</h4>
+            <p>The <code>any</code> operator is powerful for filtering through relational fields with complex conditions:</p>
+            <ul>
+                <li><strong>Purpose:</strong> Filter records where ANY related record matches a subdomain</li>
+                <li><strong>Syntax:</strong> <code>[('relation_field', 'any', [subdomain])]</code></li>
+                <li><strong>Use case:</strong> Find sales orders where any order line has a specific product type</li>
+            </ul>
+            <p><strong>Note:</strong> The traditional dot notation <code>[('order_line.product_id.type', '=', 'service')]</code> is equivalent to using `any` and still works.</p>
+        </div>
 
         <h3>Combining Conditions</h3>
 
@@ -2956,6 +2985,11 @@
                     <td><code>text</code></td>
                     <td>Long text</td>
                     <td>Detailed notes</td>
+                </tr>
+                <tr>
+                    <td><code>html</code></td>
+                    <td>Rich text (HTML)</td>
+                    <td>Formatted descriptions, instructions</td>
                 </tr>
                 <tr>
                     <td><code>integer</code></td>
