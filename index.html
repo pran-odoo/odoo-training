@@ -1204,7 +1204,7 @@
 
         <div class="foundation-box" style="margin-top: 0;">
             <h4 style="margin-top: 0;">Document Purpose</h4>
-            <p>This comprehensive guide provides functional consultants with the knowledge to understand Odoo's data architecture, communicate effectively with technical teams, and make informed configuration decisions. Each concept is explained with real business scenarios and practical examples.</p>
+            <p>This guide helps functional consultants understand Odoo's data architecture, talk to technical teams, and make better configuration decisions. Each concept includes real business scenarios and practical examples.</p>
         </div>
 
         <div class="toc">
@@ -1214,8 +1214,8 @@
             <a href="#field-types">2. Complete Field Types Guide</a>
             <a href="#relationships">3. Relationships - Many2one, One2many, Many2many</a>
             <a href="#storage">4. Field Storage - store=True vs store=False</a>
-            <a href="#computed">5. Computed Fields Deep Dive</a>
-            <a href="#related">6. Related Fields Deep Dive</a>
+            <a href="#computed">5. Computed Fields Explained</a>
+            <a href="#related">6. Related Fields Explained</a>
             <a href="#groupby">7. Why Group By Requires Stored Fields</a>
             <a href="#views">8. Views - Form, List, Kanban, and More</a>
             <a href="#widgets">9. Widgets - Display vs Data Storage</a>
@@ -1619,7 +1619,7 @@
 
         <div class="critical-box">
             <h4>Why Relationships Are Critical</h4>
-            <p>Relationships connect data across different models. Understanding them is <strong>essential</strong> for:</p>
+            <p>Relationships connect data across different models. Understanding them is <strong>important</strong> for:</p>
             <ul>
                 <li>Understanding how data flows in Odoo</li>
                 <li>Creating proper filters and reports</li>
@@ -1943,7 +1943,7 @@
         </div>
 
         <!-- ==================== SECTION 6: COMPUTED FIELDS ==================== -->
-        <h2 id="computed">5. Computed Fields Deep Dive</h2>
+        <h2 id="computed">5. Computed Fields Explained</h2>
 
         <div class="technical-box">
             <h4>What Is a Computed Field?</h4>
@@ -2128,7 +2128,7 @@
         </div>
 
         <!-- ==================== SECTION 7: RELATED FIELDS ==================== -->
-        <h2 id="related">6. Related Fields Deep Dive</h2>
+        <h2 id="related">6. Related Fields Explained</h2>
 
         <div class="technical-box">
             <h4>What Is a Related Field?</h4>
@@ -2929,7 +2929,7 @@
                 <li><strong>Always check your current company</strong> when configuring these fields</li>
                 <li>If a field shows different values when switching companies, it's likely company-dependent</li>
                 <li>Use <strong>Developer Mode</strong> → hover over field → check for "company_dependent" in technical info</li>
-                <li>When importing data, ensure you're in the correct company context</li>
+                <li>When importing data, make sure you're in the correct company context</li>
             </ul>
         </div>
 
@@ -2937,7 +2937,7 @@
 
         <div class="critical-box">
             <h4>What Is the Properties Field?</h4>
-            <p>The <strong>Properties</strong> field type (introduced in Odoo 16/17) allows you to create <strong>dynamic custom fields on the fly</strong> without modifying the database structure. It's like having flexible "extra attributes" that can be different for each parent record.</p>
+            <p>The <strong>Properties</strong> field type (added in Odoo 16/17) lets you create <strong>dynamic custom fields on the fly</strong> without modifying the database structure. Think of it as flexible "extra attributes" that can be different for each parent record.</p>
         </div>
 
         <div class="analogy-box">
@@ -3332,7 +3332,7 @@
 
         <div class="odoo-box">
             <h4>What Is Odoo Studio?</h4>
-            <p>Odoo Studio is a <strong>no-code customization tool</strong> that allows you to:</p>
+            <p>Odoo Studio is a <strong>no-code customization tool</strong>. With it you can:</p>
             <ul>
                 <li>Add new fields to existing models</li>
                 <li>Create new models (apps)</li>
@@ -3380,7 +3380,7 @@
         </table>
 
         <div class="warning-box">
-            <h4>Studio Best Practices</h4>
+            <h4>Studio Tips</h4>
             <ul>
                 <li><strong>Document everything</strong> - Keep a log of Studio changes</li>
                 <li><strong>Test in staging first</strong> - Don't experiment in production</li>
