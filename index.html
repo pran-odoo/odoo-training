@@ -105,8 +105,13 @@
             transition: all 0.2s ease;
         }
 
-        .search-result-item:hover {
+        .search-result-item:hover,
+        .search-result-item.selected {
             background: #475569;
+        }
+
+        .search-result-item.selected {
+            outline: 2px solid #714B67;
         }
 
         .search-result-title {
@@ -3871,38 +3876,80 @@
             // ==================== SEARCH FUNCTIONALITY ====================
             const searchableContent = [];
 
-            // Build search index
+            // Build search index - find the nearest section ID for any element
+            function findNearestSectionId(element) {
+                // First try to find parent h2 with id
+                let current = element;
+                while (current && current !== document.body) {
+                    if (current.tagName === 'H2' && current.id) {
+                        return current.id;
+                    }
+                    current = current.parentElement;
+                }
+
+                // If not found, search backwards through siblings
+                let sibling = element.previousElementSibling;
+                while (sibling) {
+                    if (sibling.tagName === 'H2' && sibling.id) {
+                        return sibling.id;
+                    }
+                    // Also check inside the sibling
+                    const h2 = sibling.querySelector ? sibling.querySelector('h2[id]') : null;
+                    if (h2) return h2.id;
+                    sibling = sibling.previousElementSibling;
+                }
+
+                return '';
+            }
+
             function buildSearchIndex() {
                 const container = document.querySelector('.container');
-                const headings = container.querySelectorAll('h2, h3, h4');
+                if (!container) return;
 
-                headings.forEach(heading => {
-                    const id = heading.id || heading.closest('h2[id]')?.id || '';
-                    const text = heading.textContent.trim();
-                    const parent = heading.closest('h2[id]');
-                    const parentText = parent ? parent.textContent.trim() : '';
-
+                // Index all h2 sections first (these have IDs)
+                const h2s = container.querySelectorAll('h2[id]');
+                h2s.forEach(h2 => {
                     searchableContent.push({
-                        title: text,
-                        id: id,
-                        parentId: parent?.id || '',
-                        parentTitle: parentText,
-                        element: heading
+                        title: h2.textContent.trim(),
+                        id: h2.id,
+                        sectionTitle: '',
+                        element: h2
                     });
                 });
 
-                // Also index important paragraphs and list items
-                const importantTexts = container.querySelectorAll('.critical-box h4, .technical-box h4, .success-box h4, .warning-box h4');
-                importantTexts.forEach(el => {
-                    const parent = el.closest('h2[id]') || el.closest('[id]');
-                    if (parent) {
+                // Index h3 and h4 headings
+                const subheadings = container.querySelectorAll('h3, h4');
+                subheadings.forEach(heading => {
+                    const sectionId = findNearestSectionId(heading);
+                    if (sectionId) {
+                        const sectionH2 = document.getElementById(sectionId);
                         searchableContent.push({
-                            title: el.textContent.trim(),
-                            id: parent.id,
-                            parentId: parent.id,
-                            parentTitle: parent.textContent?.substring(0, 50) || '',
-                            element: el
+                            title: heading.textContent.trim(),
+                            id: sectionId,
+                            sectionTitle: sectionH2 ? sectionH2.textContent.trim().substring(0, 40) : '',
+                            element: heading
                         });
+                    }
+                });
+
+                // Also index important box titles
+                const boxTitles = container.querySelectorAll('.critical-box h4, .technical-box h4, .success-box h4, .warning-box h4, .mechanism-box h4, .analogy-box h4, .info-box h4');
+                boxTitles.forEach(el => {
+                    const sectionId = findNearestSectionId(el);
+                    if (sectionId) {
+                        const sectionH2 = document.getElementById(sectionId);
+                        // Avoid duplicates
+                        const exists = searchableContent.some(item =>
+                            item.title === el.textContent.trim() && item.id === sectionId
+                        );
+                        if (!exists) {
+                            searchableContent.push({
+                                title: el.textContent.trim(),
+                                id: sectionId,
+                                sectionTitle: sectionH2 ? sectionH2.textContent.trim().substring(0, 40) : '',
+                                element: el
+                            });
+                        }
                     }
                 });
             }
@@ -3916,54 +3963,69 @@
                 const lowerQuery = query.toLowerCase();
                 const results = searchableContent.filter(item =>
                     item.title.toLowerCase().includes(lowerQuery)
-                ).slice(0, 8);
+                ).slice(0, 10);
 
                 if (results.length === 0) {
                     searchResults.innerHTML = '<div class="no-results">No results found</div>';
                     return;
                 }
 
-                searchResults.innerHTML = results.map(item => {
+                // Build results HTML
+                let html = '';
+                results.forEach((item, index) => {
                     const highlightedTitle = item.title.replace(
                         new RegExp(`(${escapeRegex(query)})`, 'gi'),
                         '<span class="search-highlight">$1</span>'
                     );
-                    return `
-                        <div class="search-result-item" data-id="${item.id || item.parentId}">
+                    html += `
+                        <div class="search-result-item" data-index="${index}">
                             <div class="search-result-title">${highlightedTitle}</div>
-                            ${item.parentTitle && item.parentTitle !== item.title ?
-                                `<div class="search-result-context">in ${item.parentTitle.substring(0, 40)}...</div>` : ''}
+                            ${item.sectionTitle ? `<div class="search-result-context">in ${item.sectionTitle}...</div>` : ''}
                         </div>
                     `;
-                }).join('');
-
-                // Add click handlers
-                searchResults.querySelectorAll('.search-result-item').forEach(item => {
-                    item.addEventListener('click', function() {
-                        const targetId = this.dataset.id;
-                        if (targetId) {
-                            const target = document.getElementById(targetId);
-                            if (target) {
-                                target.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                                searchInput.value = '';
-                                searchResults.innerHTML = '';
-                                closeMobileMenu();
-                            }
-                        }
-                    });
                 });
+                searchResults.innerHTML = html;
+
+                // Store results for click handling
+                searchResults._results = results;
+
+                // Add click handlers using event delegation
+                searchResults.onclick = function(e) {
+                    const resultItem = e.target.closest('.search-result-item');
+                    if (resultItem) {
+                        const index = parseInt(resultItem.dataset.index, 10);
+                        const result = searchResults._results[index];
+                        if (result && result.element) {
+                            // Scroll to the actual element, not just the section
+                            result.element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                            // Clear search
+                            searchInput.value = '';
+                            searchResults.innerHTML = '';
+                            searchResults._results = null;
+                            closeMobileMenu();
+                        }
+                    }
+                };
             }
 
             function escapeRegex(string) {
                 return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
             }
 
+            // Search on input with debounce
             let searchTimeout;
             searchInput.addEventListener('input', function() {
                 clearTimeout(searchTimeout);
                 searchTimeout = setTimeout(() => {
                     performSearch(this.value.trim());
-                }, 200);
+                }, 150);
+            });
+
+            // Also trigger search on focus if there's already text
+            searchInput.addEventListener('focus', function() {
+                if (this.value.trim().length >= 2) {
+                    performSearch(this.value.trim());
+                }
             });
 
             searchInput.addEventListener('keydown', function(e) {
@@ -3973,10 +4035,34 @@
                     this.blur();
                 }
                 if (e.key === 'Enter') {
-                    const firstResult = searchResults.querySelector('.search-result-item');
+                    e.preventDefault();
+                    const selected = searchResults.querySelector('.search-result-item.selected');
+                    const firstResult = selected || searchResults.querySelector('.search-result-item');
                     if (firstResult) {
                         firstResult.click();
                     }
+                }
+                // Arrow key navigation
+                if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
+                    e.preventDefault();
+                    const items = searchResults.querySelectorAll('.search-result-item');
+                    if (items.length === 0) return;
+
+                    const current = searchResults.querySelector('.search-result-item.selected');
+                    let nextIndex = 0;
+
+                    if (current) {
+                        current.classList.remove('selected');
+                        const currentIndex = Array.from(items).indexOf(current);
+                        if (e.key === 'ArrowDown') {
+                            nextIndex = (currentIndex + 1) % items.length;
+                        } else {
+                            nextIndex = (currentIndex - 1 + items.length) % items.length;
+                        }
+                    }
+
+                    items[nextIndex].classList.add('selected');
+                    items[nextIndex].scrollIntoView({ block: 'nearest' });
                 }
             });
 
