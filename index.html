@@ -2721,6 +2721,251 @@
             </table>
         </div>
 
+        <h3>Company-Dependent Fields (Multi-Company)</h3>
+
+        <div class="critical-box">
+            <h4>What Are Company-Dependent Fields?</h4>
+            <p>In a multi-company environment, some field values need to be <strong>different for each company</strong>. For example, a product might have different costs, accounting configurations, or warehouse settings per company.</p>
+        </div>
+
+        <div class="analogy-box">
+            <h4>Real-World Analogy</h4>
+            <p>Think of a franchise business. The same product "Burger Meal" exists across all locations, but:</p>
+            <ul>
+                <li>The <strong>price</strong> might be different in each city</li>
+                <li>The <strong>supplier</strong> might be different per region</li>
+                <li>The <strong>tax rate</strong> varies by country</li>
+            </ul>
+            <p>Company-dependent fields solve exactly this - <strong>one record, multiple company-specific values</strong>.</p>
+        </div>
+
+        <div class="mechanism-box">
+            <h4>How It Works Technically</h4>
+            <p>When a field has <code>company_dependent=True</code>:</p>
+            <ul>
+                <li>The value is stored as <strong>JSONB</strong> in the database with company IDs as keys</li>
+                <li>When you read the field, Odoo automatically returns the value for your <strong>current company</strong></li>
+                <li>Fallback values can be set via <code>ir.default</code> (System Parameters)</li>
+            </ul>
+            <div class="code-block">
+# Database storage example:
+{"1": 100.00, "2": 95.50, "3": 110.00}
+# Company 1 sees: 100.00
+# Company 2 sees: 95.50
+# Company 3 sees: 110.00</div>
+        </div>
+
+        <div class="success-box">
+            <h4>Common Company-Dependent Fields in Odoo</h4>
+            <table>
+                <tr>
+                    <th>Module</th>
+                    <th>Field</th>
+                    <th>Why Company-Dependent?</th>
+                </tr>
+                <tr>
+                    <td>Product</td>
+                    <td>Standard Price (Cost)</td>
+                    <td>Different purchase costs per company</td>
+                </tr>
+                <tr>
+                    <td>Product</td>
+                    <td>Income/Expense Accounts</td>
+                    <td>Different chart of accounts per company</td>
+                </tr>
+                <tr>
+                    <td>Product</td>
+                    <td>Stock Valuation Account</td>
+                    <td>Different accounting setup per company</td>
+                </tr>
+                <tr>
+                    <td>User</td>
+                    <td>Default Warehouse</td>
+                    <td>Users may have different default warehouses</td>
+                </tr>
+                <tr>
+                    <td>Partner</td>
+                    <td>Subcontractor Location</td>
+                    <td>Manufacturing locations vary by company</td>
+                </tr>
+            </table>
+        </div>
+
+        <div class="warning-box">
+            <h4>Important for Functional Consultants</h4>
+            <ul>
+                <li><strong>Always check your current company</strong> when configuring these fields</li>
+                <li>If a field shows different values when switching companies, it's likely company-dependent</li>
+                <li>Use <strong>Developer Mode</strong> → hover over field → check for "company_dependent" in technical info</li>
+                <li>When importing data, ensure you're in the correct company context</li>
+            </ul>
+        </div>
+
+        <h3>Properties Field (Dynamic Custom Fields)</h3>
+
+        <div class="critical-box">
+            <h4>What Is the Properties Field?</h4>
+            <p>The <strong>Properties</strong> field type (introduced in Odoo 16/17) allows you to create <strong>dynamic custom fields on the fly</strong> without modifying the database structure. It's like having flexible "extra attributes" that can be different for each parent record.</p>
+        </div>
+
+        <div class="analogy-box">
+            <h4>Real-World Analogy</h4>
+            <p>Imagine a Project Management system:</p>
+            <ul>
+                <li><strong>Project A (Website Redesign)</strong> needs fields: "Design Tool", "Browser Compatibility", "Mobile First?"</li>
+                <li><strong>Project B (Office Move)</strong> needs fields: "Moving Company", "Insurance Policy", "Floor Plan Approved?"</li>
+            </ul>
+            <p>With Properties, each project can have <strong>its own custom fields</strong> for tasks, without creating hundreds of unused fields in the database!</p>
+        </div>
+
+        <div class="mechanism-box">
+            <h4>How Properties Work</h4>
+            <div class="diagram">
+                <div class="diagram-box" style="background: linear-gradient(135deg, #667eea, #764ba2); color: white;">
+                    <strong>Container Record</strong><br>
+                    (e.g., Project)<br>
+                    <small>Defines the property structure</small>
+                </div>
+                <div class="arrow">→</div>
+                <div class="diagram-box" style="background: linear-gradient(135deg, #11998e, #38ef7d); color: white;">
+                    <strong>Child Records</strong><br>
+                    (e.g., Tasks)<br>
+                    <small>Store only the values</small>
+                </div>
+            </div>
+            <p style="margin-top: 15px;"><strong>Key Concept:</strong> The property <em>definition</em> (field names, types) is stored on the parent. The property <em>values</em> are stored on each child as JSON.</p>
+        </div>
+
+        <div class="technical-box">
+            <h4>Supported Property Types</h4>
+            <table>
+                <tr>
+                    <th>Type</th>
+                    <th>Description</th>
+                    <th>Example Use</th>
+                </tr>
+                <tr>
+                    <td><code>char</code></td>
+                    <td>Short text</td>
+                    <td>Version number, code name</td>
+                </tr>
+                <tr>
+                    <td><code>text</code></td>
+                    <td>Long text</td>
+                    <td>Detailed notes</td>
+                </tr>
+                <tr>
+                    <td><code>integer</code></td>
+                    <td>Whole number</td>
+                    <td>Priority score, count</td>
+                </tr>
+                <tr>
+                    <td><code>float</code></td>
+                    <td>Decimal number</td>
+                    <td>Percentage, rating</td>
+                </tr>
+                <tr>
+                    <td><code>boolean</code></td>
+                    <td>Yes/No checkbox</td>
+                    <td>Is approved?, Is urgent?</td>
+                </tr>
+                <tr>
+                    <td><code>date</code></td>
+                    <td>Date picker</td>
+                    <td>Target date, review date</td>
+                </tr>
+                <tr>
+                    <td><code>datetime</code></td>
+                    <td>Date and time</td>
+                    <td>Meeting time, deadline</td>
+                </tr>
+                <tr>
+                    <td><code>selection</code></td>
+                    <td>Dropdown options</td>
+                    <td>Status, category</td>
+                </tr>
+                <tr>
+                    <td><code>tags</code></td>
+                    <td>Multiple tags</td>
+                    <td>Labels, skills required</td>
+                </tr>
+                <tr>
+                    <td><code>many2one</code></td>
+                    <td>Link to another record</td>
+                    <td>Assigned vendor, related contact</td>
+                </tr>
+                <tr>
+                    <td><code>many2many</code></td>
+                    <td>Multiple links</td>
+                    <td>Related documents, team members</td>
+                </tr>
+                <tr>
+                    <td><code>monetary</code></td>
+                    <td>Currency amount</td>
+                    <td>Budget, estimated cost</td>
+                </tr>
+                <tr>
+                    <td><code>separator</code></td>
+                    <td>Visual divider</td>
+                    <td>Grouping properties visually</td>
+                </tr>
+            </table>
+        </div>
+
+        <div class="success-box">
+            <h4>Where You'll Find Properties in Standard Odoo</h4>
+            <ul>
+                <li><strong>Project Tasks</strong> - Each project can define custom properties for its tasks</li>
+                <li><strong>CRM Leads</strong> - Different sales teams can have different lead attributes</li>
+                <li><strong>Helpdesk Tickets</strong> - Each helpdesk team can customize ticket fields</li>
+            </ul>
+        </div>
+
+        <div class="info-box">
+            <h4>Properties vs Traditional Custom Fields</h4>
+            <table>
+                <tr>
+                    <th>Aspect</th>
+                    <th>Properties Field</th>
+                    <th>Traditional Custom Field</th>
+                </tr>
+                <tr>
+                    <td><strong>Database Impact</strong></td>
+                    <td>No schema change (stored as JSON)</td>
+                    <td>Adds column to table</td>
+                </tr>
+                <tr>
+                    <td><strong>Flexibility</strong></td>
+                    <td>Different fields per parent record</td>
+                    <td>Same fields for all records</td>
+                </tr>
+                <tr>
+                    <td><strong>Search/Filter</strong></td>
+                    <td>Supported (with some limitations)</td>
+                    <td>Full support</td>
+                </tr>
+                <tr>
+                    <td><strong>Reporting</strong></td>
+                    <td>Limited in standard reports</td>
+                    <td>Full reporting support</td>
+                </tr>
+                <tr>
+                    <td><strong>Best For</strong></td>
+                    <td>Flexible, per-parent customization</td>
+                    <td>Consistent fields across all records</td>
+                </tr>
+            </table>
+        </div>
+
+        <div class="warning-box">
+            <h4>When to Use What?</h4>
+            <ul>
+                <li><strong>Use Properties</strong> when different parent records need different "child attributes" (e.g., different projects need different task fields)</li>
+                <li><strong>Use Traditional Fields</strong> when ALL records need the same field (e.g., all products need a "brand" field)</li>
+                <li><strong>Use Studio</strong> (Enterprise) for quick custom fields without code when Properties isn't suitable</li>
+            </ul>
+        </div>
+
         <!-- ==================== SECTION 13: ACCESS RIGHTS ==================== -->
         <h2 id="access">12. Access Rights & Record Rules</h2>
 
