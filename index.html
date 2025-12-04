@@ -1,0 +1,3035 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Complete Odoo Framework Training - For Functional Consultants</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        /* Smooth scrolling */
+        html {
+            scroll-behavior: smooth;
+            scroll-padding-top: 80px;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background-attachment: fixed;
+            padding: 20px;
+            padding-left: 280px;
+            line-height: 1.7;
+            min-height: 100vh;
+        }
+
+        /* ==================== SIDEBAR NAVIGATION ==================== */
+        .sidebar {
+            position: fixed;
+            left: 0;
+            top: 0;
+            width: 260px;
+            height: 100vh;
+            background: linear-gradient(180deg, #1e293b 0%, #0f172a 100%);
+            padding: 20px 0;
+            overflow-y: auto;
+            z-index: 1000;
+            box-shadow: 4px 0 20px rgba(0,0,0,0.3);
+        }
+
+        .sidebar-header {
+            padding: 15px 20px 25px 20px;
+            border-bottom: 1px solid #334155;
+            margin-bottom: 15px;
+        }
+
+        .sidebar-logo {
+            color: #714B67;
+            font-size: 24px;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .sidebar-logo-icon {
+            width: 40px;
+            height: 40px;
+            background: #714B67;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 20px;
+        }
+
+        .sidebar-subtitle {
+            color: #64748b;
+            font-size: 12px;
+            margin-top: 5px;
+        }
+
+        .sidebar nav {
+            padding: 0 10px;
+        }
+
+        .sidebar a {
+            display: block;
+            color: #94a3b8;
+            text-decoration: none;
+            padding: 12px 15px;
+            margin: 3px 0;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: all 0.2s ease;
+            border-left: 3px solid transparent;
+        }
+
+        .sidebar a:hover {
+            background: #334155;
+            color: white;
+            border-left-color: #714B67;
+        }
+
+        .sidebar a.active {
+            background: linear-gradient(90deg, rgba(113, 75, 103, 0.3) 0%, transparent 100%);
+            color: #f0abfc;
+            border-left-color: #714B67;
+            font-weight: 600;
+        }
+
+        .sidebar-section-title {
+            color: #475569;
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            padding: 20px 15px 8px 15px;
+            font-weight: 600;
+        }
+
+        /* ==================== PROGRESS BAR ==================== */
+        .progress-container {
+            position: fixed;
+            top: 0;
+            left: 260px;
+            right: 0;
+            height: 4px;
+            background: rgba(255,255,255,0.2);
+            z-index: 999;
+        }
+
+        .progress-bar {
+            height: 100%;
+            background: linear-gradient(90deg, #714B67, #ec4899);
+            width: 0%;
+            transition: width 0.1s ease;
+        }
+
+        /* ==================== MAIN CONTAINER ==================== */
+        .container {
+            max-width: 1100px;
+            margin: 0 auto;
+            background: white;
+            padding: 50px 60px;
+            border-radius: 20px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+            position: relative;
+        }
+
+        /* ==================== BACK TO TOP BUTTON ==================== */
+        .back-to-top {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            width: 50px;
+            height: 50px;
+            background: #714B67;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 15px rgba(113, 75, 103, 0.4);
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+            z-index: 998;
+        }
+
+        .back-to-top.visible {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .back-to-top:hover {
+            background: #5a3d53;
+            transform: translateY(-3px);
+            box-shadow: 0 6px 20px rgba(113, 75, 103, 0.5);
+        }
+
+        /* ==================== HEADINGS ==================== */
+        h1 {
+            font-size: 42px;
+            color: #1e293b;
+            margin-bottom: 20px;
+            text-align: center;
+            border-bottom: 4px solid #714B67;
+            padding-bottom: 20px;
+        }
+
+        h2 {
+            font-size: 32px;
+            color: #714B67;
+            margin: 60px 0 25px 0;
+            border-bottom: 3px solid #714B67;
+            padding-bottom: 15px;
+            padding-top: 20px;
+            scroll-margin-top: 20px;
+        }
+
+        h3 {
+            font-size: 24px;
+            color: #1e293b;
+            margin: 35px 0 20px 0;
+            background: #f1f5f9;
+            padding: 15px;
+            border-left: 5px solid #714B67;
+            border-radius: 0 8px 8px 0;
+        }
+
+        h4 { font-size: 20px; color: #475569; margin: 25px 0 15px 0; }
+        p { font-size: 17px; color: #475569; margin-bottom: 18px; line-height: 1.8; }
+
+        /* ==================== CONTENT BOXES ==================== */
+        .critical-box { background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%); padding: 30px; border-radius: 12px; border-left: 6px solid #ef4444; margin: 25px 0; }
+        .technical-box { background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%); padding: 30px; border-radius: 12px; border-left: 6px solid #2563eb; margin: 25px 0; }
+        .foundation-box { background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%); padding: 30px; border-radius: 12px; border-left: 6px solid #f59e0b; margin: 25px 0; }
+        .success-box { background: linear-gradient(135deg, #dcfce7 0%, #bbf7d0 100%); padding: 30px; border-radius: 12px; border-left: 6px solid #10b981; margin: 25px 0; }
+        .mechanism-box { background: linear-gradient(135deg, #e0e7ff 0%, #c7d2fe 100%); padding: 30px; border-radius: 12px; border-left: 6px solid #4f46e5; margin: 25px 0; }
+        .analogy-box { background: linear-gradient(135deg, #fce7f3 0%, #fbcfe8 100%); padding: 30px; border-radius: 12px; border-left: 6px solid #ec4899; margin: 25px 0; }
+        .warning-box { background: #fee2e2; padding: 25px; border-radius: 12px; border-left: 6px solid #ef4444; margin: 25px 0; }
+        .info-box { background: linear-gradient(135deg, #e0f2fe 0%, #bae6fd 100%); padding: 25px; border-radius: 12px; border-left: 6px solid #0284c7; margin: 25px 0; }
+        .odoo-box { background: linear-gradient(135deg, #fdf4ff 0%, #fae8ff 100%); padding: 30px; border-radius: 12px; border-left: 6px solid #714B67; margin: 25px 0; }
+
+        /* Box hover effect */
+        .critical-box, .technical-box, .foundation-box, .success-box,
+        .mechanism-box, .analogy-box, .warning-box, .info-box, .odoo-box {
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .critical-box:hover, .technical-box:hover, .foundation-box:hover, .success-box:hover,
+        .mechanism-box:hover, .analogy-box:hover, .warning-box:hover, .info-box:hover, .odoo-box:hover {
+            transform: translateX(5px);
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+        }
+
+        /* ==================== CODE BLOCKS ==================== */
+        .code-block { background: #1e293b; color: #e2e8f0; padding: 25px; border-radius: 12px; font-family: 'Courier New', monospace; margin: 20px 0; overflow-x: auto; font-size: 14px; line-height: 1.6; white-space: pre-wrap; }
+        .code-comment { color: #94a3b8; }
+        .code-keyword { color: #f472b6; }
+        .code-string { color: #a5f3fc; }
+        .code-function { color: #fbbf24; }
+        code { background: #f1f5f9; padding: 2px 8px; border-radius: 4px; font-family: 'Courier New', monospace; font-size: 14px; color: #714B67; }
+
+        /* ==================== TABLES ==================== */
+        table { width: 100%; border-collapse: collapse; margin: 25px 0; box-shadow: 0 2px 8px rgba(0,0,0,0.1); border-radius: 12px; overflow: hidden; }
+        th { background: #714B67; color: white; padding: 18px; text-align: left; font-size: 16px; font-weight: 600; }
+        td { padding: 16px; border: 1px solid #e2e8f0; font-size: 15px; vertical-align: top; }
+        tr:nth-child(even) { background: #f8fafc; }
+        tr:hover { background: #f1f5f9; transition: background 0.2s ease; }
+
+        /* ==================== LISTS ==================== */
+        ul, ol { margin: 20px 0; padding-left: 40px; }
+        li { margin: 12px 0; font-size: 17px; color: #475569; line-height: 1.7; }
+        strong { color: #1e293b; }
+
+        /* ==================== COMPARISON GRIDS ==================== */
+        .comparison-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin: 25px 0; }
+        .comparison-card { padding: 25px; border-radius: 12px; border: 2px solid; transition: transform 0.2s ease; }
+        .comparison-card:hover { transform: scale(1.02); }
+        .comparison-card.good { background: #dcfce7; border-color: #10b981; }
+        .comparison-card.bad { background: #fee2e2; border-color: #ef4444; }
+
+        /* ==================== HEADER STYLES ==================== */
+        .subtitle { text-align: center; font-size: 20px; color: #64748b; margin-bottom: 40px; font-style: italic; }
+
+        /* ==================== TOC (in main content) ==================== */
+        .toc { background: #f1f5f9; padding: 30px; border-radius: 12px; margin: 30px 0; columns: 2; }
+        .toc a { color: #714B67; text-decoration: none; font-size: 16px; display: block; padding: 6px 0; break-inside: avoid; transition: all 0.2s ease; }
+        .toc a:hover { color: #ec4899; padding-left: 10px; }
+
+        /* ==================== DIAGRAMS ==================== */
+        .diagram { background: white; border: 3px solid #714B67; border-radius: 12px; padding: 30px; text-align: center; margin: 25px 0; }
+        .diagram-box { background: #714B67; color: white; border-radius: 8px; padding: 15px 25px; display: inline-block; margin: 10px; font-weight: bold; transition: transform 0.2s ease; }
+        .diagram-box:hover { transform: scale(1.05); }
+        .diagram-box.secondary { background: #9f7aea; }
+        .diagram-box.tertiary { background: #38bdf8; }
+        .arrow { font-size: 28px; color: #714B67; display: inline-block; margin: 0 15px; }
+        .arrow-down { display: block; font-size: 28px; color: #714B67; margin: 10px auto; }
+
+        /* ==================== BADGES ==================== */
+        .badge { display: inline-block; padding: 4px 12px; border-radius: 20px; font-size: 13px; font-weight: bold; margin: 2px; }
+        .badge-new { background: #dcfce7; color: #166534; }
+        .badge-important { background: #fee2e2; color: #991b1b; }
+        .badge-enterprise { background: #fef3c7; color: #92400e; }
+
+        /* ==================== SECTION INDICATOR ==================== */
+        .current-section {
+            position: fixed;
+            bottom: 30px;
+            left: 280px;
+            background: rgba(30, 41, 59, 0.9);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 30px;
+            font-size: 14px;
+            z-index: 997;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            opacity: 0;
+            transform: translateY(20px);
+            transition: all 0.3s ease;
+        }
+
+        .current-section.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        /* ==================== PRINT / PDF OPTIMIZATION ==================== */
+        @media print {
+            /* Hide interactive elements */
+            .sidebar, .progress-container, .back-to-top, .current-section,
+            .mobile-menu-toggle, .sidebar-overlay {
+                display: none !important;
+            }
+
+            /* Reset background and padding for clean print */
+            body {
+                padding-left: 0 !important;
+                background: white !important;
+                padding: 0 !important;
+                margin: 0 !important;
+                -webkit-print-color-adjust: exact !important;
+                print-color-adjust: exact !important;
+            }
+
+            /* Container adjustments */
+            .container {
+                box-shadow: none !important;
+                padding: 30px !important;
+                max-width: 100% !important;
+                border-radius: 0 !important;
+            }
+
+            /* Page breaks - each major section on new page */
+            h2 {
+                page-break-before: always !important;
+                margin-top: 0 !important;
+                padding-top: 20px !important;
+            }
+
+            /* First h2 (after TOC) should not break */
+            h2#intro { page-break-before: avoid !important; }
+
+            /* Prevent orphaned headers */
+            h3, h4 {
+                page-break-after: avoid !important;
+                page-break-inside: avoid !important;
+            }
+
+            /* Keep boxes together - don't split across pages */
+            .critical-box, .technical-box, .foundation-box, .success-box,
+            .mechanism-box, .analogy-box, .warning-box, .info-box, .odoo-box,
+            .diagram, .comparison-card {
+                page-break-inside: avoid !important;
+                break-inside: avoid !important;
+            }
+
+            /* Tables - keep header with at least some rows */
+            table {
+                page-break-inside: auto !important;
+            }
+            tr {
+                page-break-inside: avoid !important;
+                page-break-after: auto !important;
+            }
+            thead {
+                display: table-header-group !important;
+            }
+
+            /* Comparison grids - keep cards together */
+            .comparison-grid {
+                page-break-inside: avoid !important;
+            }
+
+            /* TOC single column for print */
+            .toc {
+                columns: 1 !important;
+                page-break-after: always !important;
+            }
+
+            /* Hide hover effects */
+            tr:hover { background: inherit !important; }
+
+            /* Ensure colors print */
+            .critical-box, .technical-box, .foundation-box, .success-box,
+            .mechanism-box, .analogy-box, .warning-box, .info-box, .odoo-box {
+                -webkit-print-color-adjust: exact !important;
+                print-color-adjust: exact !important;
+            }
+
+            th {
+                -webkit-print-color-adjust: exact !important;
+                print-color-adjust: exact !important;
+                background: #714B67 !important;
+                color: white !important;
+            }
+
+            .diagram-box {
+                -webkit-print-color-adjust: exact !important;
+                print-color-adjust: exact !important;
+            }
+
+            .badge {
+                -webkit-print-color-adjust: exact !important;
+                print-color-adjust: exact !important;
+            }
+
+            /* Reduce font sizes slightly for print */
+            h1 { font-size: 36px !important; }
+            h2 { font-size: 28px !important; }
+            h3 { font-size: 20px !important; }
+            h4 { font-size: 17px !important; }
+            p, li, td { font-size: 14px !important; }
+            th { font-size: 14px !important; }
+
+            /* Reduce padding for boxes */
+            .critical-box, .technical-box, .foundation-box, .success-box,
+            .mechanism-box, .analogy-box, .warning-box, .info-box, .odoo-box {
+                padding: 20px !important;
+                margin: 15px 0 !important;
+            }
+
+            /* Links - show URL for reference (optional - commented out)
+            a[href]:after { content: " (" attr(href) ")"; font-size: 12px; color: #666; }
+            */
+
+            /* Page margins via @page */
+            @page {
+                margin: 1.5cm 1.5cm 2cm 1.5cm;
+                size: A4;
+            }
+
+            /* First page no top margin */
+            @page :first {
+                margin-top: 1cm;
+            }
+
+            /* Footer area for page numbers (handled by browser) */
+            @page {
+                @bottom-center {
+                    content: counter(page);
+                }
+            }
+        }
+        /* ==================== MOBILE RESPONSIVE ==================== */
+        @media (max-width: 1024px) {
+            body {
+                padding-left: 20px;
+            }
+            .sidebar {
+                transform: translateX(-100%);
+                transition: transform 0.3s ease;
+            }
+            .sidebar.open {
+                transform: translateX(0);
+            }
+            .progress-container {
+                left: 0;
+            }
+            .mobile-menu-toggle {
+                display: flex !important;
+            }
+            .current-section {
+                left: 20px;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .comparison-grid { grid-template-columns: 1fr; }
+            .toc { columns: 1; }
+            .container { padding: 25px; }
+            h1 { font-size: 32px; }
+            h2 { font-size: 26px; }
+            h3 { font-size: 20px; }
+        }
+
+        /* Mobile menu toggle button */
+        .mobile-menu-toggle {
+            display: none;
+            position: fixed;
+            top: 15px;
+            left: 15px;
+            width: 45px;
+            height: 45px;
+            background: #714B67;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            z-index: 1001;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 5px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        }
+
+        .mobile-menu-toggle span {
+            display: block;
+            width: 22px;
+            height: 2px;
+            background: white;
+            border-radius: 2px;
+            transition: all 0.3s ease;
+        }
+
+        .sidebar-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.5);
+            z-index: 999;
+        }
+
+        @media (max-width: 1024px) {
+            .sidebar-overlay.active {
+                display: block;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Progress Bar -->
+    <div class="progress-container">
+        <div class="progress-bar" id="progressBar"></div>
+    </div>
+
+    <!-- Mobile Menu Toggle -->
+    <button class="mobile-menu-toggle" id="mobileMenuToggle" aria-label="Toggle menu">
+        <span></span>
+        <span></span>
+        <span></span>
+    </button>
+
+    <!-- Sidebar Overlay (for mobile) -->
+    <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+    <!-- Sidebar Navigation -->
+    <aside class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <div class="sidebar-logo">
+                <div class="sidebar-logo-icon">O</div>
+                <span>Odoo Training</span>
+            </div>
+            <div class="sidebar-subtitle">Functional Consultant Guide</div>
+        </div>
+        <nav>
+            <div class="sidebar-section-title">Getting Started</div>
+            <a href="#intro">Introduction</a>
+            <a href="#models">1. Models</a>
+            <a href="#field-types">2. Field Types</a>
+
+            <div class="sidebar-section-title">Data Structure</div>
+            <a href="#relationships">3. Relationships</a>
+            <a href="#storage">4. Field Storage</a>
+            <a href="#computed">5. Computed Fields</a>
+            <a href="#related">6. Related Fields</a>
+            <a href="#groupby">7. Group By</a>
+
+            <div class="sidebar-section-title">User Interface</div>
+            <a href="#views">8. Views</a>
+            <a href="#widgets">9. Widgets</a>
+            <a href="#domains">10. Domains</a>
+            <a href="#properties">11. Field Properties</a>
+
+            <div class="sidebar-section-title">Administration</div>
+            <a href="#access">12. Access Rights</a>
+            <a href="#workflows">13. Workflows</a>
+            <a href="#studio">14. Odoo Studio</a>
+
+            <div class="sidebar-section-title">Advanced</div>
+            <a href="#performance">15. Performance</a>
+            <a href="#decision">16. Decision Matrix</a>
+            <a href="#practical">17. Examples</a>
+            <a href="#mistakes">18. Common Mistakes</a>
+        </nav>
+    </aside>
+
+    <!-- Back to Top Button -->
+    <button class="back-to-top" id="backToTop" aria-label="Back to top">&#8593;</button>
+
+    <!-- Current Section Indicator -->
+    <div class="current-section" id="currentSection"></div>
+
+    <!-- Main Content -->
+    <div class="container">
+        <h1>Complete Odoo Framework Training</h1>
+        <p class="subtitle">The Ultimate Guide for Functional Consultants - Belgium & India Teams<br>
+        <span class="badge badge-new">Odoo 17/18/19 Compatible</span>
+        <span class="badge badge-enterprise">Community & Enterprise</span></p>
+
+        <div class="foundation-box" style="margin-top: 0;">
+            <h4 style="margin-top: 0;">Document Purpose</h4>
+            <p>This comprehensive guide provides functional consultants with the knowledge to understand Odoo's data architecture, communicate effectively with technical teams, and make informed configuration decisions. Each concept is explained with real business scenarios and practical examples.</p>
+        </div>
+
+        <div class="toc">
+            <h2 style="margin-top: 0; border: none; column-span: all; page-break-before: avoid;">Table of Contents</h2>
+            <a href="#intro">Introduction & Teaching Philosophy</a>
+            <a href="#models">1. Understanding Models - The Foundation</a>
+            <a href="#field-types">2. Complete Field Types Guide</a>
+            <a href="#relationships">3. Relationships - Many2one, One2many, Many2many</a>
+            <a href="#storage">4. Field Storage - store=True vs store=False</a>
+            <a href="#computed">5. Computed Fields Deep Dive</a>
+            <a href="#related">6. Related Fields Deep Dive</a>
+            <a href="#groupby">7. Why Group By Requires Stored Fields</a>
+            <a href="#views">8. Views - Form, List, Kanban, and More</a>
+            <a href="#widgets">9. Widgets - Display vs Data Storage</a>
+            <a href="#domains">10. Domain Filters - Controlling Data</a>
+            <a href="#properties">11. Field Properties</a>
+            <a href="#access">12. Access Rights & Record Rules</a>
+            <a href="#workflows">13. Workflows & Status Management</a>
+            <a href="#studio">14. Odoo Studio Basics</a>
+            <a href="#performance">15. Performance Considerations</a>
+            <a href="#decision">16. Decision Matrix - When to Use What</a>
+            <a href="#practical">17. Real-World Business Examples</a>
+            <a href="#mistakes">18. Common Mistakes & How to Avoid Them</a>
+        </div>
+
+        <!-- ==================== SECTION 1: INTRODUCTION ==================== -->
+        <h2 id="intro">Introduction & Teaching Philosophy</h2>
+
+        <div class="foundation-box">
+            <h4>Who Is This Document For?</h4>
+            <p>This training is designed for <strong>Functional Consultants</strong> who need to:</p>
+            <ul>
+                <li>Understand how Odoo stores and manages data</li>
+                <li>Communicate effectively with developers</li>
+                <li>Write functional specifications that developers can implement</li>
+                <li>Configure Odoo without writing code (using Studio)</li>
+                <li>Troubleshoot issues and understand error messages</li>
+            </ul>
+            <p><strong>You don't need to write code</strong> - but understanding the concepts will make you much more effective.</p>
+        </div>
+
+        <div class="analogy-box">
+            <h4>The Building Analogy</h4>
+            <p>Think of Odoo like a <strong>large office building</strong>:</p>
+            <ul>
+                <li><strong>Models</strong> = Different departments (Sales, HR, Warehouse)</li>
+                <li><strong>Fields</strong> = Information each department keeps (customer name, employee salary)</li>
+                <li><strong>Records</strong> = Individual files in each department (one customer, one employee)</li>
+                <li><strong>Views</strong> = How you look at the information (form, list, chart)</li>
+                <li><strong>Access Rights</strong> = Who can enter which department and what they can do there</li>
+            </ul>
+        </div>
+
+        <h3>How Each Concept Is Explained</h3>
+        <p>For every major concept, we follow this structure:</p>
+        <ol>
+            <li><strong>What Is It?</strong> - Simple definition in plain language</li>
+            <li><strong>Why Does It Exist?</strong> - The business problem it solves</li>
+            <li><strong>How Does It Work?</strong> - Step-by-step explanation</li>
+            <li><strong>Real Example</strong> - Concrete business scenario</li>
+            <li><strong>Common Mistakes</strong> - What to avoid</li>
+        </ol>
+
+        <!-- ==================== SECTION 2: MODELS ==================== -->
+        <h2 id="models">1. Understanding Models - The Foundation</h2>
+
+        <h3>What Is a Model?</h3>
+
+        <div class="technical-box">
+            <h4>Simple Definition</h4>
+            <p>A <strong>Model</strong> is a <strong>table in the database</strong> that stores a specific type of information.</p>
+            <p>Think of it like an Excel spreadsheet - each model is a different spreadsheet for different data.</p>
+        </div>
+
+        <div class="analogy-box">
+            <h4>Excel Analogy</h4>
+            <table>
+                <tr>
+                    <th>Excel Concept</th>
+                    <th>Odoo Concept</th>
+                    <th>Example</th>
+                </tr>
+                <tr>
+                    <td>Spreadsheet file</td>
+                    <td>Model</td>
+                    <td>res.partner (Contacts)</td>
+                </tr>
+                <tr>
+                    <td>Column header</td>
+                    <td>Field</td>
+                    <td>name, email, phone</td>
+                </tr>
+                <tr>
+                    <td>Row</td>
+                    <td>Record</td>
+                    <td>One specific customer</td>
+                </tr>
+                <tr>
+                    <td>Cell</td>
+                    <td>Field value</td>
+                    <td>"John Smith"</td>
+                </tr>
+            </table>
+        </div>
+
+        <h3>Model Naming Convention</h3>
+        <p>Odoo models have a specific naming pattern:</p>
+
+        <table>
+            <tr>
+                <th>Model Name</th>
+                <th>What It Stores</th>
+                <th>Menu Location</th>
+            </tr>
+            <tr>
+                <td><code>res.partner</code></td>
+                <td>Customers, Vendors, Contacts</td>
+                <td>Contacts app</td>
+            </tr>
+            <tr>
+                <td><code>res.users</code></td>
+                <td>System Users (login accounts)</td>
+                <td>Settings > Users</td>
+            </tr>
+            <tr>
+                <td><code>res.company</code></td>
+                <td>Companies in the system</td>
+                <td>Settings > Companies</td>
+            </tr>
+            <tr>
+                <td><code>sale.order</code></td>
+                <td>Sales Orders / Quotations</td>
+                <td>Sales > Orders</td>
+            </tr>
+            <tr>
+                <td><code>sale.order.line</code></td>
+                <td>Individual lines on a sales order</td>
+                <td>Inside Sales Order form</td>
+            </tr>
+            <tr>
+                <td><code>purchase.order</code></td>
+                <td>Purchase Orders</td>
+                <td>Purchase > Orders</td>
+            </tr>
+            <tr>
+                <td><code>account.move</code></td>
+                <td>Invoices, Bills, Journal Entries</td>
+                <td>Accounting > Invoices</td>
+            </tr>
+            <tr>
+                <td><code>stock.picking</code></td>
+                <td>Delivery Orders, Receipts</td>
+                <td>Inventory > Transfers</td>
+            </tr>
+            <tr>
+                <td><code>product.product</code></td>
+                <td>Product Variants</td>
+                <td>Products with variants</td>
+            </tr>
+            <tr>
+                <td><code>product.template</code></td>
+                <td>Product Templates</td>
+                <td>Product form</td>
+            </tr>
+            <tr>
+                <td><code>hr.employee</code></td>
+                <td>Employees</td>
+                <td>Employees app</td>
+            </tr>
+            <tr>
+                <td><code>project.project</code></td>
+                <td>Projects</td>
+                <td>Project app</td>
+            </tr>
+            <tr>
+                <td><code>project.task</code></td>
+                <td>Tasks within projects</td>
+                <td>Project > Tasks</td>
+            </tr>
+            <tr>
+                <td><code>crm.lead</code></td>
+                <td>Leads and Opportunities</td>
+                <td>CRM app</td>
+            </tr>
+        </table>
+
+        <div class="info-box">
+            <h4>Naming Pattern Explained</h4>
+            <p><strong>Format:</strong> <code>module.object</code> or <code>module.parent.child</code></p>
+            <ul>
+                <li><code>res</code> = "Resource" - core/base models used everywhere</li>
+                <li><code>sale</code> = Sales module models</li>
+                <li><code>purchase</code> = Purchase module models</li>
+                <li><code>account</code> = Accounting module models</li>
+                <li><code>stock</code> = Inventory module models</li>
+                <li><code>hr</code> = Human Resources models</li>
+                <li><code>crm</code> = Customer Relationship Management models</li>
+            </ul>
+        </div>
+
+        <h3>How to Find a Model Name</h3>
+        <div class="success-box">
+            <h4>Method 1: Enable Developer Mode</h4>
+            <ol>
+                <li>Go to Settings > General Settings</li>
+                <li>Scroll down and click "Activate Developer Mode"</li>
+                <li>Go to any form view</li>
+                <li>Click the bug icon (Debug menu) > "View Metadata"</li>
+                <li>You'll see the model name (e.g., <code>sale.order</code>)</li>
+            </ol>
+        </div>
+
+        <div class="success-box">
+            <h4>Method 2: URL Inspection</h4>
+            <p>Look at the URL in your browser. For example:</p>
+            <p><code>https://mycompany.odoo.com/web#id=5&model=<strong>sale.order</strong>&view_type=form</code></p>
+            <p>The model name is shown in the URL!</p>
+        </div>
+
+        <!-- ==================== SECTION 3: FIELD TYPES ==================== -->
+        <h2 id="field-types">2. Complete Field Types Guide</h2>
+
+        <div class="technical-box">
+            <h4>What Are Fields?</h4>
+            <p>Fields are the <strong>columns</strong> in your database table. Each field stores a specific type of data.</p>
+            <p>Understanding field types helps you:</p>
+            <ul>
+                <li>Know what kind of data can be stored</li>
+                <li>Understand why certain validations exist</li>
+                <li>Write better functional specifications</li>
+            </ul>
+        </div>
+
+        <h3>Basic Field Types</h3>
+
+        <table>
+            <tr>
+                <th>Field Type</th>
+                <th>What It Stores</th>
+                <th>Example Use</th>
+                <th>Database Storage</th>
+            </tr>
+            <tr>
+                <td><strong>Char</strong></td>
+                <td>Short text (single line)</td>
+                <td>Customer name, Reference number</td>
+                <td>VARCHAR (limited characters)</td>
+            </tr>
+            <tr>
+                <td><strong>Text</strong></td>
+                <td>Long text (multiple lines)</td>
+                <td>Description, Notes, Address</td>
+                <td>TEXT (unlimited)</td>
+            </tr>
+            <tr>
+                <td><strong>Html</strong></td>
+                <td>Formatted text with styling</td>
+                <td>Email templates, Product descriptions</td>
+                <td>TEXT with HTML tags</td>
+            </tr>
+            <tr>
+                <td><strong>Integer</strong></td>
+                <td>Whole numbers only</td>
+                <td>Quantity, Age, Count</td>
+                <td>INTEGER</td>
+            </tr>
+            <tr>
+                <td><strong>Float</strong></td>
+                <td>Decimal numbers</td>
+                <td>Weight, Dimensions</td>
+                <td>FLOAT/NUMERIC</td>
+            </tr>
+            <tr>
+                <td><strong>Monetary</strong></td>
+                <td>Currency amounts</td>
+                <td>Price, Total amount</td>
+                <td>NUMERIC (with currency link)</td>
+            </tr>
+            <tr>
+                <td><strong>Boolean</strong></td>
+                <td>True/False (checkbox)</td>
+                <td>Is Active, Is Company</td>
+                <td>BOOLEAN</td>
+            </tr>
+            <tr>
+                <td><strong>Date</strong></td>
+                <td>Date only (no time)</td>
+                <td>Birth date, Deadline</td>
+                <td>DATE</td>
+            </tr>
+            <tr>
+                <td><strong>Datetime</strong></td>
+                <td>Date and time</td>
+                <td>Order date, Last login</td>
+                <td>TIMESTAMP</td>
+            </tr>
+            <tr>
+                <td><strong>Selection</strong></td>
+                <td>Predefined choices</td>
+                <td>Status, Type, Priority</td>
+                <td>VARCHAR (stores key)</td>
+            </tr>
+            <tr>
+                <td><strong>Binary</strong></td>
+                <td>File attachments</td>
+                <td>PDF, Images</td>
+                <td>BYTEA or file system</td>
+            </tr>
+            <tr>
+                <td><strong>Image</strong></td>
+                <td>Image files</td>
+                <td>Product image, Avatar</td>
+                <td>BYTEA (with auto-resize)</td>
+            </tr>
+            <tr>
+                <td><strong>Json</strong></td>
+                <td>Structured data</td>
+                <td>Complex configurations</td>
+                <td>JSONB</td>
+            </tr>
+            <tr>
+                <td><strong>Properties</strong></td>
+                <td>Dynamic sub-fields</td>
+                <td>Custom fields per project</td>
+                <td>JSONB</td>
+            </tr>
+        </table>
+
+        <h3>Field Type Details with Examples</h3>
+
+        <div class="mechanism-box">
+            <h4>Char vs Text - When to Use Which?</h4>
+            <table>
+                <tr>
+                    <th>Use Char For</th>
+                    <th>Use Text For</th>
+                </tr>
+                <tr>
+                    <td>Names (max ~255 characters)</td>
+                    <td>Descriptions (unlimited)</td>
+                </tr>
+                <tr>
+                    <td>Reference numbers</td>
+                    <td>Notes and comments</td>
+                </tr>
+                <tr>
+                    <td>Email addresses</td>
+                    <td>Full addresses</td>
+                </tr>
+                <tr>
+                    <td>Phone numbers</td>
+                    <td>Terms and conditions</td>
+                </tr>
+            </table>
+            <p style="margin-top: 15px;"><strong>Key Difference:</strong> Char shows as a single-line input, Text shows as a multi-line textarea.</p>
+        </div>
+
+        <div class="mechanism-box">
+            <h4>Selection Field - The Dropdown</h4>
+            <p>Selection fields store a <strong>key</strong> internally but display a <strong>label</strong> to users.</p>
+
+            <p><strong>Example: Order Status</strong></p>
+            <table>
+                <tr>
+                    <th>What User Sees</th>
+                    <th>What's Stored in Database</th>
+                </tr>
+                <tr>
+                    <td>Quotation</td>
+                    <td>'draft'</td>
+                </tr>
+                <tr>
+                    <td>Quotation Sent</td>
+                    <td>'sent'</td>
+                </tr>
+                <tr>
+                    <td>Sales Order</td>
+                    <td>'sale'</td>
+                </tr>
+                <tr>
+                    <td>Cancelled</td>
+                    <td>'cancel'</td>
+                </tr>
+            </table>
+            <p style="margin-top: 15px;"><strong>Why This Matters:</strong> When filtering or searching, you use the key ('draft'), not the label ('Quotation').</p>
+        </div>
+
+        <div class="mechanism-box">
+            <h4>Monetary Field - More Than Just a Number</h4>
+            <p>A Monetary field is linked to a <strong>currency field</strong>. This allows:</p>
+            <ul>
+                <li>Proper currency symbol display (EUR, USD, INR)</li>
+                <li>Correct decimal places (2 for EUR, 0 for JPY)</li>
+                <li>Currency conversion calculations</li>
+            </ul>
+            <p><strong>Example:</strong> Sale Order has <code>amount_total</code> (Monetary) linked to <code>currency_id</code> (Many2one to res.currency)</p>
+        </div>
+
+        <div class="odoo-box">
+            <h4>Properties Field - Dynamic Custom Fields</h4>
+            <p>The Properties field allows creating <strong>custom sub-fields per record</strong> without database changes.</p>
+            <p><strong>Use Case:</strong> Different projects need different custom fields:</p>
+            <ul>
+                <li>Project "Website Redesign" needs fields: Browser compatibility, Responsive breakpoints</li>
+                <li>Project "ERP Implementation" needs fields: Go-live date, Training hours</li>
+            </ul>
+            <p>With Properties, each project can have its own custom fields, and all tasks in that project inherit them!</p>
+        </div>
+
+        <!-- ==================== SECTION 4: RELATIONSHIPS ==================== -->
+        <h2 id="relationships">3. Relationships - Many2one, One2many, Many2many</h2>
+
+        <div class="critical-box">
+            <h4>Why Relationships Are Critical</h4>
+            <p>Relationships connect data across different models. Understanding them is <strong>essential</strong> for:</p>
+            <ul>
+                <li>Understanding how data flows in Odoo</li>
+                <li>Creating proper filters and reports</li>
+                <li>Designing new features correctly</li>
+            </ul>
+        </div>
+
+        <h3>The Three Relationship Types</h3>
+
+        <div class="diagram">
+            <h4>Visual Summary</h4>
+            <div style="display: flex; justify-content: space-around; flex-wrap: wrap; gap: 30px; margin-top: 20px;">
+                <div style="text-align: center;">
+                    <div class="diagram-box">Many2one</div>
+                    <p style="margin-top: 10px; font-size: 14px;"><strong>Many</strong> orders belong to <strong>One</strong> customer</p>
+                    <p style="font-size: 24px;">N : 1</p>
+                </div>
+                <div style="text-align: center;">
+                    <div class="diagram-box secondary">One2many</div>
+                    <p style="margin-top: 10px; font-size: 14px;"><strong>One</strong> customer has <strong>Many</strong> orders</p>
+                    <p style="font-size: 24px;">1 : N</p>
+                </div>
+                <div style="text-align: center;">
+                    <div class="diagram-box tertiary">Many2many</div>
+                    <p style="margin-top: 10px; font-size: 14px;"><strong>Many</strong> products in <strong>Many</strong> categories</p>
+                    <p style="font-size: 24px;">N : N</p>
+                </div>
+            </div>
+        </div>
+
+        <h3>Many2one - The Dropdown Link</h3>
+
+        <div class="technical-box">
+            <h4>What Is Many2one?</h4>
+            <p>A <strong>Many2one</strong> field creates a link from <strong>many records</strong> in one model to <strong>one record</strong> in another model.</p>
+            <p><strong>How It Appears:</strong> As a dropdown/search field in the form</p>
+            <p><strong>What's Stored:</strong> Just an ID number (the linked record's ID)</p>
+        </div>
+
+        <div class="analogy-box">
+            <h4>Real-World Example: Sales Orders</h4>
+            <div class="diagram">
+                <div class="diagram-box">Sale Order #1</div>
+                <span class="arrow">---></span>
+                <div class="diagram-box secondary" style="background: #10b981;">Customer: Acme Corp</div>
+                <br><br>
+                <div class="diagram-box">Sale Order #2</div>
+                <span class="arrow">---></span>
+                <div class="diagram-box secondary" style="background: #10b981;">Customer: Acme Corp</div>
+                <br><br>
+                <div class="diagram-box">Sale Order #3</div>
+                <span class="arrow">---></span>
+                <div class="diagram-box secondary" style="background: #10b981;">Customer: Acme Corp</div>
+            </div>
+            <p style="margin-top: 15px;"><strong>Many</strong> Sale Orders can belong to <strong>One</strong> Customer (Acme Corp)</p>
+        </div>
+
+        <table>
+            <tr>
+                <th>Field</th>
+                <th>On Model</th>
+                <th>Links To</th>
+                <th>Business Meaning</th>
+            </tr>
+            <tr>
+                <td>partner_id</td>
+                <td>sale.order</td>
+                <td>res.partner</td>
+                <td>Which customer is this order for?</td>
+            </tr>
+            <tr>
+                <td>product_id</td>
+                <td>sale.order.line</td>
+                <td>product.product</td>
+                <td>Which product is on this line?</td>
+            </tr>
+            <tr>
+                <td>company_id</td>
+                <td>(many models)</td>
+                <td>res.company</td>
+                <td>Which company owns this record?</td>
+            </tr>
+            <tr>
+                <td>user_id</td>
+                <td>sale.order</td>
+                <td>res.users</td>
+                <td>Who is the salesperson?</td>
+            </tr>
+            <tr>
+                <td>department_id</td>
+                <td>hr.employee</td>
+                <td>hr.department</td>
+                <td>Which department does the employee belong to?</td>
+            </tr>
+            <tr>
+                <td>project_id</td>
+                <td>project.task</td>
+                <td>project.project</td>
+                <td>Which project does this task belong to?</td>
+            </tr>
+        </table>
+
+        <h3>One2many - The Reverse View</h3>
+
+        <div class="technical-box">
+            <h4>What Is One2many?</h4>
+            <p>A <strong>One2many</strong> field shows all records that link back to the current record via a Many2one.</p>
+            <p><strong>Important:</strong> One2many fields are <strong>NOT stored in the database</strong>. They are computed on-the-fly by looking at the reverse relationship.</p>
+            <p><strong>How It Appears:</strong> As a list/table inside a form (like order lines on a sales order)</p>
+        </div>
+
+        <div class="analogy-box">
+            <h4>Real-World Example: Customer's Orders</h4>
+            <p>On the Customer form, you see a list of all their orders:</p>
+            <div class="diagram">
+                <div class="diagram-box secondary" style="background: #10b981;">Customer: Acme Corp</div>
+                <span class="arrow-down">↓</span>
+                <p><strong>order_ids (One2many)</strong></p>
+                <div style="display: flex; flex-direction: column; gap: 10px; margin-top: 10px;">
+                    <div class="diagram-box">Sale Order #1 - EUR 5,000</div>
+                    <div class="diagram-box">Sale Order #2 - EUR 3,500</div>
+                    <div class="diagram-box">Sale Order #3 - EUR 8,200</div>
+                </div>
+            </div>
+            <p style="margin-top: 15px;">The customer doesn't "store" these orders - Odoo looks up "all orders where partner_id = this customer"</p>
+        </div>
+
+        <div class="warning-box">
+            <h4>One2many Fields Cannot Be Used in Group By</h4>
+            <p>Because One2many is not stored in the database, you <strong>cannot</strong>:</p>
+            <ul>
+                <li>Use it in report groupings</li>
+                <li>Filter by it directly in domains (some limitations)</li>
+                <li>Export it directly to Excel</li>
+            </ul>
+        </div>
+
+        <h3>Many2many - Multiple Links Both Ways</h3>
+
+        <div class="technical-box">
+            <h4>What Is Many2many?</h4>
+            <p>A <strong>Many2many</strong> field allows linking <strong>multiple records</strong> on both sides.</p>
+            <p><strong>How It Works:</strong> Creates a "junction table" in the database to store all the links.</p>
+            <p><strong>How It Appears:</strong> As tags or a multi-select dropdown</p>
+        </div>
+
+        <div class="analogy-box">
+            <h4>Real-World Example: Products and Categories</h4>
+            <div class="diagram">
+                <div style="display: flex; justify-content: center; gap: 50px; flex-wrap: wrap;">
+                    <div style="text-align: center;">
+                        <strong>Products</strong>
+                        <div class="diagram-box" style="display: block; margin: 10px auto;">Laptop</div>
+                        <div class="diagram-box" style="display: block; margin: 10px auto;">Keyboard</div>
+                        <div class="diagram-box" style="display: block; margin: 10px auto;">Mouse</div>
+                    </div>
+                    <div style="display: flex; align-items: center;">
+                        <span style="font-size: 40px;">↔</span>
+                    </div>
+                    <div style="text-align: center;">
+                        <strong>Categories</strong>
+                        <div class="diagram-box secondary" style="display: block; margin: 10px auto;">Electronics</div>
+                        <div class="diagram-box secondary" style="display: block; margin: 10px auto;">Office Supplies</div>
+                        <div class="diagram-box secondary" style="display: block; margin: 10px auto;">Computer Accessories</div>
+                    </div>
+                </div>
+                <p style="margin-top: 20px;">
+                    <strong>Laptop</strong> is in: Electronics, Computer Accessories<br>
+                    <strong>Keyboard</strong> is in: Electronics, Office Supplies, Computer Accessories<br>
+                    <strong>Electronics</strong> contains: Laptop, Keyboard, Mouse
+                </p>
+            </div>
+        </div>
+
+        <table>
+            <tr>
+                <th>Field</th>
+                <th>On Model</th>
+                <th>Links To</th>
+                <th>Business Meaning</th>
+            </tr>
+            <tr>
+                <td>tag_ids</td>
+                <td>sale.order</td>
+                <td>crm.tag</td>
+                <td>Tags for categorizing orders</td>
+            </tr>
+            <tr>
+                <td>category_id</td>
+                <td>res.partner</td>
+                <td>res.partner.category</td>
+                <td>Customer categories/tags</td>
+            </tr>
+            <tr>
+                <td>tax_ids</td>
+                <td>sale.order.line</td>
+                <td>account.tax</td>
+                <td>Taxes applied to a line</td>
+            </tr>
+            <tr>
+                <td>user_ids</td>
+                <td>res.groups</td>
+                <td>res.users</td>
+                <td>Users in a security group</td>
+            </tr>
+        </table>
+
+        <div class="success-box">
+            <h4>Quick Reference: Relationship Summary</h4>
+            <table>
+                <tr>
+                    <th>Type</th>
+                    <th>Stored?</th>
+                    <th>UI Display</th>
+                    <th>Can Group By?</th>
+                    <th>Example</th>
+                </tr>
+                <tr>
+                    <td>Many2one</td>
+                    <td>Yes (ID)</td>
+                    <td>Dropdown</td>
+                    <td>Yes</td>
+                    <td>Order → Customer</td>
+                </tr>
+                <tr>
+                    <td>One2many</td>
+                    <td>No</td>
+                    <td>Embedded list</td>
+                    <td>No</td>
+                    <td>Customer → Orders</td>
+                </tr>
+                <tr>
+                    <td>Many2many</td>
+                    <td>Yes (junction)</td>
+                    <td>Tags/Multi-select</td>
+                    <td>Limited</td>
+                    <td>Product ↔ Categories</td>
+                </tr>
+            </table>
+        </div>
+
+        <!-- ==================== SECTION 5: STORAGE ==================== -->
+        <h2 id="storage">4. Field Storage - store=True vs store=False</h2>
+
+        <div class="critical-box">
+            <h4>Why This Matters</h4>
+            <p>Whether a field is "stored" determines:</p>
+            <ul>
+                <li>Can you filter by it?</li>
+                <li>Can you group reports by it?</li>
+                <li>How fast is it to read?</li>
+                <li>Does it take database space?</li>
+            </ul>
+        </div>
+
+        <h3>The Two Storage Options</h3>
+
+        <div class="comparison-grid">
+            <div class="comparison-card good">
+                <h4>store=True (Stored Field)</h4>
+                <ul>
+                    <li>Has a column in the database</li>
+                    <li>Value is saved permanently</li>
+                    <li>Fast to read (direct lookup)</li>
+                    <li>Can be used in Group By</li>
+                    <li>Can be filtered and searched</li>
+                    <li>Takes database space</li>
+                </ul>
+                <p><strong>Default for:</strong> Char, Integer, Boolean, Many2one, etc.</p>
+            </div>
+            <div class="comparison-card bad" style="background: #dbeafe; border-color: #3b82f6;">
+                <h4>store=False (Computed On-the-fly)</h4>
+                <ul>
+                    <li>No database column</li>
+                    <li>Calculated every time you view it</li>
+                    <li>Always shows latest value</li>
+                    <li>Cannot use in Group By</li>
+                    <li>Limited filtering options</li>
+                    <li>No database space used</li>
+                </ul>
+                <p><strong>Default for:</strong> Computed fields, One2many, Related fields</p>
+            </div>
+        </div>
+
+        <div class="analogy-box">
+            <h4>Analogy: Calculator vs Notebook</h4>
+            <table>
+                <tr>
+                    <th>store=True</th>
+                    <th>store=False</th>
+                </tr>
+                <tr>
+                    <td>Like writing the answer in a notebook</td>
+                    <td>Like using a calculator each time</td>
+                </tr>
+                <tr>
+                    <td>Answer is always ready to read</td>
+                    <td>Must calculate every time</td>
+                </tr>
+                <tr>
+                    <td>Might be outdated if inputs changed</td>
+                    <td>Always fresh calculation</td>
+                </tr>
+                <tr>
+                    <td>Takes paper (storage)</td>
+                    <td>No paper needed</td>
+                </tr>
+            </table>
+        </div>
+
+        <h3>Practical Impact</h3>
+
+        <div class="mechanism-box">
+            <h4>Example: Total Amount on Invoice</h4>
+            <p>The field <code>amount_total</code> on an invoice:</p>
+            <ul>
+                <li><strong>If store=False:</strong> Calculated by summing all lines each time you view the invoice. Always accurate but cannot group invoices by total.</li>
+                <li><strong>If store=True:</strong> Stored in database. Can group "Invoices by Total Amount" in reports. Must be recalculated when lines change.</li>
+            </ul>
+            <p><strong>Odoo's Choice:</strong> <code>amount_total</code> is stored (store=True) so you can use it in reports!</p>
+        </div>
+
+        <!-- ==================== SECTION 6: COMPUTED FIELDS ==================== -->
+        <h2 id="computed">5. Computed Fields Deep Dive</h2>
+
+        <div class="technical-box">
+            <h4>What Is a Computed Field?</h4>
+            <p>A <strong>computed field</strong> is a field whose value is calculated automatically based on other fields.</p>
+            <p>Think of it like an <strong>Excel formula</strong> - the cell shows a result calculated from other cells.</p>
+        </div>
+
+        <h3>Common Computed Fields You Already Use</h3>
+
+        <table>
+            <tr>
+                <th>Field</th>
+                <th>Model</th>
+                <th>How It's Calculated</th>
+            </tr>
+            <tr>
+                <td>amount_total</td>
+                <td>sale.order</td>
+                <td>Sum of all order line totals + taxes</td>
+            </tr>
+            <tr>
+                <td>price_subtotal</td>
+                <td>sale.order.line</td>
+                <td>quantity × unit price (with discounts)</td>
+            </tr>
+            <tr>
+                <td>display_name</td>
+                <td>res.partner</td>
+                <td>Combines name + company info</td>
+            </tr>
+            <tr>
+                <td>age</td>
+                <td>hr.employee</td>
+                <td>Today's date - birthday</td>
+            </tr>
+            <tr>
+                <td>qty_available</td>
+                <td>product.product</td>
+                <td>Sum of all stock quantities</td>
+            </tr>
+        </table>
+
+        <h3>The Four Configurations of Computed Fields</h3>
+
+        <table>
+            <tr>
+                <th>Configuration</th>
+                <th>Stored?</th>
+                <th>Can Group By?</th>
+                <th>When Used?</th>
+            </tr>
+            <tr>
+                <td><strong>Computed, Not Stored</strong></td>
+                <td>No</td>
+                <td>No</td>
+                <td>Values that change often (age, days until deadline)</td>
+            </tr>
+            <tr>
+                <td><strong>Computed, Stored</strong></td>
+                <td>Yes</td>
+                <td>Yes</td>
+                <td>Calculated once, rarely changes (margin, total)</td>
+            </tr>
+            <tr>
+                <td><strong>Computed, Stored, with Depends</strong></td>
+                <td>Yes</td>
+                <td>Yes</td>
+                <td>Recalculates when dependencies change</td>
+            </tr>
+            <tr>
+                <td><strong>Computed with Inverse</strong></td>
+                <td>Yes</td>
+                <td>Yes</td>
+                <td>Can be edited and works backward (rare)</td>
+            </tr>
+        </table>
+
+        <div class="mechanism-box">
+            <h4>The @api.depends Decorator - What Triggers Recalculation?</h4>
+            <p>For stored computed fields, <code>@api.depends</code> tells Odoo <strong>when to recalculate</strong>:</p>
+            <ul>
+                <li><code>@api.depends('price_unit', 'quantity')</code> = Recalculate when price or quantity changes</li>
+                <li><code>@api.depends('order_line.price_subtotal')</code> = Recalculate when any order line subtotal changes</li>
+                <li><code>@api.depends('partner_id.country_id')</code> = Recalculate when the customer's country changes</li>
+            </ul>
+        </div>
+
+        <div class="success-box">
+            <h4>Business Scenario: When to Store Computed Fields</h4>
+            <table>
+                <tr>
+                    <th>Scenario</th>
+                    <th>Store?</th>
+                    <th>Reason</th>
+                </tr>
+                <tr>
+                    <td>Invoice total amount</td>
+                    <td>Yes</td>
+                    <td>Need to group invoices by amount in reports</td>
+                </tr>
+                <tr>
+                    <td>Days until deadline</td>
+                    <td>No</td>
+                    <td>Changes every day, would need constant recalculation</td>
+                </tr>
+                <tr>
+                    <td>Profit margin %</td>
+                    <td>Yes</td>
+                    <td>Want to filter "orders with margin > 20%"</td>
+                </tr>
+                <tr>
+                    <td>Full address (combined)</td>
+                    <td>No</td>
+                    <td>Just for display, don't need to search by it</td>
+                </tr>
+            </table>
+        </div>
+
+        <!-- ==================== SECTION 7: RELATED FIELDS ==================== -->
+        <h2 id="related">6. Related Fields Deep Dive</h2>
+
+        <div class="technical-box">
+            <h4>What Is a Related Field?</h4>
+            <p>A <strong>related field</strong> displays a value from a <strong>linked record</strong> on the current form.</p>
+            <p>It "reaches through" a Many2one relationship to show information from the related record.</p>
+        </div>
+
+        <div class="analogy-box">
+            <h4>Example: Showing Customer's Country on Sales Order</h4>
+            <div class="diagram">
+                <div class="diagram-box">Sale Order</div>
+                <span class="arrow">partner_id →</span>
+                <div class="diagram-box secondary">Customer (res.partner)</div>
+                <span class="arrow">country_id →</span>
+                <div class="diagram-box tertiary">Country (res.country)</div>
+            </div>
+            <p style="margin-top: 15px;">A related field <code>partner_country_id</code> on Sale Order can directly show the customer's country without storing it!</p>
+            <p><strong>Path:</strong> <code>partner_id.country_id</code></p>
+        </div>
+
+        <h3>Related Fields: store=True vs store=False</h3>
+
+        <div class="comparison-grid">
+            <div class="comparison-card good">
+                <h4>Related Field with store=False (Default)</h4>
+                <ul>
+                    <li>Always shows current value from linked record</li>
+                    <li>If customer changes their country, you see new country immediately</li>
+                    <li>Cannot use in Group By</li>
+                    <li>Limited search capabilities</li>
+                </ul>
+                <p><strong>Use When:</strong> You just want to display info on a form</p>
+            </div>
+            <div class="comparison-card good">
+                <h4>Related Field with store=True</h4>
+                <ul>
+                    <li>Copies value and stores it in database</li>
+                    <li>Can use in Group By and reports</li>
+                    <li>May become "stale" if linked record changes</li>
+                    <li>Takes database space</li>
+                </ul>
+                <p><strong>Use When:</strong> You need to filter or group by this value</p>
+            </div>
+        </div>
+
+        <div class="warning-box">
+            <h4>The N+1 Query Problem</h4>
+            <p>If you have a <strong>non-stored related field</strong> and display it in a list view with 100 records:</p>
+            <ul>
+                <li>Odoo might need to make 100 separate database queries (one per record)</li>
+                <li>This can slow down the page significantly</li>
+            </ul>
+            <p><strong>Solution:</strong> If the field is shown in list views, consider <code>store=True</code></p>
+        </div>
+
+        <!-- ==================== SECTION 8: GROUP BY ==================== -->
+        <h2 id="groupby">7. Why Group By Requires Stored Fields</h2>
+
+        <div class="critical-box">
+            <h4>The Problem</h4>
+            <p>You want to create a report: "Sales by Customer Country"</p>
+            <p>You try to group by a related field <code>partner_id.country_id</code> but it doesn't work. Why?</p>
+        </div>
+
+        <h3>How Group By Works (Simple Explanation)</h3>
+
+        <div class="mechanism-box">
+            <h4>What Happens When You "Group By" in Odoo</h4>
+            <ol>
+                <li>Odoo sends a request to the database (SQL query)</li>
+                <li>The database groups records by the specified field</li>
+                <li>The database returns grouped totals</li>
+            </ol>
+            <p><strong>The Problem:</strong> The database can only group by <strong>columns that exist in the database</strong>.</p>
+            <p>Non-stored fields don't have a database column, so the database doesn't know how to group by them!</p>
+        </div>
+
+        <div class="analogy-box">
+            <h4>Analogy: Library Card Catalog</h4>
+            <p>Imagine you want to organize library books:</p>
+            <ul>
+                <li><strong>Stored field:</strong> Like having "Genre" written on each book's card. Easy to sort by genre.</li>
+                <li><strong>Non-stored field:</strong> Like calculating "Days since published" - you'd have to look at each book individually. Can't pre-sort by it.</li>
+            </ul>
+        </div>
+
+        <h3>Solution: Make the Field Stored</h3>
+
+        <div class="success-box">
+            <h4>When You Need to Group By a Computed/Related Field:</h4>
+            <p>Ask your developer to add <code>store=True</code> to the field definition.</p>
+            <p><strong>Trade-off:</strong> The field will take database space and might need recalculation triggers.</p>
+        </div>
+
+        <table>
+            <tr>
+                <th>Report Need</th>
+                <th>Field Type Required</th>
+                <th>Solution</th>
+            </tr>
+            <tr>
+                <td>Group by customer country</td>
+                <td>Stored field</td>
+                <td>Add stored related field for country</td>
+            </tr>
+            <tr>
+                <td>Filter by salesperson</td>
+                <td>Any Many2one</td>
+                <td>Already stored by default</td>
+            </tr>
+            <tr>
+                <td>Group by profit margin</td>
+                <td>Stored computed field</td>
+                <td>Add store=True to margin field</td>
+            </tr>
+            <tr>
+                <td>Sum of order totals</td>
+                <td>Stored field</td>
+                <td>amount_total is already stored</td>
+            </tr>
+        </table>
+
+        <!-- ==================== SECTION 9: VIEWS ==================== -->
+        <h2 id="views">8. Views - Form, List, Kanban, and More</h2>
+
+        <div class="technical-box">
+            <h4>What Are Views?</h4>
+            <p><strong>Views</strong> determine <strong>how data is displayed</strong> to users. The same data can be shown in different ways.</p>
+            <p>Views are defined in XML files and control:</p>
+            <ul>
+                <li>Which fields are visible</li>
+                <li>How fields are arranged</li>
+                <li>What buttons and actions are available</li>
+                <li>Conditional formatting and visibility</li>
+            </ul>
+        </div>
+
+        <h3>View Types in Odoo</h3>
+
+        <table>
+            <tr>
+                <th>View Type</th>
+                <th>XML Tag</th>
+                <th>Purpose</th>
+                <th>Best For</th>
+            </tr>
+            <tr>
+                <td><strong>Form</strong></td>
+                <td><code>&lt;form&gt;</code></td>
+                <td>View/edit one record</td>
+                <td>Detailed data entry</td>
+            </tr>
+            <tr>
+                <td><strong>List</strong></td>
+                <td><code>&lt;list&gt;</code></td>
+                <td>Table view of multiple records</td>
+                <td>Quick overview, bulk actions</td>
+            </tr>
+            <tr>
+                <td><strong>Kanban</strong></td>
+                <td><code>&lt;kanban&gt;</code></td>
+                <td>Cards in columns</td>
+                <td>Pipeline/stage management</td>
+            </tr>
+            <tr>
+                <td><strong>Calendar</strong></td>
+                <td><code>&lt;calendar&gt;</code></td>
+                <td>Records on calendar</td>
+                <td>Scheduling, deadlines</td>
+            </tr>
+            <tr>
+                <td><strong>Graph</strong></td>
+                <td><code>&lt;graph&gt;</code></td>
+                <td>Charts and graphs</td>
+                <td>Data visualization</td>
+            </tr>
+            <tr>
+                <td><strong>Pivot</strong></td>
+                <td><code>&lt;pivot&gt;</code></td>
+                <td>Pivot table analysis</td>
+                <td>Business intelligence</td>
+            </tr>
+            <tr>
+                <td><strong>Gantt</strong> <span class="badge badge-enterprise">Enterprise</span></td>
+                <td><code>&lt;gantt&gt;</code></td>
+                <td>Timeline view</td>
+                <td>Project planning</td>
+            </tr>
+            <tr>
+                <td><strong>Map</strong> <span class="badge badge-enterprise">Enterprise</span></td>
+                <td><code>&lt;map&gt;</code></td>
+                <td>Geographic map</td>
+                <td>Location-based data</td>
+            </tr>
+            <tr>
+                <td><strong>Activity</strong></td>
+                <td><code>&lt;activity&gt;</code></td>
+                <td>Activity scheduling</td>
+                <td>Task/follow-up management</td>
+            </tr>
+            <tr>
+                <td><strong>Search</strong></td>
+                <td><code>&lt;search&gt;</code></td>
+                <td>Filter definitions</td>
+                <td>Defining search options</td>
+            </tr>
+        </table>
+
+        <div class="info-box">
+            <h4>Note on Terminology</h4>
+            <p>List views use the <code>&lt;list&gt;</code> XML tag. You may see older documentation or code using <code>&lt;tree&gt;</code> - both work, but <code>&lt;list&gt;</code> is the current standard.</p>
+        </div>
+
+        <h3>View Examples</h3>
+
+        <div class="mechanism-box">
+            <h4>Form View - Editing a Single Record</h4>
+            <p>The form view is where users enter and edit detailed information.</p>
+            <p><strong>Key elements:</strong></p>
+            <ul>
+                <li><strong>Header</strong> - Status bar and buttons</li>
+                <li><strong>Sheet</strong> - Main content area</li>
+                <li><strong>Group</strong> - Organizes fields in columns</li>
+                <li><strong>Notebook</strong> - Creates tabs</li>
+                <li><strong>Chatter</strong> - Messages and activity log</li>
+            </ul>
+        </div>
+
+        <div class="mechanism-box">
+            <h4>List View - Viewing Multiple Records</h4>
+            <p>Shows records in a table format with sortable columns.</p>
+            <p><strong>Features:</strong></p>
+            <ul>
+                <li>Click column headers to sort</li>
+                <li>Select multiple records for bulk actions</li>
+                <li>Inline editing (if enabled)</li>
+                <li>Optional columns (user can show/hide)</li>
+            </ul>
+        </div>
+
+        <div class="mechanism-box">
+            <h4>Kanban View - Pipeline Management</h4>
+            <p>Perfect for tracking items through stages (like CRM pipeline).</p>
+            <p><strong>Features:</strong></p>
+            <ul>
+                <li>Drag and drop between columns</li>
+                <li>Color coding by status</li>
+                <li>Progress bars</li>
+                <li>Quick create within columns</li>
+            </ul>
+        </div>
+
+        <!-- ==================== SECTION 10: WIDGETS ==================== -->
+        <h2 id="widgets">9. Widgets - Display vs Data Storage</h2>
+
+        <div class="critical-box">
+            <h4>Key Concept</h4>
+            <p><strong>Widgets change how a field LOOKS, not what it STORES.</strong></p>
+            <p>The same Selection field can appear as a dropdown, radio buttons, or badges - but it still stores the same data.</p>
+        </div>
+
+        <h3>Common Widgets</h3>
+
+        <table>
+            <tr>
+                <th>Widget</th>
+                <th>Used With</th>
+                <th>How It Looks</th>
+                <th>Use Case</th>
+            </tr>
+            <tr>
+                <td><code>radio</code></td>
+                <td>Selection</td>
+                <td>Radio buttons</td>
+                <td>Few options, visible at once</td>
+            </tr>
+            <tr>
+                <td><code>badge</code></td>
+                <td>Selection</td>
+                <td>Colored badge</td>
+                <td>Status display in lists</td>
+            </tr>
+            <tr>
+                <td><code>statusbar</code></td>
+                <td>Selection</td>
+                <td>Horizontal status bar</td>
+                <td>Document workflow stages</td>
+            </tr>
+            <tr>
+                <td><code>priority</code></td>
+                <td>Selection</td>
+                <td>Star ratings</td>
+                <td>Priority/importance</td>
+            </tr>
+            <tr>
+                <td><code>many2many_tags</code></td>
+                <td>Many2many</td>
+                <td>Colored tags</td>
+                <td>Categories, labels</td>
+            </tr>
+            <tr>
+                <td><code>many2one_avatar_user</code></td>
+                <td>Many2one</td>
+                <td>User with avatar</td>
+                <td>Assigned user field</td>
+            </tr>
+            <tr>
+                <td><code>monetary</code></td>
+                <td>Float/Monetary</td>
+                <td>Currency formatted</td>
+                <td>Money amounts</td>
+            </tr>
+            <tr>
+                <td><code>percentage</code></td>
+                <td>Float</td>
+                <td>Percentage with %</td>
+                <td>Discount, margin</td>
+            </tr>
+            <tr>
+                <td><code>progressbar</code></td>
+                <td>Float/Integer</td>
+                <td>Progress bar</td>
+                <td>Completion percentage</td>
+            </tr>
+            <tr>
+                <td><code>image</code></td>
+                <td>Binary</td>
+                <td>Image preview</td>
+                <td>Product photos</td>
+            </tr>
+            <tr>
+                <td><code>handle</code></td>
+                <td>Integer</td>
+                <td>Drag handle</td>
+                <td>Manual sorting</td>
+            </tr>
+            <tr>
+                <td><code>html</code></td>
+                <td>Html</td>
+                <td>Rich text editor</td>
+                <td>Descriptions</td>
+            </tr>
+            <tr>
+                <td><code>daterange</code></td>
+                <td>Date</td>
+                <td>Date range picker</td>
+                <td>Start/end dates</td>
+            </tr>
+        </table>
+
+        <div class="analogy-box">
+            <h4>Example: Same Data, Different Display</h4>
+            <p>A Selection field for "Priority" with values: low, medium, high</p>
+            <div class="diagram">
+                <div style="display: flex; justify-content: space-around; flex-wrap: wrap; gap: 20px; margin-top: 20px;">
+                    <div style="text-align: center; padding: 20px; background: #f1f5f9; border-radius: 8px;">
+                        <strong>Default (dropdown)</strong><br>
+                        <select style="padding: 8px; margin-top: 10px;">
+                            <option>Low</option>
+                            <option>Medium</option>
+                            <option selected>High</option>
+                        </select>
+                    </div>
+                    <div style="text-align: center; padding: 20px; background: #f1f5f9; border-radius: 8px;">
+                        <strong>widget="radio"</strong><br>
+                        <div style="margin-top: 10px; text-align: left;">
+                            <input type="radio" name="prio"> Low<br>
+                            <input type="radio" name="prio"> Medium<br>
+                            <input type="radio" name="prio" checked> High
+                        </div>
+                    </div>
+                    <div style="text-align: center; padding: 20px; background: #f1f5f9; border-radius: 8px;">
+                        <strong>widget="priority"</strong><br>
+                        <div style="margin-top: 10px; font-size: 24px; color: gold;">
+                            ★★★
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <p style="margin-top: 15px;">All three store the same value ('high') but display it differently!</p>
+        </div>
+
+        <!-- ==================== SECTION 11: DOMAINS ==================== -->
+        <h2 id="domains">10. Domain Filters - Controlling Data</h2>
+
+        <div class="technical-box">
+            <h4>What Is a Domain?</h4>
+            <p>A <strong>domain</strong> is a filter condition that limits which records are shown or selectable.</p>
+            <p>Domains are written as a list of conditions: <code>[('field', 'operator', 'value')]</code></p>
+        </div>
+
+        <h3>Domain Operators</h3>
+
+        <table>
+            <tr>
+                <th>Operator</th>
+                <th>Meaning</th>
+                <th>Example</th>
+                <th>Result</th>
+            </tr>
+            <tr>
+                <td><code>=</code></td>
+                <td>Equals</td>
+                <td><code>[('state', '=', 'draft')]</code></td>
+                <td>Records where state is draft</td>
+            </tr>
+            <tr>
+                <td><code>!=</code></td>
+                <td>Not equals</td>
+                <td><code>[('state', '!=', 'cancel')]</code></td>
+                <td>Records not cancelled</td>
+            </tr>
+            <tr>
+                <td><code>&gt;</code></td>
+                <td>Greater than</td>
+                <td><code>[('amount', '>', 1000)]</code></td>
+                <td>Amount over 1000</td>
+            </tr>
+            <tr>
+                <td><code>&lt;</code></td>
+                <td>Less than</td>
+                <td><code>[('amount', '<', 500)]</code></td>
+                <td>Amount under 500</td>
+            </tr>
+            <tr>
+                <td><code>&gt;=</code></td>
+                <td>Greater or equal</td>
+                <td><code>[('qty', '>=', 10)]</code></td>
+                <td>Quantity 10 or more</td>
+            </tr>
+            <tr>
+                <td><code>&lt;=</code></td>
+                <td>Less or equal</td>
+                <td><code>[('date', '<=', '2024-12-31')]</code></td>
+                <td>Date on or before Dec 31</td>
+            </tr>
+            <tr>
+                <td><code>in</code></td>
+                <td>In list</td>
+                <td><code>[('state', 'in', ['draft', 'sent'])]</code></td>
+                <td>Draft OR sent</td>
+            </tr>
+            <tr>
+                <td><code>not in</code></td>
+                <td>Not in list</td>
+                <td><code>[('state', 'not in', ['cancel', 'done'])]</code></td>
+                <td>Not cancelled or done</td>
+            </tr>
+            <tr>
+                <td><code>like</code></td>
+                <td>Contains (case sensitive)</td>
+                <td><code>[('name', 'like', 'Sales')]</code></td>
+                <td>Name contains "Sales"</td>
+            </tr>
+            <tr>
+                <td><code>ilike</code></td>
+                <td>Contains (case insensitive)</td>
+                <td><code>[('email', 'ilike', '@gmail')]</code></td>
+                <td>Gmail addresses</td>
+            </tr>
+            <tr>
+                <td><code>=like</code></td>
+                <td>Pattern match</td>
+                <td><code>[('ref', '=like', 'SO%')]</code></td>
+                <td>Starts with "SO"</td>
+            </tr>
+            <tr>
+                <td><code>=ilike</code></td>
+                <td>Pattern (case insensitive)</td>
+                <td><code>[('name', '=ilike', '%ltd')]</code></td>
+                <td>Ends with "ltd"</td>
+            </tr>
+            <tr>
+                <td><code>child_of</code></td>
+                <td>Hierarchical child</td>
+                <td><code>[('categ_id', 'child_of', 5)]</code></td>
+                <td>Category 5 and children</td>
+            </tr>
+            <tr>
+                <td><code>parent_of</code></td>
+                <td>Hierarchical parent</td>
+                <td><code>[('categ_id', 'parent_of', 10)]</code></td>
+                <td>Parents of category 10</td>
+            </tr>
+        </table>
+
+        <h3>Combining Conditions</h3>
+
+        <div class="mechanism-box">
+            <h4>AND, OR, NOT Logic</h4>
+            <table>
+                <tr>
+                    <th>Symbol</th>
+                    <th>Meaning</th>
+                    <th>Example</th>
+                </tr>
+                <tr>
+                    <td><code>&</code> (default)</td>
+                    <td>AND - both must be true</td>
+                    <td><code>[('state', '=', 'sale'), ('amount', '>', 1000)]</code><br>Confirmed orders over 1000</td>
+                </tr>
+                <tr>
+                    <td><code>|</code></td>
+                    <td>OR - either can be true</td>
+                    <td><code>['|', ('state', '=', 'draft'), ('state', '=', 'sent')]</code><br>Draft OR sent orders</td>
+                </tr>
+                <tr>
+                    <td><code>!</code></td>
+                    <td>NOT - inverse</td>
+                    <td><code>['!', ('active', '=', True)]</code><br>Inactive records</td>
+                </tr>
+            </table>
+        </div>
+
+        <h3>Where Domains Are Used</h3>
+
+        <table>
+            <tr>
+                <th>Location</th>
+                <th>Purpose</th>
+                <th>Example</th>
+            </tr>
+            <tr>
+                <td><strong>Field Definition</strong></td>
+                <td>Limit dropdown choices</td>
+                <td>partner_id domain: only show customers</td>
+            </tr>
+            <tr>
+                <td><strong>Search Filters</strong></td>
+                <td>Predefined searches</td>
+                <td>"My Orders" filter</td>
+            </tr>
+            <tr>
+                <td><strong>Action Windows</strong></td>
+                <td>What records to show</td>
+                <td>Menu shows only quotations</td>
+            </tr>
+            <tr>
+                <td><strong>Record Rules</strong></td>
+                <td>Security restrictions</td>
+                <td>Users see only their company's data</td>
+            </tr>
+            <tr>
+                <td><strong>Reports</strong></td>
+                <td>Filter report data</td>
+                <td>Only confirmed invoices</td>
+            </tr>
+        </table>
+
+        <div class="success-box">
+            <h4>Practical Examples</h4>
+            <p><strong>1. Show only companies (not individuals) in dropdown:</strong></p>
+            <p><code>[('is_company', '=', True)]</code></p>
+
+            <p><strong>2. Show only products in stock:</strong></p>
+            <p><code>[('qty_available', '>', 0)]</code></p>
+
+            <p><strong>3. Show orders from last 30 days:</strong></p>
+            <p><code>[('date_order', '>=', (context_today() - relativedelta(days=30)).strftime('%Y-%m-%d'))]</code></p>
+
+            <p><strong>4. Show only active, confirmed sales orders for current user:</strong></p>
+            <p><code>[('active', '=', True), ('state', '=', 'sale'), ('user_id', '=', uid)]</code></p>
+        </div>
+
+        <!-- ==================== SECTION 12: FIELD PROPERTIES ==================== -->
+        <h2 id="properties">11. Field Properties</h2>
+
+        <div class="technical-box">
+            <h4>What Are Field Properties?</h4>
+            <p>Properties are settings that control a field's behavior: Is it required? Can it be edited? What's the default value?</p>
+        </div>
+
+        <table>
+            <tr>
+                <th>Property</th>
+                <th>Type</th>
+                <th>What It Does</th>
+                <th>Example Use</th>
+            </tr>
+            <tr>
+                <td><strong>string</strong></td>
+                <td>String</td>
+                <td>Label shown to users</td>
+                <td><code>string="Customer Name"</code></td>
+            </tr>
+            <tr>
+                <td><strong>required</strong></td>
+                <td>Boolean</td>
+                <td>Must be filled before saving</td>
+                <td><code>required=True</code></td>
+            </tr>
+            <tr>
+                <td><strong>readonly</strong></td>
+                <td>Boolean</td>
+                <td>Cannot be edited by users</td>
+                <td><code>readonly=True</code></td>
+            </tr>
+            <tr>
+                <td><strong>default</strong></td>
+                <td>Value/Function</td>
+                <td>Initial value for new records</td>
+                <td><code>default=lambda self: fields.Date.today()</code></td>
+            </tr>
+            <tr>
+                <td><strong>help</strong></td>
+                <td>String</td>
+                <td>Tooltip text on hover</td>
+                <td><code>help="Enter the full legal name"</code></td>
+            </tr>
+            <tr>
+                <td><strong>index</strong></td>
+                <td>Boolean/String</td>
+                <td>Create database index for faster search</td>
+                <td><code>index=True</code></td>
+            </tr>
+            <tr>
+                <td><strong>copy</strong></td>
+                <td>Boolean</td>
+                <td>Include when duplicating record</td>
+                <td><code>copy=False</code> for reference numbers</td>
+            </tr>
+            <tr>
+                <td><strong>tracking</strong></td>
+                <td>Boolean/Integer</td>
+                <td>Log changes in chatter</td>
+                <td><code>tracking=True</code></td>
+            </tr>
+            <tr>
+                <td><strong>groups</strong></td>
+                <td>String</td>
+                <td>Restrict visibility to user groups</td>
+                <td><code>groups="account.group_account_manager"</code></td>
+            </tr>
+            <tr>
+                <td><strong>company_dependent</strong></td>
+                <td>Boolean</td>
+                <td>Different value per company</td>
+                <td><code>company_dependent=True</code></td>
+            </tr>
+            <tr>
+                <td><strong>translate</strong></td>
+                <td>Boolean</td>
+                <td>Can be translated to other languages</td>
+                <td><code>translate=True</code></td>
+            </tr>
+        </table>
+
+        <h3>ondelete for Many2one Fields</h3>
+
+        <div class="mechanism-box">
+            <h4>What Happens When Linked Record Is Deleted?</h4>
+            <table>
+                <tr>
+                    <th>ondelete Value</th>
+                    <th>Behavior</th>
+                    <th>Use Case</th>
+                </tr>
+                <tr>
+                    <td><code>'set null'</code></td>
+                    <td>Set field to empty</td>
+                    <td>Optional relationships (default)</td>
+                </tr>
+                <tr>
+                    <td><code>'restrict'</code></td>
+                    <td>Prevent deletion</td>
+                    <td>Critical references (can't delete customer with orders)</td>
+                </tr>
+                <tr>
+                    <td><code>'cascade'</code></td>
+                    <td>Delete this record too</td>
+                    <td>Child records (delete order lines with order)</td>
+                </tr>
+            </table>
+        </div>
+
+        <!-- ==================== SECTION 13: ACCESS RIGHTS ==================== -->
+        <h2 id="access">12. Access Rights & Record Rules</h2>
+
+        <div class="critical-box">
+            <h4>Security in Odoo: Two Levels</h4>
+            <ol>
+                <li><strong>Access Rights (ir.model.access)</strong> - Can this user group access this model at all?</li>
+                <li><strong>Record Rules (ir.rule)</strong> - Which specific records can they see/edit?</li>
+            </ol>
+        </div>
+
+        <h3>Access Rights - Model Level</h3>
+
+        <div class="mechanism-box">
+            <h4>The Four Permissions: CRUD</h4>
+            <table>
+                <tr>
+                    <th>Permission</th>
+                    <th>Letter</th>
+                    <th>What It Allows</th>
+                </tr>
+                <tr>
+                    <td><strong>Create</strong></td>
+                    <td>C</td>
+                    <td>Create new records</td>
+                </tr>
+                <tr>
+                    <td><strong>Read</strong></td>
+                    <td>R</td>
+                    <td>View existing records</td>
+                </tr>
+                <tr>
+                    <td><strong>Update</strong></td>
+                    <td>U</td>
+                    <td>Edit existing records</td>
+                </tr>
+                <tr>
+                    <td><strong>Delete</strong></td>
+                    <td>D</td>
+                    <td>Delete records</td>
+                </tr>
+            </table>
+        </div>
+
+        <div class="analogy-box">
+            <h4>Example: Sales Module Access</h4>
+            <table>
+                <tr>
+                    <th>Group</th>
+                    <th>Model</th>
+                    <th>C</th>
+                    <th>R</th>
+                    <th>U</th>
+                    <th>D</th>
+                </tr>
+                <tr>
+                    <td>Sales / User</td>
+                    <td>sale.order</td>
+                    <td>Yes</td>
+                    <td>Yes</td>
+                    <td>Yes</td>
+                    <td>No</td>
+                </tr>
+                <tr>
+                    <td>Sales / Manager</td>
+                    <td>sale.order</td>
+                    <td>Yes</td>
+                    <td>Yes</td>
+                    <td>Yes</td>
+                    <td>Yes</td>
+                </tr>
+                <tr>
+                    <td>Sales / User</td>
+                    <td>sale.report</td>
+                    <td>No</td>
+                    <td>Yes</td>
+                    <td>No</td>
+                    <td>No</td>
+                </tr>
+            </table>
+        </div>
+
+        <h3>Record Rules - Record Level</h3>
+
+        <div class="mechanism-box">
+            <h4>What Record Rules Do</h4>
+            <p>Record rules use <strong>domains</strong> to filter which specific records a user can access.</p>
+            <p><strong>Example:</strong> "Sales users can only see orders assigned to them"</p>
+            <p><strong>Domain:</strong> <code>[('user_id', '=', user.id)]</code></p>
+        </div>
+
+        <div class="success-box">
+            <h4>Common Record Rule Patterns</h4>
+            <table>
+                <tr>
+                    <th>Rule Name</th>
+                    <th>Domain</th>
+                    <th>Effect</th>
+                </tr>
+                <tr>
+                    <td>Own records only</td>
+                    <td><code>[('user_id', '=', user.id)]</code></td>
+                    <td>See only records you created/own</td>
+                </tr>
+                <tr>
+                    <td>Same company</td>
+                    <td><code>[('company_id', 'in', company_ids)]</code></td>
+                    <td>See only your company's data</td>
+                </tr>
+                <tr>
+                    <td>Team members</td>
+                    <td><code>[('team_id', '=', user.sale_team_id.id)]</code></td>
+                    <td>See team's records</td>
+                </tr>
+                <tr>
+                    <td>Public records</td>
+                    <td><code>[('public', '=', True)]</code></td>
+                    <td>See only public records</td>
+                </tr>
+            </table>
+        </div>
+
+        <div class="warning-box">
+            <h4>Common Security Issue</h4>
+            <p>If a user can't see records they should see:</p>
+            <ol>
+                <li>Check their user groups (Settings > Users > Groups tab)</li>
+                <li>Check model access rights (Settings > Technical > Security > Access Rights)</li>
+                <li>Check record rules (Settings > Technical > Security > Record Rules)</li>
+            </ol>
+        </div>
+
+        <!-- ==================== SECTION 14: WORKFLOWS ==================== -->
+        <h2 id="workflows">13. Workflows & Status Management</h2>
+
+        <div class="technical-box">
+            <h4>How Odoo Manages Document States</h4>
+            <p>Most business documents in Odoo follow a <strong>state machine</strong> pattern:</p>
+            <ul>
+                <li>A <code>state</code> Selection field tracks the current status</li>
+                <li>Buttons trigger state changes</li>
+                <li>Business logic runs on transitions</li>
+            </ul>
+        </div>
+
+        <h3>Example: Sales Order Workflow</h3>
+
+        <div class="diagram">
+            <div style="display: flex; justify-content: center; align-items: center; flex-wrap: wrap; gap: 10px;">
+                <div class="diagram-box" style="background: #94a3b8;">Draft</div>
+                <span class="arrow">→</span>
+                <div class="diagram-box" style="background: #38bdf8;">Sent</div>
+                <span class="arrow">→</span>
+                <div class="diagram-box" style="background: #4ade80;">Sale</div>
+                <span class="arrow">→</span>
+                <div class="diagram-box" style="background: #a78bfa;">Done</div>
+            </div>
+            <div style="margin-top: 20px;">
+                <div class="diagram-box" style="background: #f87171;">Cancelled</div>
+                <p style="font-size: 14px; margin-top: 10px;">(Can cancel from Draft, Sent, or Sale)</p>
+            </div>
+        </div>
+
+        <table>
+            <tr>
+                <th>State</th>
+                <th>Key (stored)</th>
+                <th>What Can Happen</th>
+            </tr>
+            <tr>
+                <td>Quotation</td>
+                <td>'draft'</td>
+                <td>Edit freely, Send to customer, Confirm, Cancel</td>
+            </tr>
+            <tr>
+                <td>Quotation Sent</td>
+                <td>'sent'</td>
+                <td>Customer reviewing, Confirm, Cancel</td>
+            </tr>
+            <tr>
+                <td>Sales Order</td>
+                <td>'sale'</td>
+                <td>Confirmed, Creates delivery & invoice</td>
+            </tr>
+            <tr>
+                <td>Locked</td>
+                <td>'done'</td>
+                <td>Completed, no changes</td>
+            </tr>
+            <tr>
+                <td>Cancelled</td>
+                <td>'cancel'</td>
+                <td>Voided, can set back to draft</td>
+            </tr>
+        </table>
+
+        <h3>The Statusbar Widget</h3>
+
+        <div class="mechanism-box">
+            <h4>Visual State Indicator</h4>
+            <p>The statusbar widget shows the workflow visually at the top of forms:</p>
+            <ul>
+                <li>Shows all possible states</li>
+                <li>Highlights current state</li>
+                <li>Users can click to jump to states (if allowed)</li>
+                <li>Can be configured to show only certain states</li>
+            </ul>
+        </div>
+
+        <h3>Automated Actions</h3>
+
+        <div class="success-box">
+            <h4>Automate Without Code</h4>
+            <p>Odoo allows creating automated actions that trigger on:</p>
+            <ul>
+                <li><strong>On Creation</strong> - When record is created</li>
+                <li><strong>On Update</strong> - When specific fields change</li>
+                <li><strong>On Creation & Update</strong> - Both</li>
+                <li><strong>On Deletion</strong> - When record is deleted</li>
+                <li><strong>Based on Time</strong> - Scheduled (e.g., daily at 9 AM)</li>
+            </ul>
+            <p><strong>Location:</strong> Settings > Technical > Automation > Automated Actions</p>
+        </div>
+
+        <!-- ==================== SECTION 15: STUDIO ==================== -->
+        <h2 id="studio">14. Odoo Studio Basics <span class="badge badge-enterprise">Enterprise</span></h2>
+
+        <div class="odoo-box">
+            <h4>What Is Odoo Studio?</h4>
+            <p>Odoo Studio is a <strong>no-code customization tool</strong> that allows you to:</p>
+            <ul>
+                <li>Add new fields to existing models</li>
+                <li>Create new models (apps)</li>
+                <li>Modify views (forms, lists, etc.)</li>
+                <li>Create automated actions</li>
+                <li>Build reports</li>
+                <li>Add approval workflows</li>
+            </ul>
+            <p><strong>Available in:</strong> Odoo Enterprise only</p>
+        </div>
+
+        <h3>What You Can Do in Studio</h3>
+
+        <table>
+            <tr>
+                <th>Task</th>
+                <th>Studio Capability</th>
+                <th>Limitation</th>
+            </tr>
+            <tr>
+                <td>Add new field</td>
+                <td>All basic types, relations</td>
+                <td>Complex computed fields need code</td>
+            </tr>
+            <tr>
+                <td>Rearrange form</td>
+                <td>Drag and drop fields</td>
+                <td>Some structural changes limited</td>
+            </tr>
+            <tr>
+                <td>Add new app</td>
+                <td>Full model creation</td>
+                <td>Complex logic needs development</td>
+            </tr>
+            <tr>
+                <td>Create report</td>
+                <td>PDF reports with templates</td>
+                <td>Advanced formatting may need code</td>
+            </tr>
+            <tr>
+                <td>Automated actions</td>
+                <td>Email, update fields, webhooks</td>
+                <td>Complex conditions need code</td>
+            </tr>
+        </table>
+
+        <div class="warning-box">
+            <h4>Studio Best Practices</h4>
+            <ul>
+                <li><strong>Document everything</strong> - Keep a log of Studio changes</li>
+                <li><strong>Test in staging first</strong> - Don't experiment in production</li>
+                <li><strong>Export customizations</strong> - Back up your Studio changes</li>
+                <li><strong>Know the limits</strong> - Complex logic should be custom developed</li>
+            </ul>
+        </div>
+
+        <!-- ==================== SECTION 16: PERFORMANCE ==================== -->
+        <h2 id="performance">15. Performance Considerations</h2>
+
+        <div class="technical-box">
+            <h4>Why Performance Matters</h4>
+            <p>As your Odoo database grows, poor design choices become obvious:</p>
+            <ul>
+                <li>Slow page loads</li>
+                <li>Reports that timeout</li>
+                <li>Searches that take forever</li>
+            </ul>
+        </div>
+
+        <h3>Key Performance Factors</h3>
+
+        <table>
+            <tr>
+                <th>Factor</th>
+                <th>Impact</th>
+                <th>Solution</th>
+            </tr>
+            <tr>
+                <td><strong>Non-stored computed fields</strong></td>
+                <td>Calculated every page load</td>
+                <td>Store if used in lists/reports</td>
+            </tr>
+            <tr>
+                <td><strong>Non-stored related fields</strong></td>
+                <td>N+1 query problem in lists</td>
+                <td>Store if shown in list views</td>
+            </tr>
+            <tr>
+                <td><strong>Missing indexes</strong></td>
+                <td>Slow searches and filters</td>
+                <td>Add index=True to frequently searched fields</td>
+            </tr>
+            <tr>
+                <td><strong>Large One2many lists</strong></td>
+                <td>Slow form loading</td>
+                <td>Paginate or load on demand</td>
+            </tr>
+            <tr>
+                <td><strong>Complex domains</strong></td>
+                <td>Slow record rule evaluation</td>
+                <td>Simplify or cache results</td>
+            </tr>
+            <tr>
+                <td><strong>Too many automated actions</strong></td>
+                <td>Slow saves</td>
+                <td>Consolidate or use scheduled actions</td>
+            </tr>
+        </table>
+
+        <div class="success-box">
+            <h4>Performance Checklist for Consultants</h4>
+            <ul>
+                <li>Fields shown in list views should be stored</li>
+                <li>Fields used in filters/group by must be stored</li>
+                <li>Frequently searched fields should have indexes</li>
+                <li>Avoid showing large One2many fields in list views</li>
+                <li>Use pagination for reports with many records</li>
+            </ul>
+        </div>
+
+        <!-- ==================== SECTION 17: DECISION MATRIX ==================== -->
+        <h2 id="decision">16. Decision Matrix - When to Use What</h2>
+
+        <h3>Field Type Decision</h3>
+
+        <table>
+            <tr>
+                <th>If You Need To Store...</th>
+                <th>Use This Field Type</th>
+            </tr>
+            <tr>
+                <td>Short text (name, reference, email)</td>
+                <td>Char</td>
+            </tr>
+            <tr>
+                <td>Long text (description, notes)</td>
+                <td>Text</td>
+            </tr>
+            <tr>
+                <td>Formatted text (HTML emails, descriptions)</td>
+                <td>Html</td>
+            </tr>
+            <tr>
+                <td>Whole numbers (quantity, count)</td>
+                <td>Integer</td>
+            </tr>
+            <tr>
+                <td>Decimal numbers (weight, percentage)</td>
+                <td>Float</td>
+            </tr>
+            <tr>
+                <td>Money amounts</td>
+                <td>Monetary (with currency field)</td>
+            </tr>
+            <tr>
+                <td>Yes/No choice</td>
+                <td>Boolean</td>
+            </tr>
+            <tr>
+                <td>Date only</td>
+                <td>Date</td>
+            </tr>
+            <tr>
+                <td>Date with time</td>
+                <td>Datetime</td>
+            </tr>
+            <tr>
+                <td>Fixed list of choices</td>
+                <td>Selection</td>
+            </tr>
+            <tr>
+                <td>Link to ONE other record</td>
+                <td>Many2one</td>
+            </tr>
+            <tr>
+                <td>Link to MANY other records</td>
+                <td>Many2many</td>
+            </tr>
+            <tr>
+                <td>Show child records</td>
+                <td>One2many</td>
+            </tr>
+            <tr>
+                <td>File attachment</td>
+                <td>Binary</td>
+            </tr>
+            <tr>
+                <td>Image</td>
+                <td>Image</td>
+            </tr>
+        </table>
+
+        <h3>Storage Decision</h3>
+
+        <table>
+            <tr>
+                <th>Scenario</th>
+                <th>store=True?</th>
+                <th>Reason</th>
+            </tr>
+            <tr>
+                <td>Field shown in list views</td>
+                <td>Yes</td>
+                <td>Avoid N+1 queries</td>
+            </tr>
+            <tr>
+                <td>Field used in Group By</td>
+                <td>Yes</td>
+                <td>Required by database</td>
+            </tr>
+            <tr>
+                <td>Field used in filters/search</td>
+                <td>Yes</td>
+                <td>Better search performance</td>
+            </tr>
+            <tr>
+                <td>Field only shown on form</td>
+                <td>Maybe</td>
+                <td>Depends on complexity</td>
+            </tr>
+            <tr>
+                <td>Value changes frequently (age, days left)</td>
+                <td>No</td>
+                <td>Would need constant recalculation</td>
+            </tr>
+            <tr>
+                <td>Simple display from related record</td>
+                <td>No</td>
+                <td>Unless needed for reports</td>
+            </tr>
+        </table>
+
+        <h3>Relationship Decision</h3>
+
+        <table>
+            <tr>
+                <th>Business Relationship</th>
+                <th>Technical Field</th>
+                <th>Example</th>
+            </tr>
+            <tr>
+                <td>Record belongs to ONE other</td>
+                <td>Many2one</td>
+                <td>Order belongs to Customer</td>
+            </tr>
+            <tr>
+                <td>Record has MANY children</td>
+                <td>One2many</td>
+                <td>Order has Order Lines</td>
+            </tr>
+            <tr>
+                <td>Record has MANY tags/categories</td>
+                <td>Many2many</td>
+                <td>Product has Categories</td>
+            </tr>
+            <tr>
+                <td>Show value from linked record</td>
+                <td>Related field</td>
+                <td>Show customer's country on order</td>
+            </tr>
+        </table>
+
+        <!-- ==================== SECTION 18: PRACTICAL EXAMPLES ==================== -->
+        <h2 id="practical">17. Real-World Business Examples</h2>
+
+        <h3>Example 1: Hospital Patient Management</h3>
+
+        <div class="mechanism-box">
+            <h4>Business Requirement</h4>
+            <p>A hospital needs to track patients, their doctors, appointments, and medical records.</p>
+        </div>
+
+        <table>
+            <tr>
+                <th>Model</th>
+                <th>Key Fields</th>
+                <th>Field Type</th>
+            </tr>
+            <tr>
+                <td rowspan="5"><strong>hospital.patient</strong></td>
+                <td>name</td>
+                <td>Char (required)</td>
+            </tr>
+            <tr>
+                <td>date_of_birth</td>
+                <td>Date</td>
+            </tr>
+            <tr>
+                <td>gender</td>
+                <td>Selection [male, female, other]</td>
+            </tr>
+            <tr>
+                <td>doctor_id</td>
+                <td>Many2one → hospital.doctor</td>
+            </tr>
+            <tr>
+                <td>appointment_ids</td>
+                <td>One2many → hospital.appointment</td>
+            </tr>
+            <tr>
+                <td rowspan="3"><strong>hospital.doctor</strong></td>
+                <td>name</td>
+                <td>Char</td>
+            </tr>
+            <tr>
+                <td>specialization</td>
+                <td>Selection [general, cardiology, etc.]</td>
+            </tr>
+            <tr>
+                <td>patient_ids</td>
+                <td>One2many → hospital.patient</td>
+            </tr>
+            <tr>
+                <td rowspan="4"><strong>hospital.appointment</strong></td>
+                <td>patient_id</td>
+                <td>Many2one → hospital.patient</td>
+            </tr>
+            <tr>
+                <td>doctor_id</td>
+                <td>Many2one → hospital.doctor</td>
+            </tr>
+            <tr>
+                <td>appointment_date</td>
+                <td>Datetime</td>
+            </tr>
+            <tr>
+                <td>state</td>
+                <td>Selection [draft, confirmed, done, cancelled]</td>
+            </tr>
+        </table>
+
+        <h3>Example 2: E-Commerce Order Flow</h3>
+
+        <div class="diagram">
+            <h4>Order Data Flow</h4>
+            <div style="display: flex; justify-content: center; align-items: flex-start; flex-wrap: wrap; gap: 30px; margin-top: 20px;">
+                <div style="text-align: center;">
+                    <div class="diagram-box">Customer</div>
+                    <p style="font-size: 12px;">res.partner</p>
+                </div>
+                <span class="arrow">→</span>
+                <div style="text-align: center;">
+                    <div class="diagram-box secondary">Sale Order</div>
+                    <p style="font-size: 12px;">sale.order</p>
+                    <span class="arrow-down">↓</span>
+                    <div class="diagram-box tertiary" style="font-size: 14px;">Order Lines</div>
+                    <p style="font-size: 12px;">sale.order.line</p>
+                </div>
+                <span class="arrow">→</span>
+                <div style="text-align: center;">
+                    <div class="diagram-box" style="background: #4ade80;">Delivery</div>
+                    <p style="font-size: 12px;">stock.picking</p>
+                </div>
+                <span class="arrow">→</span>
+                <div style="text-align: center;">
+                    <div class="diagram-box" style="background: #fbbf24;">Invoice</div>
+                    <p style="font-size: 12px;">account.move</p>
+                </div>
+            </div>
+        </div>
+
+        <h3>Example 3: Manufacturing Scenario</h3>
+
+        <div class="success-box">
+            <h4>Key Relationships in Manufacturing</h4>
+            <ul>
+                <li><strong>Bill of Materials (mrp.bom)</strong> → defines what components make a product</li>
+                <li><strong>Manufacturing Order (mrp.production)</strong> → actual production request</li>
+                <li><strong>Work Orders (mrp.workorder)</strong> → individual steps in production</li>
+                <li><strong>Product (product.product)</strong> → the item being manufactured</li>
+            </ul>
+            <p><strong>Many2one chain:</strong> Work Order → Manufacturing Order → Bill of Materials → Product</p>
+        </div>
+
+        <!-- ==================== SECTION 19: COMMON MISTAKES ==================== -->
+        <h2 id="mistakes">18. Common Mistakes & How to Avoid Them</h2>
+
+        <h3>Mistake 1: Using Non-Stored Fields in Group By</h3>
+        <div class="comparison-grid">
+            <div class="comparison-card bad">
+                <h4>Wrong</h4>
+                <p>"I want to group orders by customer country"</p>
+                <p>Uses: <code>partner_id.country_id</code> (related, not stored)</p>
+                <p><strong>Result:</strong> Error or empty grouping</p>
+            </div>
+            <div class="comparison-card good">
+                <h4>Correct</h4>
+                <p>Create a stored related field:</p>
+                <p><code>partner_country_id = fields.Many2one(related='partner_id.country_id', store=True)</code></p>
+                <p><strong>Result:</strong> Works perfectly</p>
+            </div>
+        </div>
+
+        <h3>Mistake 2: Confusing Field Type and Widget</h3>
+        <div class="comparison-grid">
+            <div class="comparison-card bad">
+                <h4>Wrong Thinking</h4>
+                <p>"I need a radio button field"</p>
+                <p>Creates a new field type</p>
+            </div>
+            <div class="comparison-card good">
+                <h4>Correct</h4>
+                <p>"I need a Selection field displayed as radio buttons"</p>
+                <p>Uses: <code>Selection</code> field with <code>widget="radio"</code></p>
+            </div>
+        </div>
+
+        <h3>Mistake 3: Over-Using Many2many</h3>
+        <div class="comparison-grid">
+            <div class="comparison-card bad">
+                <h4>Wrong</h4>
+                <p>"Product can have multiple suppliers"</p>
+                <p>Uses: Many2many between product and supplier</p>
+                <p><strong>Problem:</strong> Can't store price per supplier!</p>
+            </div>
+            <div class="comparison-card good">
+                <h4>Correct</h4>
+                <p>Create a "Product Supplier" model with:</p>
+                <ul>
+                    <li>Many2one to product</li>
+                    <li>Many2one to supplier</li>
+                    <li>Price, lead time, etc.</li>
+                </ul>
+            </div>
+        </div>
+
+        <h3>Mistake 4: Forgetting ondelete</h3>
+        <div class="warning-box">
+            <h4>Problem</h4>
+            <p>You have orders linked to customers. If someone deletes a customer, what happens to their orders?</p>
+            <ul>
+                <li><strong>Default (set null):</strong> Orders remain but customer field becomes empty - data loss!</li>
+                <li><strong>cascade:</strong> Orders get deleted too - dangerous!</li>
+                <li><strong>restrict:</strong> Cannot delete customer with orders - safe!</li>
+            </ul>
+            <p><strong>Best Practice:</strong> Always specify <code>ondelete='restrict'</code> for important business relationships.</p>
+        </div>
+
+        <h3>Mistake 5: Not Using Tracking</h3>
+        <div class="success-box">
+            <h4>Best Practice</h4>
+            <p>For important fields (status, assigned user, amounts), add <code>tracking=True</code></p>
+            <p>This creates an audit trail in the chatter showing who changed what and when.</p>
+        </div>
+
+        <h3>Quick Reference: Error Messages and Solutions</h3>
+
+        <table>
+            <tr>
+                <th>Error Message</th>
+                <th>Likely Cause</th>
+                <th>Solution</th>
+            </tr>
+            <tr>
+                <td>"Field X does not exist"</td>
+                <td>Typo in field name or module not installed</td>
+                <td>Check spelling, install module</td>
+            </tr>
+            <tr>
+                <td>"Access denied"</td>
+                <td>User lacks permissions</td>
+                <td>Check access rights and record rules</td>
+            </tr>
+            <tr>
+                <td>"Cannot group by X"</td>
+                <td>Field not stored</td>
+                <td>Add store=True or use different field</td>
+            </tr>
+            <tr>
+                <td>"Constraint violation"</td>
+                <td>Required field empty or unique violation</td>
+                <td>Fill required fields, check uniqueness</td>
+            </tr>
+            <tr>
+                <td>"Recursion error"</td>
+                <td>Circular dependency in computed fields</td>
+                <td>Check @api.depends chains</td>
+            </tr>
+        </table>
+
+        <!-- ==================== CONCLUSION ==================== -->
+        <hr style="margin: 60px 0; border: 2px solid #e2e8f0;"/>
+
+        <h2 style="text-align: center; color: #714B67; margin-top: 40px; page-break-before: avoid;">Training Complete</h2>
+
+        <div class="success-box" style="margin-top: 30px;">
+            <h3 style="margin-top: 0;">You Now Understand:</h3>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 15px;">
+                <div>
+                    <ul style="font-size: 16px; line-height: 1.8;">
+                        <li>Models and naming conventions</li>
+                        <li>All field types and when to use them</li>
+                        <li>Many2one, One2many, Many2many relationships</li>
+                        <li>store=True vs store=False implications</li>
+                        <li>Computed and Related fields</li>
+                        <li>Why Group By needs stored fields</li>
+                    </ul>
+                </div>
+                <div>
+                    <ul style="font-size: 16px; line-height: 1.8;">
+                        <li>All view types (Form, List, Kanban, etc.)</li>
+                        <li>Widgets and how they differ from fields</li>
+                        <li>Domain filters and operators</li>
+                        <li>Access Rights and Record Rules</li>
+                        <li>Workflow and status management</li>
+                        <li>Odoo Studio basics</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <div class="foundation-box" style="margin-top: 30px;">
+            <h3 style="margin-top: 0;">Next Steps:</h3>
+            <ol style="font-size: 17px; line-height: 2;">
+                <li>Practice identifying field types in your Odoo instance</li>
+                <li>Enable Developer Mode and explore model structures</li>
+                <li>Try creating a simple custom field in Studio</li>
+                <li>Review access rights for your user groups</li>
+                <li>Document customization requirements using proper terminology</li>
+            </ol>
+        </div>
+
+        <div class="info-box" style="margin-top: 30px;">
+            <h4>Additional Resources</h4>
+            <ul>
+                <li><strong>Odoo Documentation:</strong> https://www.odoo.com/documentation</li>
+                <li><strong>Odoo eLearning:</strong> https://www.odoo.com/slides</li>
+                <li><strong>Odoo Forum:</strong> https://www.odoo.com/forum</li>
+                <li><strong>Developer Documentation:</strong> https://www.odoo.com/documentation/17.0/developer.html</li>
+            </ul>
+        </div>
+
+        <p style="text-align: center; font-size: 22px; margin-top: 50px; color: #714B67;">
+            <strong>Ready to Configure Odoo with Confidence!</strong>
+        </p>
+        <p style="text-align: center; font-size: 16px; color: #64748b; margin-bottom: 50px;">
+            <em>Document Version: 1.0 | Compatible with Odoo 17, 18, 19 | December 2024</em>
+        </p>
+
+    </div>
+
+    <!-- JavaScript for Interactive Features -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // ==================== ELEMENTS ====================
+            const progressBar = document.getElementById('progressBar');
+            const backToTop = document.getElementById('backToTop');
+            const sidebar = document.getElementById('sidebar');
+            const sidebarLinks = sidebar.querySelectorAll('nav a');
+            const mobileMenuToggle = document.getElementById('mobileMenuToggle');
+            const sidebarOverlay = document.getElementById('sidebarOverlay');
+            const currentSectionIndicator = document.getElementById('currentSection');
+            const sections = document.querySelectorAll('h2[id]');
+
+            // ==================== PROGRESS BAR ====================
+            function updateProgressBar() {
+                const scrollTop = window.scrollY;
+                const docHeight = document.documentElement.scrollHeight - window.innerHeight;
+                const progress = (scrollTop / docHeight) * 100;
+                progressBar.style.width = progress + '%';
+            }
+
+            // ==================== BACK TO TOP ====================
+            function toggleBackToTop() {
+                if (window.scrollY > 500) {
+                    backToTop.classList.add('visible');
+                } else {
+                    backToTop.classList.remove('visible');
+                }
+            }
+
+            backToTop.addEventListener('click', function() {
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            });
+
+            // ==================== ACTIVE SECTION TRACKING ====================
+            function updateActiveSection() {
+                let currentSection = null;
+                const scrollPos = window.scrollY + 100;
+
+                sections.forEach(section => {
+                    if (section.offsetTop <= scrollPos) {
+                        currentSection = section;
+                    }
+                });
+
+                // Update sidebar active state
+                sidebarLinks.forEach(link => {
+                    link.classList.remove('active');
+                    if (currentSection && link.getAttribute('href') === '#' + currentSection.id) {
+                        link.classList.add('active');
+
+                        // Update current section indicator
+                        const sectionText = link.textContent;
+                        currentSectionIndicator.textContent = sectionText;
+                        currentSectionIndicator.classList.add('visible');
+
+                        // Scroll sidebar to show active link
+                        link.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+                    }
+                });
+
+                // Hide indicator at top
+                if (window.scrollY < 300) {
+                    currentSectionIndicator.classList.remove('visible');
+                }
+            }
+
+            // ==================== MOBILE MENU ====================
+            function toggleMobileMenu() {
+                sidebar.classList.toggle('open');
+                sidebarOverlay.classList.toggle('active');
+            }
+
+            function closeMobileMenu() {
+                sidebar.classList.remove('open');
+                sidebarOverlay.classList.remove('active');
+            }
+
+            mobileMenuToggle.addEventListener('click', toggleMobileMenu);
+            sidebarOverlay.addEventListener('click', closeMobileMenu);
+
+            // Close menu when clicking a link (mobile)
+            sidebarLinks.forEach(link => {
+                link.addEventListener('click', function() {
+                    if (window.innerWidth <= 1024) {
+                        closeMobileMenu();
+                    }
+                });
+            });
+
+            // ==================== SCROLL EVENT LISTENER ====================
+            let ticking = false;
+            window.addEventListener('scroll', function() {
+                if (!ticking) {
+                    window.requestAnimationFrame(function() {
+                        updateProgressBar();
+                        toggleBackToTop();
+                        updateActiveSection();
+                        ticking = false;
+                    });
+                    ticking = true;
+                }
+            });
+
+            // ==================== KEYBOARD NAVIGATION ====================
+            document.addEventListener('keydown', function(e) {
+                // Press 'T' to toggle sidebar on desktop
+                if (e.key === 't' && !e.ctrlKey && !e.metaKey && document.activeElement.tagName !== 'INPUT') {
+                    sidebar.style.display = sidebar.style.display === 'none' ? 'block' : 'none';
+                    document.body.style.paddingLeft = sidebar.style.display === 'none' ? '20px' : '280px';
+                }
+
+                // Press Escape to close mobile menu
+                if (e.key === 'Escape') {
+                    closeMobileMenu();
+                }
+            });
+
+            // ==================== SMOOTH SCROLL FOR SIDEBAR LINKS ====================
+            sidebarLinks.forEach(link => {
+                link.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const targetId = this.getAttribute('href');
+                    const targetElement = document.querySelector(targetId);
+                    if (targetElement) {
+                        targetElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                        // Update URL without jumping
+                        history.pushState(null, null, targetId);
+                    }
+                });
+            });
+
+            // ==================== INITIAL CALLS ====================
+            updateProgressBar();
+            toggleBackToTop();
+            updateActiveSection();
+        });
+    </script>
+</body>
+</html>
