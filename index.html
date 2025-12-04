@@ -3341,6 +3341,116 @@
             </ul>
         </div>
 
+        <h3>Record Rules vs Domains - When to Use What</h3>
+
+        <div class="critical-box">
+            <h4>Understanding the Difference</h4>
+            <p><strong>Record Rules</strong> = Security filtering (WHO can see WHAT records)</p>
+            <p><strong>Domains</strong> = Business filtering (WHICH records to display in a specific context)</p>
+        </div>
+
+        <div class="comparison-grid">
+            <div class="comparison-card">
+                <h4>Record Rules (ir.rule)</h4>
+                <ul>
+                    <li><strong>Purpose:</strong> Security/Access Control</li>
+                    <li><strong>Applied:</strong> Automatically on ALL operations</li>
+                    <li><strong>Scope:</strong> Global - affects entire system</li>
+                    <li><strong>User control:</strong> Cannot be bypassed by users</li>
+                    <li><strong>Performance:</strong> Evaluated on EVERY read/write</li>
+                    <li><strong>Visibility:</strong> Hidden from users</li>
+                </ul>
+            </div>
+            <div class="comparison-card">
+                <h4>Domains (on fields/views)</h4>
+                <ul>
+                    <li><strong>Purpose:</strong> Filter/UX convenience</li>
+                    <li><strong>Applied:</strong> Only in specific context</li>
+                    <li><strong>Scope:</strong> Local - affects only that view/field</li>
+                    <li><strong>User control:</strong> Users can clear/modify filters</li>
+                    <li><strong>Performance:</strong> Evaluated only when needed</li>
+                    <li><strong>Visibility:</strong> Visible as filters</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="mechanism-box">
+            <h4>Use Case Examples</h4>
+            <table>
+                <tr>
+                    <th>Scenario</th>
+                    <th>Use Record Rule</th>
+                    <th>Use Domain</th>
+                </tr>
+                <tr>
+                    <td>Salesperson sees only their own leads</td>
+                    <td>✅ Security requirement</td>
+                    <td>❌</td>
+                </tr>
+                <tr>
+                    <td>Default filter shows only "Open" opportunities</td>
+                    <td>❌</td>
+                    <td>✅ UX convenience</td>
+                </tr>
+                <tr>
+                    <td>Users can only access their own company's data</td>
+                    <td>✅ Multi-company security</td>
+                    <td>❌</td>
+                </tr>
+                <tr>
+                    <td>Product field shows only "Storable" products</td>
+                    <td>❌</td>
+                    <td>✅ Field filtering</td>
+                </tr>
+                <tr>
+                    <td>Warehouse manager sees only their warehouse orders</td>
+                    <td>✅ Data isolation</td>
+                    <td>❌</td>
+                </tr>
+                <tr>
+                    <td>Show only confirmed orders in a dashboard</td>
+                    <td>❌</td>
+                    <td>✅ View filtering</td>
+                </tr>
+                <tr>
+                    <td>HR manager sees only their department's employees</td>
+                    <td>✅ Privacy/Security</td>
+                    <td>❌</td>
+                </tr>
+                <tr>
+                    <td>Customer dropdown shows only active customers</td>
+                    <td>❌</td>
+                    <td>✅ Field domain</td>
+                </tr>
+            </table>
+        </div>
+
+        <div class="warning-box">
+            <h4>Performance Impact</h4>
+            <p><strong>Record Rules</strong> are evaluated on EVERY database operation. Complex record rules = slow system!</p>
+            <ul>
+                <li><strong>Bad:</strong> Record rule with subquery or computed field → evaluated thousands of times per page</li>
+                <li><strong>Good:</strong> Record rule on stored, indexed field → fast lookup</li>
+            </ul>
+            <p><strong>Tip:</strong> If you can achieve the same result with a Domain instead of a Record Rule, prefer the Domain for better performance.</p>
+        </div>
+
+        <div class="analogy-box">
+            <h4>Real-World Analogy</h4>
+            <p><strong>Record Rule</strong> = Building security badge - you can only enter floors your badge allows, no matter which elevator button you press.</p>
+            <p><strong>Domain</strong> = Floor directory sign - shows you where to find what you're looking for, but doesn't stop you from going elsewhere.</p>
+        </div>
+
+        <div class="info-box">
+            <h4>Quick Decision Guide</h4>
+            <ul>
+                <li><strong>Ask: "Should the user NEVER see these records?"</strong> → Use Record Rule</li>
+                <li><strong>Ask: "Is this just a helpful default filter?"</strong> → Use Domain</li>
+                <li><strong>Ask: "Is this a security/privacy requirement?"</strong> → Use Record Rule</li>
+                <li><strong>Ask: "Can a power user need to see all records sometimes?"</strong> → Use Domain</li>
+            </ul>
+        </div>
+
         <!-- ==================== SECTION 17: DECISION MATRIX ==================== -->
         <h2 id="decision">16. Decision Matrix - When to Use What</h2>
 
