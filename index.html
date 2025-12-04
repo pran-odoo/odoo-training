@@ -2764,34 +2764,54 @@
             <h4>Common Company-Dependent Fields in Odoo</h4>
             <table>
                 <tr>
-                    <th>Module</th>
+                    <th>Location</th>
                     <th>Field</th>
                     <th>Why Company-Dependent?</th>
                 </tr>
                 <tr>
-                    <td>Product</td>
-                    <td>Standard Price (Cost)</td>
-                    <td>Different purchase costs per company</td>
+                    <td>Product → General Information</td>
+                    <td>Cost (standard_price)</td>
+                    <td>Each company may have different purchase costs for the same product</td>
                 </tr>
                 <tr>
-                    <td>Product</td>
-                    <td>Income/Expense Accounts</td>
-                    <td>Different chart of accounts per company</td>
+                    <td>Product → Accounting</td>
+                    <td>Income Account / Expense Account</td>
+                    <td>Each company has its own Chart of Accounts</td>
                 </tr>
                 <tr>
-                    <td>Product</td>
+                    <td>Product → Inventory</td>
                     <td>Stock Valuation Account</td>
-                    <td>Different accounting setup per company</td>
+                    <td>Inventory valuation accounts differ per company</td>
                 </tr>
                 <tr>
-                    <td>User</td>
+                    <td>Contact → Sales & Purchase</td>
+                    <td>Customer Payment Terms / Vendor Payment Terms</td>
+                    <td>Different payment agreements per company</td>
+                </tr>
+                <tr>
+                    <td>Contact → Accounting</td>
+                    <td>Account Receivable / Account Payable</td>
+                    <td>Different receivable/payable accounts per Chart of Accounts</td>
+                </tr>
+                <tr>
+                    <td>Contact → Sales & Purchase</td>
+                    <td>Fiscal Position</td>
+                    <td>Tax rules vary by company/country</td>
+                </tr>
+                <tr>
+                    <td>Contact → Sales & Purchase</td>
+                    <td>Pricelist</td>
+                    <td>Different pricing strategies per company</td>
+                </tr>
+                <tr>
+                    <td>User Preferences</td>
                     <td>Default Warehouse</td>
-                    <td>Users may have different default warehouses</td>
+                    <td>Users work with different warehouses per company</td>
                 </tr>
                 <tr>
-                    <td>Partner</td>
-                    <td>Subcontractor Location</td>
-                    <td>Manufacturing locations vary by company</td>
+                    <td>Contact → Purchase</td>
+                    <td>Delivery Method</td>
+                    <td>Shipping carriers vary per company location</td>
                 </tr>
             </table>
         </div>
