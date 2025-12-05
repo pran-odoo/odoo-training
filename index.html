@@ -2526,6 +2526,42 @@
             <p>Domains are written as a list of conditions: <code>[('field', 'operator', 'value')]</code></p>
         </div>
 
+        <h3>How Domains Work</h3>
+
+        <div class="mechanism-box">
+            <h4>Domain Structure</h4>
+            <p>A domain is a <strong>list of conditions</strong> (called "leaves") combined with <strong>logical operators</strong>.</p>
+
+            <p><strong>Each condition is a tuple with 3 parts:</strong></p>
+            <ol>
+                <li><strong>Field name</strong> - The field to filter on (can use dot notation for related fields)</li>
+                <li><strong>Operator</strong> - How to compare (=, !=, in, like, etc.)</li>
+                <li><strong>Value</strong> - What to compare against</li>
+            </ol>
+
+            <p><strong>Example breakdown:</strong></p>
+            <pre><code>[('state', '=', 'draft'), ('amount', '>', 1000)]
+ ↓         ↓       ↓
+ field   operator  value</code></pre>
+
+            <p><strong>Default behavior:</strong> Multiple conditions are combined with AND (all must be true).</p>
+        </div>
+
+        <div class="info-box">
+            <h4>Reading Domains Step by Step</h4>
+            <p><strong>Simple domain:</strong> <code>[('active', '=', True)]</code></p>
+            <p>→ "Show records where active equals True"</p>
+
+            <p><strong>Multiple conditions:</strong> <code>[('state', '=', 'sale'), ('amount', '>', 1000)]</code></p>
+            <p>→ "Show records where state is 'sale' AND amount is greater than 1000"</p>
+
+            <p><strong>OR condition:</strong> <code>['|', ('state', '=', 'draft'), ('state', '=', 'sent')]</code></p>
+            <p>→ "Show records where state is 'draft' OR state is 'sent'"</p>
+
+            <p><strong>Dot notation:</strong> <code>[('partner_id.country_id.code', '=', 'IN')]</code></p>
+            <p>→ "Show records where the partner's country code is 'IN' (India)"</p>
+        </div>
+
         <h3>Domain Operators</h3>
 
         <table>
@@ -2608,6 +2644,24 @@
                 <td>Ends with "ltd"</td>
             </tr>
             <tr>
+                <td><code>not like</code></td>
+                <td>Does not contain (case sensitive)</td>
+                <td><code>[('name', 'not like', 'Test')]</code></td>
+                <td>Name doesn't contain "Test"</td>
+            </tr>
+            <tr>
+                <td><code>not ilike</code></td>
+                <td>Does not contain (case insensitive)</td>
+                <td><code>[('email', 'not ilike', 'spam')]</code></td>
+                <td>Email without "spam"</td>
+            </tr>
+            <tr>
+                <td><code>=?</code></td>
+                <td>Equals if value is set</td>
+                <td><code>[('company_id', '=?', company_id)]</code></td>
+                <td>Filter by company only if company_id has a value</td>
+            </tr>
+            <tr>
                 <td><code>child_of</code></td>
                 <td>Hierarchical child</td>
                 <td><code>[('categ_id', 'child_of', 5)]</code></td>
@@ -2634,42 +2688,180 @@
         </table>
 
         <div class="info-box">
-            <h4>The "any" Operator (Odoo 17+)</h4>
-            <p>The <code>any</code> operator is powerful for filtering through relational fields with complex conditions:</p>
+            <h4>The "any" and "not any" Operators (Odoo 17+)</h4>
+            <p>These operators filter through relational fields with complex conditions:</p>
+
+            <p><strong>The <code>any</code> operator:</strong></p>
             <ul>
-                <li><strong>Purpose:</strong> Filter records where ANY related record matches a subdomain</li>
+                <li>Filter records where <strong>at least one</strong> related record matches a subdomain</li>
                 <li><strong>Syntax:</strong> <code>[('relation_field', 'any', [subdomain])]</code></li>
-                <li><strong>Use case:</strong> Find sales orders where any order line has a specific product type</li>
             </ul>
-            <p><strong>Note:</strong> The traditional dot notation <code>[('order_line.product_id.type', '=', 'service')]</code> is equivalent to using `any` and still works.</p>
+
+            <p><strong>The <code>not any</code> operator:</strong></p>
+            <ul>
+                <li>Filter records where <strong>no</strong> related records match a subdomain</li>
+                <li><strong>Syntax:</strong> <code>[('relation_field', 'not any', [subdomain])]</code></li>
+            </ul>
+
+            <p><strong>Real examples from Odoo source:</strong></p>
+            <pre><code># Find sales orders with service products
+[('order_line', 'any', [('product_id.type', '=', 'service')])]
+
+# Find orders with NO delivered lines
+[('order_line', 'not any', [('qty_delivered', '>', 0)])]
+
+# Find partners with invoices to pay
+[('partner_invoice_id', 'any', [('state', '=', 'posted')])]
+
+# Find events with employee registrations
+[('registration_ids', 'any', [('partner_id.employee', '=', True)])]</code></pre>
+
+            <p><strong>Note:</strong> The traditional dot notation <code>[('order_line.product_id.type', '=', 'service')]</code> is equivalent to using <code>any</code> and still works.</p>
+        </div>
+
+        <div class="warning-box">
+            <h4>The "=?" Conditional Operator</h4>
+            <p>The <code>=?</code> operator is special - it only applies the filter if the value is truthy (not False/None/empty):</p>
+
+            <pre><code># Only filter by company if company_id is set
+domain="[('company_id', '=?', company_id)]"
+
+# This is equivalent to:
+# If company_id is set: [('company_id', '=', company_id)]
+# If company_id is False/empty: [] (no filter, show all)</code></pre>
+
+            <p><strong>Common use case:</strong> Field domains that should filter by company only when a company is selected.</p>
+            <p><strong>Example from Odoo:</strong> <code>domain="[('share', '=', False), ('company_ids', '=?', company_id)]"</code></p>
+        </div>
+
+        <h3>Pattern Matching with Wildcards</h3>
+
+        <div class="mechanism-box">
+            <h4>Using % and _ Wildcards</h4>
+            <p>The <code>=like</code> and <code>=ilike</code> operators use SQL LIKE syntax with wildcards:</p>
+
+            <table>
+                <tr>
+                    <th>Wildcard</th>
+                    <th>Meaning</th>
+                    <th>Example</th>
+                    <th>Matches</th>
+                </tr>
+                <tr>
+                    <td><code>%</code></td>
+                    <td>Any characters (0 or more)</td>
+                    <td><code>[('ref', '=like', 'SO%')]</code></td>
+                    <td>SO001, SO123, SO</td>
+                </tr>
+                <tr>
+                    <td><code>_</code></td>
+                    <td>Exactly one character</td>
+                    <td><code>[('code', '=like', 'A_')]</code></td>
+                    <td>A1, AB, AX (not A, A12)</td>
+                </tr>
+                <tr>
+                    <td><code>%...%</code></td>
+                    <td>Contains anywhere</td>
+                    <td><code>[('name', '=ilike', '%sales%')]</code></td>
+                    <td>Sales Team, Pre-Sales, sales</td>
+                </tr>
+            </table>
+
+            <p><strong>Difference between <code>like</code> and <code>=like</code>:</strong></p>
+            <ul>
+                <li><code>like</code> automatically adds <code>%</code> around your value → <code>%value%</code></li>
+                <li><code>=like</code> uses your value exactly as provided (you control the wildcards)</li>
+            </ul>
+
+            <pre><code># These are equivalent:
+[('name', 'like', 'Sales')]      # → matches '%Sales%'
+[('name', '=like', '%Sales%')]   # → matches '%Sales%'
+
+# But these are different:
+[('ref', '=like', 'SO%')]        # Starts with SO
+[('ref', 'like', 'SO')]          # Contains SO anywhere</code></pre>
         </div>
 
         <h3>Combining Conditions</h3>
 
         <div class="mechanism-box">
-            <h4>AND, OR, NOT Logic</h4>
+            <h4>AND, OR, NOT Logic (Prefix Notation)</h4>
+            <p>Odoo uses <strong>prefix notation</strong> (Polish notation) where the operator comes BEFORE the conditions it applies to.</p>
+
             <table>
                 <tr>
                     <th>Symbol</th>
                     <th>Meaning</th>
-                    <th>Example</th>
+                    <th>How It Works</th>
                 </tr>
                 <tr>
                     <td><code>&</code> (default)</td>
                     <td>AND - both must be true</td>
-                    <td><code>[('state', '=', 'sale'), ('amount', '>', 1000)]</code><br>Confirmed orders over 1000</td>
+                    <td>Applied to the NEXT TWO conditions</td>
                 </tr>
                 <tr>
                     <td><code>|</code></td>
                     <td>OR - either can be true</td>
-                    <td><code>['|', ('state', '=', 'draft'), ('state', '=', 'sent')]</code><br>Draft OR sent orders</td>
+                    <td>Applied to the NEXT TWO conditions</td>
                 </tr>
                 <tr>
                     <td><code>!</code></td>
                     <td>NOT - inverse</td>
-                    <td><code>['!', ('active', '=', True)]</code><br>Inactive records</td>
+                    <td>Applied to the NEXT ONE condition</td>
                 </tr>
             </table>
+        </div>
+
+        <div class="info-box">
+            <h4>Understanding Prefix Notation</h4>
+            <p><strong>Key rule:</strong> The operator applies to the conditions that follow it.</p>
+
+            <p><strong>Simple OR:</strong></p>
+            <pre><code>['|', ('state', '=', 'draft'), ('state', '=', 'sent')]
+  ↓         ↓                        ↓
+ OR    first condition        second condition
+
+→ state is draft OR state is sent</code></pre>
+
+            <p><strong>Chained OR (A OR B OR C):</strong></p>
+            <pre><code>['|', '|', ('a', '=', 1), ('b', '=', 2), ('c', '=', 3)]
+  ↓    ↓       ↓              ↓              ↓
+ OR   OR      A              B              C
+
+→ First | applies to (result of second |) and C
+→ Second | applies to A and B
+→ Final: A OR B OR C</code></pre>
+
+            <p><strong>Mixed AND/OR (A AND (B OR C)):</strong></p>
+            <pre><code>['&', ('a', '=', 1), '|', ('b', '=', 2), ('c', '=', 3)]
+  ↓       ↓          ↓       ↓              ↓
+ AND      A         OR       B              C
+
+→ & applies to A and (result of |)
+→ | applies to B and C
+→ Final: A AND (B OR C)</code></pre>
+        </div>
+
+        <div class="success-box">
+            <h4>Common Domain Patterns</h4>
+            <p><strong>1. Either/Or (A OR B):</strong></p>
+            <pre><code>['|', ('state', '=', 'draft'), ('state', '=', 'sent')]</code></pre>
+
+            <p><strong>2. Multiple OR (A OR B OR C):</strong></p>
+            <pre><code>['|', '|', ('state', '=', 'a'), ('state', '=', 'b'), ('state', '=', 'c')]
+# Easier alternative using 'in':
+[('state', 'in', ['a', 'b', 'c'])]</code></pre>
+
+            <p><strong>3. AND with OR ((A OR B) AND C):</strong></p>
+            <pre><code>['&', '|', ('type', '=', 'a'), ('type', '=', 'b'), ('active', '=', True)]</code></pre>
+
+            <p><strong>4. NOT condition:</strong></p>
+            <pre><code>['!', ('state', '=', 'cancel')]  # state is NOT cancel
+# Easier alternative:
+[('state', '!=', 'cancel')]</code></pre>
+
+            <p><strong>5. Complex: (A AND B) OR (C AND D):</strong></p>
+            <pre><code>['|', '&', ('a', '=', 1), ('b', '=', 2), '&', ('c', '=', 3), ('d', '=', 4)]</code></pre>
         </div>
 
         <h3>Where Domains Are Used</h3>
@@ -2720,6 +2912,115 @@
 
             <p><strong>4. Show only active, confirmed sales orders for current user:</strong></p>
             <p><code>[('active', '=', True), ('state', '=', 'sale'), ('user_id', '=', uid)]</code></p>
+        </div>
+
+        <h3>Writing Domains Step by Step</h3>
+
+        <div class="mechanism-box">
+            <h4>Domain Writing Guide</h4>
+            <p><strong>Step 1:</strong> Write your requirement in plain English</p>
+            <p>Example: "Show customers from Maharashtra or Gujarat who have placed orders over ₹50,000"</p>
+
+            <p><strong>Step 2:</strong> Break it into conditions</p>
+            <ul>
+                <li>Customer type = customer</li>
+                <li>State is Maharashtra OR Gujarat</li>
+                <li>Has orders > 50000</li>
+            </ul>
+
+            <p><strong>Step 3:</strong> Convert to domain syntax</p>
+            <pre><code># Start with simple AND conditions:
+[
+    ('customer_rank', '>', 0),           # is a customer
+    ('state_id.code', 'in', ['MH', 'GJ']),  # Maharashtra or Gujarat
+    ('sale_order_ids.amount_total', '>', 50000)  # orders over 50000
+]</code></pre>
+
+            <p><strong>Step 4:</strong> Add OR logic if needed (using prefix notation)</p>
+            <pre><code># If you needed "Maharashtra customers OR Gujarat vendors":
+['|',
+    '&', ('state_id.code', '=', 'MH'), ('customer_rank', '>', 0),
+    '&', ('state_id.code', '=', 'GJ'), ('supplier_rank', '>', 0)
+]</code></pre>
+        </div>
+
+        <h3>Common Mistakes to Avoid</h3>
+
+        <div class="warning-box">
+            <h4>Domain Pitfalls</h4>
+
+            <p><strong>❌ Wrong: Using = with a list</strong></p>
+            <pre><code>[('state', '=', ['draft', 'sent'])]  # WRONG!</code></pre>
+            <p><strong>✅ Correct: Use 'in' for multiple values</strong></p>
+            <pre><code>[('state', 'in', ['draft', 'sent'])]  # Correct</code></pre>
+
+            <p><strong>❌ Wrong: Forgetting prefix for OR</strong></p>
+            <pre><code>[('state', '=', 'draft'), '|', ('state', '=', 'sent')]  # WRONG!</code></pre>
+            <p><strong>✅ Correct: Put '|' before the conditions</strong></p>
+            <pre><code>['|', ('state', '=', 'draft'), ('state', '=', 'sent')]  # Correct</code></pre>
+
+            <p><strong>❌ Wrong: Using == instead of =</strong></p>
+            <pre><code>[('active', '==', True)]  # Deprecated, still works but not recommended</code></pre>
+            <p><strong>✅ Correct: Use single =</strong></p>
+            <pre><code>[('active', '=', True)]  # Correct</code></pre>
+
+            <p><strong>❌ Wrong: Comparing to None</strong></p>
+            <pre><code>[('partner_id', '=', None)]  # WRONG!</code></pre>
+            <p><strong>✅ Correct: Use False for empty/null</strong></p>
+            <pre><code>[('partner_id', '=', False)]  # Correct - finds records without partner</code></pre>
+
+            <p><strong>❌ Wrong: Uppercase operators</strong></p>
+            <pre><code>[('name', 'ILIKE', 'test')]  # Deprecated since Odoo 19</code></pre>
+            <p><strong>✅ Correct: Always lowercase operators</strong></p>
+            <pre><code>[('name', 'ilike', 'test')]  # Correct</code></pre>
+        </div>
+
+        <div class="info-box">
+            <h4>Domain Variables in XML</h4>
+            <p>When writing domains in XML views, you can use special variables:</p>
+
+            <table>
+                <tr>
+                    <th>Variable</th>
+                    <th>Meaning</th>
+                    <th>Example</th>
+                </tr>
+                <tr>
+                    <td><code>uid</code></td>
+                    <td>Current user's ID</td>
+                    <td><code>[('user_id', '=', uid)]</code></td>
+                </tr>
+                <tr>
+                    <td><code>user</code></td>
+                    <td>Current user record</td>
+                    <td><code>[('company_id', '=', user.company_id.id)]</code></td>
+                </tr>
+                <tr>
+                    <td><code>company_id</code></td>
+                    <td>Current company ID</td>
+                    <td><code>[('company_id', '=', company_id)]</code></td>
+                </tr>
+                <tr>
+                    <td><code>company_ids</code></td>
+                    <td>All allowed company IDs</td>
+                    <td><code>[('company_id', 'in', company_ids)]</code></td>
+                </tr>
+                <tr>
+                    <td><code>context_today()</code></td>
+                    <td>Today's date</td>
+                    <td><code>[('date', '=', context_today())]</code></td>
+                </tr>
+                <tr>
+                    <td><code>self</code></td>
+                    <td>Current field value (in filter_domain)</td>
+                    <td><code>[('categ_id', 'child_of', self)]</code></td>
+                </tr>
+                <tr>
+                    <td><code>parent.field</code></td>
+                    <td>Parent record's field value</td>
+                    <td><code>[('partner_id', '=', parent.partner_id)]</code></td>
+                </tr>
+            </table>
         </div>
 
         <!-- ==================== SECTION 12: FIELD PROPERTIES ==================== -->
