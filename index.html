@@ -3773,34 +3773,34 @@ domain="[('company_id', '=?', company_id)]"
         </table>
 
         <div class="example-box">
-            <h4>Example: Bulk Assign Salesperson</h4>
-            <p><strong>Scenario:</strong> You want to quickly assign multiple leads to a specific salesperson.</p>
+            <h4>Example: Mark Leads as High Priority</h4>
+            <p><strong>Scenario:</strong> Sales manager wants a quick action to mark selected leads as high priority for immediate follow-up.</p>
             <p><strong>Steps:</strong></p>
             <ol>
                 <li>Go to Settings > Technical > Actions > Server Actions</li>
                 <li>Click Create</li>
-                <li>Set <strong>Name:</strong> "Assign to John"</li>
+                <li>Set <strong>Name:</strong> "Mark as High Priority"</li>
                 <li>Set <strong>Model:</strong> CRM Lead (crm.lead)</li>
                 <li>Set <strong>Action Type:</strong> Update Record</li>
-                <li>Set <strong>Field to Update:</strong> Salesperson (user_id)</li>
-                <li>Set <strong>Value:</strong> Select "John Doe" from the list</li>
+                <li>Set <strong>Field to Update:</strong> Priority (priority)</li>
+                <li>Set <strong>Value:</strong> Select "3" (High)</li>
                 <li>Click "Create Contextual Action" to add it to the Actions menu</li>
             </ol>
-            <p><strong>Usage:</strong> Select multiple leads in list view, go to Actions menu, click "Assign to John"</p>
+            <p><strong>Usage:</strong> Select leads requiring urgent attention from list view, go to Actions menu, click "Mark as High Priority"</p>
         </div>
 
         <div class="example-box">
-            <h4>Example: Send Webhook to External System</h4>
-            <p><strong>Scenario:</strong> Notify an external CRM when an opportunity is won.</p>
+            <h4>Example: Sync Won Opportunities to Accounting System</h4>
+            <p><strong>Scenario:</strong> Company uses separate accounting software and needs to sync won opportunities for invoice preparation.</p>
             <p><strong>Steps:</strong></p>
             <ol>
                 <li>Create Server Action on CRM Lead model</li>
                 <li>Set <strong>Action Type:</strong> Send Webhook Notification</li>
-                <li>Set <strong>Webhook URL:</strong> https://external-system.com/api/won-lead</li>
-                <li>Select <strong>Fields to Send:</strong> Name, Partner Name, Expected Revenue, etc.</li>
+                <li>Set <strong>Webhook URL:</strong> https://accounting.yourcompany.com/api/opportunities</li>
+                <li>Select <strong>Fields to Send:</strong> Name, Partner Name, Expected Revenue, Stage, Date Closed</li>
                 <li>The webhook will send JSON payload with selected fields plus _id, _model, and _name</li>
             </ol>
-            <p><strong>Payload example:</strong> <code>{"_id": 42, "_model": "crm.lead", "_name": "Assign to John", "name": "Big Deal Corp", "expected_revenue": 50000}</code></p>
+            <p><strong>Payload example:</strong> <code>{"_id": 42, "_model": "crm.lead", "_name": "Sync Won Opportunities", "name": "Website Redesign Project", "partner_name": "TechCorp Solutions", "expected_revenue": 250000}</code></p>
         </div>
 
         <!-- SCHEDULED ACTIONS -->
@@ -3849,21 +3849,21 @@ domain="[('company_id', '=?', company_id)]"
         </table>
 
         <div class="example-box">
-            <h4>Example: Daily Overdue Task Reminder</h4>
-            <p><strong>Scenario:</strong> Send email reminder every morning for overdue tasks.</p>
+            <h4>Example: Weekly Sales Pipeline Report</h4>
+            <p><strong>Scenario:</strong> Sales manager needs a weekly summary of all open opportunities sent every Monday morning.</p>
             <p><strong>Steps:</strong></p>
             <ol>
                 <li>Go to Settings > Technical > Automation > Scheduled Actions</li>
                 <li>Click Create</li>
-                <li>Set <strong>Name:</strong> "Send Overdue Task Reminders"</li>
-                <li>Set <strong>Model:</strong> Project Task (project.task)</li>
+                <li>Set <strong>Name:</strong> "Weekly Sales Pipeline Summary"</li>
+                <li>Set <strong>Model:</strong> CRM Lead (crm.lead)</li>
                 <li>Set <strong>Interval Number:</strong> 1</li>
-                <li>Set <strong>Interval Type:</strong> Days</li>
-                <li>Set <strong>Next Execution Date:</strong> Tomorrow at 9:00 AM</li>
-                <li>Set <strong>Action Type:</strong> Execute Code (or create a Server Action for email)</li>
-                <li>In the underlying Server Action, configure it to send emails to assigned users</li>
+                <li>Set <strong>Interval Type:</strong> Weeks</li>
+                <li>Set <strong>Next Execution Date:</strong> Next Monday at 9:00 AM</li>
+                <li>Set <strong>Action Type:</strong> Execute Code</li>
+                <li>Write code to search opportunities in "Qualified" or "Proposition" stages and send summary email</li>
             </ol>
-            <p><strong>Behavior:</strong> Every day at 9 AM, the system finds overdue tasks and sends reminder emails.</p>
+            <p><strong>Why use Scheduled Action:</strong> You need custom logic to aggregate data and format a report email - better suited for code than UI configuration.</p>
         </div>
 
         <div class="mechanism-box">
@@ -3991,53 +3991,53 @@ domain="[('company_id', '=?', company_id)]"
         </table>
 
         <div class="example-box">
-            <h4>Example: Auto-Assign Leads by Country</h4>
-            <p><strong>Scenario:</strong> Automatically assign leads to regional salespeople based on country.</p>
+            <h4>Example: Auto-Assign Leads to Sales Team</h4>
+            <p><strong>Scenario:</strong> Manufacturing company wants leads from Maharashtra automatically assigned to Pune sales team, and from Karnataka to Bangalore team.</p>
             <p><strong>Steps:</strong></p>
             <ol>
                 <li>Go to Settings > Technical > Automation > Automated Actions</li>
                 <li>Click Create</li>
-                <li>Set <strong>Automation Rule Name:</strong> "Auto-assign US Leads"</li>
+                <li>Set <strong>Automation Rule Name:</strong> "Assign Maharashtra Leads to Pune Team"</li>
                 <li>Set <strong>Model:</strong> CRM Lead (crm.lead)</li>
                 <li>Set <strong>Trigger:</strong> On Create</li>
-                <li>Set <strong>Apply on:</strong> <code>[('country_id.code', '=', 'US')]</code></li>
+                <li>Set <strong>Apply on:</strong> <code>[('state_id.name', '=', 'Maharashtra')]</code></li>
                 <li>In <strong>Actions</strong> tab, click Add a line</li>
-                <li>Create Server Action: Update Record > Salesperson = "John Doe (US)"</li>
+                <li>Create Server Action: Update Record > Sales Team = "Pune Regional Sales"</li>
                 <li>Save and activate</li>
             </ol>
-            <p><strong>Result:</strong> Every time a lead is created with country = USA, it's automatically assigned to John.</p>
+            <p><strong>Result:</strong> Every time a lead is created from Maharashtra, it's automatically assigned to the Pune regional sales team.</p>
         </div>
 
         <div class="example-box">
-            <h4>Example: Send Reminder Before Deadline</h4>
-            <p><strong>Scenario:</strong> Send email reminder 2 days before task deadline.</p>
+            <h4>Example: Escalate Unattended Support Tickets</h4>
+            <p><strong>Scenario:</strong> Helpdesk tickets created but not assigned to anyone within 2 hours should be escalated to team lead.</p>
             <p><strong>Steps:</strong></p>
             <ol>
-                <li>Create Automated Action on Project Task model</li>
-                <li>Set <strong>Trigger:</strong> Based on date field</li>
-                <li>Set <strong>Trigger Date:</strong> Deadline (date_deadline)</li>
-                <li>Set <strong>Delay:</strong> 2 Days</li>
-                <li>Set <strong>Delay Mode:</strong> Before</li>
-                <li>Set <strong>Apply on:</strong> <code>[('user_id', '!=', False)]</code> (only tasks with assigned user)</li>
-                <li>Create Action to send email to assigned user</li>
+                <li>Create Automated Action on Helpdesk Ticket model</li>
+                <li>Set <strong>Trigger:</strong> After creation</li>
+                <li>Set <strong>Delay:</strong> 2 Hours</li>
+                <li>Set <strong>Apply on:</strong> <code>[('user_id', '=', False)]</code> (no one assigned)</li>
+                <li>In Actions tab, add Server Action: Update Record > Assigned to = "Team Lead"</li>
+                <li>Also add action to send notification email</li>
             </ol>
-            <p><strong>Result:</strong> System checks daily and sends reminders 2 days before any task deadline.</p>
+            <p><strong>How it works:</strong> Odoo's base automation cron (runs hourly by default) checks all tickets created 2+ hours ago that still have no assignee, then applies the action.</p>
+            <p><strong>Note:</strong> Time-based Automated Actions are evaluated by a cron, but you configure them as business rules, not as code.</p>
         </div>
 
         <div class="example-box">
-            <h4>Example: Create Project When Opportunity is Won</h4>
-            <p><strong>Scenario:</strong> Automatically create a project when an opportunity reaches "Won" stage.</p>
+            <h4>Example: Create Implementation Project for Enterprise Deals</h4>
+            <p><strong>Scenario:</strong> Software company wants to automatically create an implementation project whenever an Enterprise plan subscription is confirmed.</p>
             <p><strong>Steps:</strong></p>
             <ol>
-                <li>Create Automated Action on CRM Lead model</li>
-                <li>Set <strong>Trigger:</strong> Stage is set to</li>
-                <li>Set <strong>Trigger Field:</strong> "Won"</li>
-                <li>No domain filter needed (applies to all won opportunities)</li>
+                <li>Create Automated Action on Sale Order model</li>
+                <li>Set <strong>Trigger:</strong> State is set to</li>
+                <li>Set <strong>Trigger Field:</strong> "sale" (confirmed state)</li>
+                <li>Set <strong>Apply on:</strong> <code>[('product_id.name', 'ilike', 'Enterprise')]</code></li>
                 <li>In Actions tab, add Server Action: Create Record</li>
                 <li>Set <strong>Record to Create:</strong> Project (project.project)</li>
-                <li>Map fields: Name = Lead Name, Partner = Lead Partner</li>
+                <li>Map fields: Name = "Implementation - " + Customer Name, Partner = SO Partner, User = SO Salesperson</li>
             </ol>
-            <p><strong>Result:</strong> When any lead moves to "Won" stage, a project is automatically created.</p>
+            <p><strong>Result:</strong> When Enterprise subscription order is confirmed, implementation project is auto-created with customer details and assigned to the salesperson.</p>
         </div>
 
         <div class="mechanism-box">
@@ -4048,8 +4048,41 @@ domain="[('company_id', '=?', company_id)]"
                 <li><strong>Filter evaluation:</strong> "Apply on" domain and "Before Update Domain" evaluated against record</li>
                 <li><strong>Trigger fields:</strong> Optionally specify which fields trigger the rule (on update only)</li>
                 <li><strong>Action sequence:</strong> Multiple server actions execute in order specified</li>
-                <li><strong>Execution context:</strong> Runs in the context of the user who triggered the event</li>
+                <li><strong>Execution context:</strong> Runs in the context of the user who triggered the event (for real-time) or SUPERUSER (for time-based)</li>
             </ul>
+        </div>
+
+        <div class="technical-box">
+            <h4>Important: Time-based Automated Actions vs Scheduled Actions</h4>
+            <p><strong>Confusion Alert:</strong> Time-based Automated Actions ARE executed by a cron, but they're configured differently:</p>
+            <table>
+                <tr>
+                    <th>Aspect</th>
+                    <th>Scheduled Action (ir.cron)</th>
+                    <th>Time-based Automated Action</th>
+                </tr>
+                <tr>
+                    <td><strong>Configuration</strong></td>
+                    <td>You define WHAT code runs and WHEN</td>
+                    <td>You define BUSINESS RULE in UI</td>
+                </tr>
+                <tr>
+                    <td><strong>Processing</strong></td>
+                    <td>Runs your code, you handle logic</td>
+                    <td>System finds matching records, applies action</td>
+                </tr>
+                <tr>
+                    <td><strong>Example</strong></td>
+                    <td>"Run this Python code every Monday at 9 AM"</td>
+                    <td>"2 hours after ticket creation, if unassigned, escalate"</td>
+                </tr>
+                <tr>
+                    <td><strong>When to use</strong></td>
+                    <td>Complex logic, aggregations, custom reports</td>
+                    <td>Simple business rules configurable in UI</td>
+                </tr>
+            </table>
+            <p><strong>Behind the scenes:</strong> A cron named "Base Automation: check model" runs every hour and evaluates all time-based automation rules.</p>
         </div>
 
         <div class="warning-box">
