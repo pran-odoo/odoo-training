@@ -76,7 +76,7 @@
 
         body {
             font-family: var(--font-sans);
-            background: var(--bg-main);
+            background: var(--bg-card); /* Same as container on mobile */
             color: var(--text-primary);
             line-height: 1.7;
             min-height: 100vh;
@@ -84,10 +84,11 @@
             -moz-osx-font-smoothing: grayscale;
         }
 
-        /* Mobile-first: No sidebar padding on small screens */
+        /* Desktop: Show gray background around container */
         @media (min-width: 1024px) {
             body {
                 padding-left: var(--sidebar-width);
+                background: var(--bg-main);
             }
         }
 
@@ -409,36 +410,50 @@
         /* ==================== RESUME READING BANNER ==================== */
         .resume-banner {
             position: fixed;
-            top: 16px;
-            left: 50%;
-            transform: translateX(-50%);
-            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
+            top: 12px;
+            right: 12px;
+            left: 70px; /* Leave space for hamburger menu */
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
             color: white;
-            padding: 12px 24px;
-            border-radius: 30px;
-            font-size: 14px;
-            z-index: 1001;
-            box-shadow: var(--shadow-lg);
+            padding: 10px 16px;
+            border-radius: 12px;
+            font-size: 13px;
+            z-index: 999;
+            box-shadow: var(--shadow-md);
             display: none;
             align-items: center;
-            gap: 12px;
+            gap: 8px;
             cursor: pointer;
             transition: all var(--transition-normal);
-            max-width: calc(100% - 32px);
+        }
+
+        @media (min-width: 768px) {
+            .resume-banner {
+                top: 16px;
+                left: auto;
+                right: auto;
+                left: 50%;
+                transform: translateX(-50%);
+                padding: 12px 24px;
+                border-radius: 30px;
+                font-size: 14px;
+                gap: 12px;
+                max-width: calc(100% - 32px);
+            }
         }
 
         @media (min-width: 1024px) {
             .resume-banner {
                 left: calc(50% + var(--sidebar-width) / 2);
+                z-index: 1001;
             }
         }
 
         .resume-banner:hover {
-            transform: translateX(-50%) scale(1.02);
-            box-shadow: var(--shadow-xl);
+            box-shadow: var(--shadow-lg);
         }
 
-        @media (min-width: 1024px) {
+        @media (min-width: 768px) {
             .resume-banner:hover {
                 transform: translateX(-50%) scale(1.02);
             }
@@ -558,18 +573,23 @@
 
         /* ==================== MAIN CONTAINER ==================== */
         .container {
-            max-width: var(--content-max-width);
             width: 100%;
-            margin: 0 auto;
             background: var(--bg-card);
-            padding: 24px 20px;
-            border-radius: 0;
+            padding: 80px 16px 40px 16px; /* Top padding for mobile menu + resume banner */
             min-height: 100vh;
         }
 
         @media (min-width: 640px) {
             .container {
-                padding: 32px 28px;
+                padding: 80px 24px 40px 24px;
+            }
+        }
+
+        @media (min-width: 768px) {
+            .container {
+                padding: 40px 32px;
+                max-width: var(--content-max-width);
+                margin: 0 auto;
             }
         }
 
