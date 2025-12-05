@@ -1405,132 +1405,63 @@
             </ul>
         </div>
 
-        <h3>Types of Models</h3>
+        <h3>Regular Models vs Wizards</h3>
 
         <div class="mechanism-box">
-            <h4>Three Model Types in Odoo</h4>
-            <p>Odoo has three types of models, each serving a different purpose:</p>
+            <h4>Two Types You'll Encounter</h4>
+            <p>As a functional consultant, you'll mainly work with two types:</p>
 
             <table>
                 <tr>
                     <th>Type</th>
-                    <th>Base Class</th>
-                    <th>Stored in DB?</th>
-                    <th>Purpose</th>
+                    <th>What It Is</th>
+                    <th>Data Storage</th>
+                    <th>Examples</th>
                 </tr>
                 <tr>
                     <td><strong>Regular Model</strong></td>
-                    <td><code>models.Model</code></td>
-                    <td>Yes (permanent)</td>
-                    <td>Normal business data (partners, orders, invoices)</td>
+                    <td>Normal screens with permanent data</td>
+                    <td>Saved forever</td>
+                    <td>Contacts, Sales Orders, Invoices</td>
                 </tr>
                 <tr>
-                    <td><strong>Transient Model</strong></td>
-                    <td><code>models.TransientModel</code></td>
-                    <td>Yes (temporary)</td>
-                    <td>Wizards, popups, temporary data</td>
-                </tr>
-                <tr>
-                    <td><strong>Abstract Model</strong></td>
-                    <td><code>models.AbstractModel</code></td>
-                    <td>No</td>
-                    <td>Shared functionality for other models to inherit</td>
+                    <td><strong>Wizard</strong></td>
+                    <td>Popup dialogs for actions</td>
+                    <td>Temporary (auto-deleted)</td>
+                    <td>"Create Invoice" popup, "Register Payment" popup</td>
                 </tr>
             </table>
         </div>
 
         <div class="info-box">
-            <h4>Transient Models (Wizards)</h4>
-            <p>Transient models are used for <strong>wizards</strong> - popup dialogs that collect input and perform actions.</p>
+            <h4>What Are Wizards?</h4>
+            <p>Wizards are <strong>popup windows</strong> that appear when you click action buttons. They ask for input and then perform an action.</p>
 
-            <p><strong>Key characteristics:</strong></p>
-            <ul>
-                <li>Data is stored in the database but automatically cleaned up (deleted after ~1 hour)</li>
-                <li>Used for multi-step processes, confirmations, and bulk operations</li>
-                <li>Model name often ends with <code>.wizard</code> or starts with action context</li>
-            </ul>
-
-            <p><strong>Common wizard examples:</strong></p>
+            <p><strong>You've already used wizards:</strong></p>
             <table>
                 <tr>
-                    <th>Wizard Model</th>
-                    <th>What It Does</th>
-                    <th>Where You See It</th>
+                    <th>When You Click...</th>
+                    <th>This Wizard Appears</th>
                 </tr>
                 <tr>
-                    <td><code>sale.advance.payment.inv</code></td>
-                    <td>Create invoice from sales order</td>
-                    <td>Sales Order → Create Invoice button</td>
+                    <td>Sales Order → "Create Invoice" button</td>
+                    <td>Popup asking: Regular invoice or Down payment?</td>
                 </tr>
                 <tr>
-                    <td><code>account.payment.register</code></td>
-                    <td>Register payment for invoice</td>
-                    <td>Invoice → Register Payment button</td>
+                    <td>Invoice → "Register Payment" button</td>
+                    <td>Popup asking: Payment amount, journal, date</td>
                 </tr>
                 <tr>
-                    <td><code>stock.immediate.transfer</code></td>
-                    <td>Confirm transfer immediately</td>
-                    <td>Transfer → Validate button</td>
+                    <td>Transfer → "Validate" (with partial qty)</td>
+                    <td>Popup asking: Create backorder or not?</td>
                 </tr>
                 <tr>
-                    <td><code>stock.backorder.confirmation</code></td>
-                    <td>Handle partial delivery</td>
-                    <td>Transfer → Validate (partial qty)</td>
-                </tr>
-                <tr>
-                    <td><code>hr.departure.wizard</code></td>
-                    <td>Process employee departure</td>
-                    <td>Employee → Archive</td>
-                </tr>
-                <tr>
-                    <td><code>base.language.install</code></td>
-                    <td>Install new language</td>
-                    <td>Settings → Languages → Add</td>
+                    <td>Settings → "Add a Language"</td>
+                    <td>Popup asking: Which language to install?</td>
                 </tr>
             </table>
 
-            <p><strong>How to identify a wizard:</strong> When you click a button and a popup appears asking for input before performing an action - that's a transient model.</p>
-        </div>
-
-        <div class="technical-box">
-            <h4>Abstract Models</h4>
-            <p>Abstract models provide shared functionality that other models can inherit. They don't create database tables.</p>
-
-            <p><strong>Common abstract models:</strong></p>
-            <table>
-                <tr>
-                    <th>Abstract Model</th>
-                    <th>What It Provides</th>
-                    <th>Models That Use It</th>
-                </tr>
-                <tr>
-                    <td><code>mail.thread</code></td>
-                    <td>Chatter, followers, messaging</td>
-                    <td>Most business documents</td>
-                </tr>
-                <tr>
-                    <td><code>mail.activity.mixin</code></td>
-                    <td>Scheduled activities</td>
-                    <td>Leads, tasks, invoices</td>
-                </tr>
-                <tr>
-                    <td><code>portal.mixin</code></td>
-                    <td>Portal access link</td>
-                    <td>Quotations, invoices</td>
-                </tr>
-                <tr>
-                    <td><code>utm.mixin</code></td>
-                    <td>Marketing tracking (source, medium, campaign)</td>
-                    <td>Leads, orders</td>
-                </tr>
-                <tr>
-                    <td><code>image.mixin</code></td>
-                    <td>Image handling with resizing</td>
-                    <td>Products, partners</td>
-                </tr>
-            </table>
-
-            <p><strong>Why it matters:</strong> When you see a model has chatter/messaging, it inherited from <code>mail.thread</code>. Understanding mixins helps you know what features are available.</p>
+            <p><strong>Why this matters:</strong> Wizard data is temporary - if you close the popup without clicking the action button, nothing is saved. That's by design!</p>
         </div>
 
         <h3>How to Find a Model Name</h3>
