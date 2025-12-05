@@ -1181,13 +1181,14 @@
             <a href="#access">12. Access Rights</a>
             <a href="#workflows">13. Workflows</a>
             <a href="#actions">14. Actions</a>
-            <a href="#studio">15. Odoo Studio</a>
+            <a href="#integration">15. Integration</a>
+            <a href="#studio">16. Odoo Studio</a>
 
             <div class="sidebar-section-title">Advanced</div>
-            <a href="#performance">16. Performance</a>
-            <a href="#decision">17. Decision Matrix</a>
-            <a href="#practical">18. Examples</a>
-            <a href="#mistakes">19. Common Mistakes</a>
+            <a href="#performance">17. Performance</a>
+            <a href="#decision">18. Decision Matrix</a>
+            <a href="#practical">19. Examples</a>
+            <a href="#mistakes">20. Common Mistakes</a>
         </nav>
     </aside>
 
@@ -1225,11 +1226,12 @@
             <a href="#access">12. Access Rights & Record Rules</a>
             <a href="#workflows">13. Workflows & Status Management</a>
             <a href="#actions">14. Actions: Automation in Odoo</a>
-            <a href="#studio">15. Odoo Studio Basics</a>
-            <a href="#performance">16. Performance Considerations</a>
-            <a href="#decision">17. Decision Matrix - When to Use What</a>
-            <a href="#practical">18. Real-World Business Examples</a>
-            <a href="#mistakes">19. Common Mistakes & How to Avoid Them</a>
+            <a href="#integration">15. Integration Methods: Connecting External Systems</a>
+            <a href="#studio">16. Odoo Studio Basics</a>
+            <a href="#performance">17. Performance Considerations</a>
+            <a href="#decision">18. Decision Matrix - When to Use What</a>
+            <a href="#practical">19. Real-World Business Examples</a>
+            <a href="#mistakes">20. Common Mistakes & How to Avoid Them</a>
         </div>
 
         <!-- ==================== SECTION 1: INTRODUCTION ==================== -->
@@ -4167,8 +4169,420 @@ domain="[('company_id', '=?', company_id)]"
             </ul>
         </div>
 
-        <!-- ==================== SECTION 15: STUDIO ==================== -->
-        <h2 id="studio">15. Odoo Studio Basics <span class="badge badge-enterprise">Enterprise</span></h2>
+        <!-- ==================== SECTION 15: INTEGRATION ==================== -->
+        <h2 id="integration">15. Integration Methods: Connecting Odoo with External Systems</h2>
+
+        <div class="odoo-box">
+            <h4>Four Ways to Exchange Data with Odoo</h4>
+            <p>Odoo provides multiple methods to integrate with external systems. Each serves different needs:</p>
+            <ul>
+                <li><strong>Webhooks (Incoming)</strong> - External systems call Odoo via simple HTTP</li>
+                <li><strong>Webhooks (Outgoing)</strong> - Odoo sends data to external systems via HTTP POST</li>
+                <li><strong>JSON/2 API</strong> - Modern RESTful API for external applications (Odoo 19+)</li>
+                <li><strong>XML-RPC / JSON-RPC</strong> - Legacy RPC protocols (deprecated in Odoo 19)</li>
+            </ul>
+            <p>This section focuses on practical, non-technical explanations so functional consultants can understand when to use each method.</p>
+        </div>
+
+        <!-- INCOMING WEBHOOKS -->
+        <h3>Incoming Webhooks: External Systems → Odoo</h3>
+
+        <div class="technical-box">
+            <h4>What Are Incoming Webhooks?</h4>
+            <p>Incoming webhooks allow <strong>external systems to send data INTO Odoo</strong> by making a simple HTTP request to a special URL.</p>
+            <p><strong>Real-world analogy:</strong> Like a mailbox where external systems can drop messages for Odoo to process.</p>
+            <p><strong>Location:</strong> Settings > Technical > Automation > Automated Actions (Trigger: On webhook)</p>
+        </div>
+
+        <h4>How to Set Up an Incoming Webhook</h4>
+
+        <div class="example-box">
+            <h4>Example: Receive Orders from E-commerce Website</h4>
+            <p><strong>Scenario:</strong> Your Shopify store needs to create sales orders in Odoo when customers purchase online.</p>
+            <p><strong>Steps:</strong></p>
+            <ol>
+                <li>Go to Settings > Technical > Automation > Automated Actions</li>
+                <li>Click Create</li>
+                <li>Set <strong>Automation Rule Name:</strong> "Receive Shopify Orders"</li>
+                <li>Set <strong>Model:</strong> Sale Order (sale.order)</li>
+                <li>Set <strong>Trigger:</strong> On webhook</li>
+                <li>Copy the <strong>Secret URL</strong> generated (looks like: https://yourcompany.odoo.com/web/hook/abc123-def456)</li>
+                <li>In <strong>Target Record</strong> field, write code to parse incoming data: <code>model.create({'partner_id': payload.get('customer_id'), 'amount_total': payload.get('total')})</code></li>
+                <li>Save and share the URL with your Shopify developer</li>
+            </ol>
+            <p><strong>What happens:</strong> When Shopify sends order data to that URL, Odoo automatically creates a sale order.</p>
+        </div>
+
+        <div class="mechanism-box">
+            <h4>How Incoming Webhooks Work</h4>
+            <ul>
+                <li><strong>URL Format:</strong> /web/hook/{unique-uuid}</li>
+                <li><strong>Method:</strong> Accepts both GET and POST requests</li>
+                <li><strong>Authentication:</strong> Public endpoint (no login required) - Security through URL secrecy</li>
+                <li><strong>Data Format:</strong> Receives JSON or form data, accessible via <code>payload</code> variable</li>
+                <li><strong>Processing:</strong> Automated action executes immediately when request arrives</li>
+                <li><strong>Response:</strong> Returns JSON: <code>{"status": "ok"}</code> or <code>{"status": "error"}</code></li>
+            </ul>
+        </div>
+
+        <div class="warning-box">
+            <h4>Incoming Webhooks Best Practices</h4>
+            <ul>
+                <li><strong>Security:</strong> Keep the webhook URL secret - it acts as authentication</li>
+                <li><strong>Regenerate URL:</strong> If compromised, use "Rotate Secret" button to get new URL</li>
+                <li><strong>Validation:</strong> Always validate incoming data before creating records</li>
+                <li><strong>Error handling:</strong> Use try/except in your code to handle invalid data gracefully</li>
+                <li><strong>Logging:</strong> Enable "Log Calls" during testing to debug issues</li>
+                <li><strong>Idempotency:</strong> Check if record already exists to avoid duplicates</li>
+            </ul>
+        </div>
+
+        <!-- OUTGOING WEBHOOKS -->
+        <h3>Outgoing Webhooks: Odoo → External Systems</h3>
+
+        <div class="technical-box">
+            <h4>What Are Outgoing Webhooks?</h4>
+            <p>Outgoing webhooks allow <strong>Odoo to send data to external systems</strong> via HTTP POST when specific events happen.</p>
+            <p><strong>Real-world analogy:</strong> Like Odoo sending a text message to another system saying "Hey, something happened!"</p>
+            <p><strong>Location:</strong> Settings > Technical > Actions > Server Actions (Action Type: Send Webhook Notification)</p>
+        </div>
+
+        <div class="example-box">
+            <h4>Example: Notify Warehouse System of New Orders</h4>
+            <p><strong>Scenario:</strong> When sales order is confirmed in Odoo, automatically notify your warehouse management system to prepare shipment.</p>
+            <p><strong>Steps:</strong></p>
+            <ol>
+                <li>Create Automated Action on Sale Order model</li>
+                <li>Set <strong>Trigger:</strong> State is set to</li>
+                <li>Set <strong>Trigger Field:</strong> "sale" (confirmed)</li>
+                <li>In Actions tab, add Server Action: Send Webhook Notification</li>
+                <li>Set <strong>Webhook URL:</strong> https://warehouse.yourcompany.com/api/incoming-orders</li>
+                <li>Select <strong>Fields to Send:</strong> Order Number, Customer Name, Order Lines, Delivery Address</li>
+            </ol>
+            <p><strong>What happens:</strong> Every time an order is confirmed, Odoo POSTs order data to your warehouse system.</p>
+        </div>
+
+        <div class="mechanism-box">
+            <h4>How Outgoing Webhooks Work</h4>
+            <ul>
+                <li><strong>Method:</strong> HTTP POST with JSON payload</li>
+                <li><strong>Payload Structure:</strong> Always includes _id, _model, _name + your selected fields</li>
+                <li><strong>Authentication:</strong> None by default - receiving system should implement their own auth</li>
+                <li><strong>Retry:</strong> No automatic retry - if external system is down, data is lost</li>
+                <li><strong>Timeout:</strong> Default HTTP timeout applies (typically 60 seconds)</li>
+                <li><strong>Synchronous:</strong> Blocks the Odoo transaction until webhook completes</li>
+            </ul>
+        </div>
+
+        <div class="warning-box">
+            <h4>Outgoing Webhooks Best Practices</h4>
+            <ul>
+                <li><strong>Fast endpoints:</strong> External system should respond quickly to avoid blocking Odoo</li>
+                <li><strong>Error handling:</strong> External endpoint returning error will fail the Odoo transaction</li>
+                <li><strong>Sensitive data:</strong> Don't send password fields or tokens - they bypass group restrictions</li>
+                <li><strong>Testing:</strong> Use webhook testing sites like webhook.site during development</li>
+                <li><strong>Consider async:</strong> For slow external systems, use scheduled action instead</li>
+            </ul>
+        </div>
+
+        <!-- JSON/2 API -->
+        <h3>JSON/2 API: Modern RESTful Integration (Odoo 19+)</h3>
+
+        <div class="technical-box">
+            <h4>What Is JSON/2 API?</h4>
+            <p>JSON/2 is Odoo's <strong>modern, RESTful-style API</strong> for external applications to read and write Odoo data.</p>
+            <p><strong>Real-world analogy:</strong> Like a librarian's desk where external applications can request books (data) or return them.</p>
+            <p><strong>Key advantage:</strong> Uses standard Bearer token authentication instead of username/password on every call.</p>
+        </div>
+
+        <h4>How to Use JSON/2 API</h4>
+
+        <div class="example-box">
+            <h4>Example: Mobile App Reading Product Catalog</h4>
+            <p><strong>Scenario:</strong> Your mobile app needs to display Odoo products with current pricing.</p>
+            <p><strong>API Call:</strong></p>
+            <pre><code>POST /json/2/product.product/search_read
+Authorization: Bearer your-api-key-here
+Content-Type: application/json
+
+{
+  "domain": [["sale_ok", "=", true]],
+  "fields": ["name", "list_price", "image_128"]
+}</code></pre>
+            <p><strong>Response:</strong> Returns array of products with requested fields</p>
+        </div>
+
+        <div class="mechanism-box">
+            <h4>JSON/2 API Characteristics</h4>
+            <ul>
+                <li><strong>Endpoint Format:</strong> /json/2/{model}/{method}</li>
+                <li><strong>Authentication:</strong> Bearer token (API key) in Authorization header</li>
+                <li><strong>Methods Available:</strong> All public Odoo model methods (search, read, write, create, unlink, etc.)</li>
+                <li><strong>Request Format:</strong> JSON POST body with method parameters</li>
+                <li><strong>Response Format:</strong> Clean JSON response (not wrapped in RPC protocol)</li>
+                <li><strong>IDs Parameter:</strong> Pass record IDs as array in request body, not in URL</li>
+            </ul>
+        </div>
+
+        <div class="success-box">
+            <h4>When to Use JSON/2 API</h4>
+            <ul>
+                <li>Building mobile applications that need Odoo data</li>
+                <li>Creating custom dashboards or reporting tools</li>
+                <li>Integrating with modern web applications</li>
+                <li>When you need stateless, token-based authentication</li>
+                <li>Any new integration project (this is the recommended approach)</li>
+            </ul>
+        </div>
+
+        <!-- XML-RPC / JSON-RPC -->
+        <h3>XML-RPC & JSON-RPC: Legacy RPC APIs</h3>
+
+        <div class="warning-box">
+            <h4>Deprecation Notice</h4>
+            <p><strong>Important:</strong> XML-RPC (/xmlrpc, /xmlrpc/2) and JSON-RPC (/jsonrpc) are <strong>deprecated in Odoo 19</strong> and will be removed in Odoo 20.</p>
+            <p>If you're maintaining existing integrations using these protocols, plan migration to JSON/2 API.</p>
+        </div>
+
+        <div class="technical-box">
+            <h4>What Are RPC APIs?</h4>
+            <p>RPC (Remote Procedure Call) APIs allow external applications to call Odoo functions as if they were local.</p>
+            <p><strong>Authentication:</strong> Requires database name, user ID, and password on every call</p>
+            <p><strong>Endpoints:</strong></p>
+            <ul>
+                <li>/xmlrpc/2/common - Version info, authentication</li>
+                <li>/xmlrpc/2/object - Model method calls (execute_kw)</li>
+                <li>/jsonrpc - Similar to XML-RPC but uses JSON format</li>
+            </ul>
+        </div>
+
+        <div class="example-box">
+            <h4>Legacy XML-RPC Call Example (Do Not Use for New Projects)</h4>
+            <pre><code>POST /xmlrpc/2/object
+Content-Type: text/xml
+
+&lt;methodCall&gt;
+  &lt;methodName&gt;execute_kw&lt;/methodName&gt;
+  &lt;params&gt;
+    &lt;param&gt;&lt;value&gt;database_name&lt;/value&gt;&lt;/param&gt;
+    &lt;param&gt;&lt;value&gt;123&lt;/value&gt;&lt;/param&gt;
+    &lt;param&gt;&lt;value&gt;password&lt;/value&gt;&lt;/param&gt;
+    &lt;param&gt;&lt;value&gt;product.product&lt;/value&gt;&lt;/param&gt;
+    &lt;param&gt;&lt;value&gt;search_read&lt;/value&gt;&lt;/param&gt;
+    &lt;param&gt;&lt;value&gt;[[]]&lt;/value&gt;&lt;/param&gt;
+  &lt;/params&gt;
+&lt;/methodCall&gt;</code></pre>
+        </div>
+
+        <!-- COMPARISON -->
+        <h3>Comparison: Which Integration Method to Use?</h3>
+
+        <table>
+            <tr>
+                <th>Feature</th>
+                <th>Incoming Webhook</th>
+                <th>Outgoing Webhook</th>
+                <th>JSON/2 API</th>
+                <th>XML/JSON-RPC</th>
+            </tr>
+            <tr>
+                <td><strong>Direction</strong></td>
+                <td>External → Odoo</td>
+                <td>Odoo → External</td>
+                <td>Bidirectional</td>
+                <td>Bidirectional</td>
+            </tr>
+            <tr>
+                <td><strong>Trigger</strong></td>
+                <td>External system decides</td>
+                <td>Odoo event triggers</td>
+                <td>External app decides</td>
+                <td>External app decides</td>
+            </tr>
+            <tr>
+                <td><strong>Authentication</strong></td>
+                <td>Secret URL</td>
+                <td>None (target system)</td>
+                <td>Bearer token</td>
+                <td>User/password per call</td>
+            </tr>
+            <tr>
+                <td><strong>Complexity</strong></td>
+                <td>Low (just HTTP POST)</td>
+                <td>Low (configure in UI)</td>
+                <td>Medium (REST-like)</td>
+                <td>High (RPC protocol)</td>
+            </tr>
+            <tr>
+                <td><strong>Performance</strong></td>
+                <td>Fast (single record)</td>
+                <td>Blocks transaction</td>
+                <td>Fast, stateless</td>
+                <td>Slower (auth overhead)</td>
+            </tr>
+            <tr>
+                <td><strong>Use UI to configure</strong></td>
+                <td>Yes (Automated Action)</td>
+                <td>Yes (Server Action)</td>
+                <td>No (code required)</td>
+                <td>No (code required)</td>
+            </tr>
+            <tr>
+                <td><strong>Status</strong></td>
+                <td>Supported</td>
+                <td>Supported</td>
+                <td>Recommended (19+)</td>
+                <td>Deprecated</td>
+            </tr>
+        </table>
+
+        <div class="success-box">
+            <h4>Decision Guide: Choose Your Integration Method</h4>
+
+            <p><strong>Use Incoming Webhooks when:</strong></p>
+            <ul>
+                <li>External system initiates data push to Odoo</li>
+                <li>You want to configure in Odoo UI without coding</li>
+                <li>Single records sent occasionally (e-commerce orders, form submissions)</li>
+                <li>Example: Payment gateway sending payment confirmation</li>
+            </ul>
+
+            <p><strong>Use Outgoing Webhooks when:</strong></p>
+            <ul>
+                <li>Odoo needs to notify external system of changes</li>
+                <li>You want to configure in Odoo UI without coding</li>
+                <li>External system has HTTP endpoint ready to receive data</li>
+                <li>Example: Notify shipping provider when order is confirmed</li>
+            </ul>
+
+            <p><strong>Use JSON/2 API when:</strong></p>
+            <ul>
+                <li>Building custom application that needs full Odoo data access</li>
+                <li>Need to search, read, create, update, delete records programmatically</li>
+                <li>Want modern, RESTful-style integration</li>
+                <li>Starting any new integration project in Odoo 19+</li>
+                <li>Example: Mobile app, custom dashboard, middleware integration</li>
+            </ul>
+
+            <p><strong>Avoid XML-RPC/JSON-RPC:</strong></p>
+            <ul>
+                <li>These are deprecated - use JSON/2 API instead</li>
+                <li>Only maintain existing integrations, don't create new ones</li>
+            </ul>
+        </div>
+
+        <h4>Integration Strengths & Weaknesses</h4>
+
+        <div class="comparison-grid">
+            <div class="comparison-card">
+                <h5>Incoming Webhooks</h5>
+                <p><strong>Strengths:</strong></p>
+                <ul>
+                    <li>Simple for external systems (just HTTP POST)</li>
+                    <li>No authentication complexity</li>
+                    <li>Configure entirely in Odoo UI</li>
+                    <li>Fast, real-time processing</li>
+                </ul>
+                <p><strong>Weaknesses:</strong></p>
+                <ul>
+                    <li>Security depends on URL secrecy</li>
+                    <li>Limited to simple create/update operations</li>
+                    <li>No built-in retry mechanism</li>
+                    <li>Requires Python code for complex logic</li>
+                </ul>
+            </div>
+
+            <div class="comparison-card">
+                <h5>Outgoing Webhooks</h5>
+                <p><strong>Strengths:</strong></p>
+                <ul>
+                    <li>Event-driven (automatic on triggers)</li>
+                    <li>Configure in Odoo UI with no coding</li>
+                    <li>Flexible field selection</li>
+                    <li>Good for notifications</li>
+                </ul>
+                <p><strong>Weaknesses:</strong></p>
+                <ul>
+                    <li>Blocks Odoo transaction if slow</li>
+                    <li>No automatic retry on failure</li>
+                    <li>No authentication to target</li>
+                    <li>Can't get response data back</li>
+                </ul>
+            </div>
+
+            <div class="comparison-card">
+                <h5>JSON/2 API</h5>
+                <p><strong>Strengths:</strong></p>
+                <ul>
+                    <li>Modern, RESTful approach</li>
+                    <li>Bearer token authentication</li>
+                    <li>Full CRUD operations</li>
+                    <li>Stateless (scalable)</li>
+                    <li>All Odoo methods available</li>
+                </ul>
+                <p><strong>Weaknesses:</strong></p>
+                <ul>
+                    <li>Requires programming knowledge</li>
+                    <li>Can't configure in Odoo UI</li>
+                    <li>Need to manage API tokens</li>
+                    <li>Pull-based (external app initiates)</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="technical-box">
+            <h4>Common Integration Scenarios</h4>
+            <table>
+                <tr>
+                    <th>Business Need</th>
+                    <th>Recommended Method</th>
+                    <th>Why</th>
+                </tr>
+                <tr>
+                    <td>E-commerce site → Create Odoo orders</td>
+                    <td>Incoming Webhook</td>
+                    <td>E-commerce pushes orders when placed</td>
+                </tr>
+                <tr>
+                    <td>Payment gateway → Update invoice status</td>
+                    <td>Incoming Webhook</td>
+                    <td>Gateway notifies when payment received</td>
+                </tr>
+                <tr>
+                    <td>Odoo order → Notify warehouse system</td>
+                    <td>Outgoing Webhook</td>
+                    <td>Odoo event triggers notification</td>
+                </tr>
+                <tr>
+                    <td>Odoo lead → Push to marketing platform</td>
+                    <td>Outgoing Webhook</td>
+                    <td>Real-time sync on lead creation</td>
+                </tr>
+                <tr>
+                    <td>Mobile app accessing Odoo data</td>
+                    <td>JSON/2 API</td>
+                    <td>App needs full CRUD, not just notifications</td>
+                </tr>
+                <tr>
+                    <td>Custom BI dashboard from Odoo</td>
+                    <td>JSON/2 API</td>
+                    <td>Dashboard pulls data on demand</td>
+                </tr>
+                <tr>
+                    <td>Middleware syncing two systems</td>
+                    <td>JSON/2 API</td>
+                    <td>Full control over sync logic</td>
+                </tr>
+                <tr>
+                    <td>Legacy system using XML-RPC</td>
+                    <td>Migrate to JSON/2</td>
+                    <td>XML-RPC deprecated, plan migration</td>
+                </tr>
+            </table>
+        </div>
+
+        <!-- ==================== SECTION 16: STUDIO ==================== -->
+        <h2 id="studio">16. Odoo Studio Basics <span class="badge badge-enterprise">Enterprise</span></h2>
 
         <div class="odoo-box">
             <h4>What Is Odoo Studio?</h4>
@@ -4229,8 +4643,8 @@ domain="[('company_id', '=?', company_id)]"
             </ul>
         </div>
 
-        <!-- ==================== SECTION 16: PERFORMANCE ==================== -->
-        <h2 id="performance">16. Performance Considerations</h2>
+        <!-- ==================== SECTION 17: PERFORMANCE ==================== -->
+        <h2 id="performance">17. Performance Considerations</h2>
 
         <div class="technical-box">
             <h4>Why Performance Matters</h4>
@@ -4403,8 +4817,8 @@ domain="[('company_id', '=?', company_id)]"
             </ul>
         </div>
 
-        <!-- ==================== SECTION 17: DECISION MATRIX ==================== -->
-        <h2 id="decision">17. Decision Matrix - When to Use What</h2>
+        <!-- ==================== SECTION 18: DECISION MATRIX ==================== -->
+        <h2 id="decision">18. Decision Matrix - When to Use What</h2>
 
         <h3>Field Type Decision</h3>
 
@@ -4545,8 +4959,8 @@ domain="[('company_id', '=?', company_id)]"
             </tr>
         </table>
 
-        <!-- ==================== SECTION 18: PRACTICAL EXAMPLES ==================== -->
-        <h2 id="practical">18. Real-World Business Examples</h2>
+        <!-- ==================== SECTION 19: PRACTICAL EXAMPLES ==================== -->
+        <h2 id="practical">19. Real-World Business Examples</h2>
 
         <h3>Example 1: Hospital Patient Management</h3>
 
@@ -4657,8 +5071,8 @@ domain="[('company_id', '=?', company_id)]"
             <p><strong>Many2one chain:</strong> Work Order → Manufacturing Order → Bill of Materials → Product</p>
         </div>
 
-        <!-- ==================== SECTION 19: COMMON MISTAKES ==================== -->
-        <h2 id="mistakes">19. Common Mistakes & How to Avoid Them</h2>
+        <!-- ==================== SECTION 20: COMMON MISTAKES ==================== -->
+        <h2 id="mistakes">20. Common Mistakes & How to Avoid Them</h2>
 
         <h3>Mistake 1: Using Non-Stored Fields in Group By</h3>
         <div class="comparison-grid">
