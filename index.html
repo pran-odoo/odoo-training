@@ -1405,39 +1405,47 @@
             </ul>
         </div>
 
-        <h3>Regular Models vs Wizards</h3>
+        <h3>Types of Models</h3>
 
         <div class="mechanism-box">
-            <h4>Two Types You'll Encounter</h4>
-            <p>Odoo has two main types of models:</p>
+            <h4>Three Model Types in Odoo</h4>
+            <p>Odoo has three types of models. Each type stores data differently:</p>
 
             <table>
                 <tr>
-                    <th>Type</th>
-                    <th>What It Is</th>
+                    <th>Technical Name</th>
+                    <th>What It Means</th>
                     <th>Data Storage</th>
                     <th>Examples</th>
                 </tr>
                 <tr>
-                    <td><strong>Regular Model</strong></td>
-                    <td>Normal screens with permanent data</td>
-                    <td>Saved forever</td>
-                    <td>Contacts, Sales Orders, Invoices</td>
+                    <td><strong>Model</strong></td>
+                    <td>Regular model - normal screens</td>
+                    <td>Saved permanently in database</td>
+                    <td>Contacts, Sales Orders, Invoices, Products</td>
                 </tr>
                 <tr>
-                    <td><strong>Wizard</strong></td>
-                    <td>Popup dialogs for actions</td>
-                    <td>Temporary (auto-deleted)</td>
+                    <td><strong>TransientModel</strong></td>
+                    <td>Temporary model - used for wizards (popup dialogs)</td>
+                    <td>Auto-deleted after ~1 hour</td>
                     <td>"Create Invoice" popup, "Register Payment" popup</td>
+                </tr>
+                <tr>
+                    <td><strong>AbstractModel</strong></td>
+                    <td>Template model - provides features to other models</td>
+                    <td>Not stored (no database table)</td>
+                    <td>mail.thread (adds chatter to any model)</td>
                 </tr>
             </table>
         </div>
 
         <div class="info-box">
-            <h4>What Are Wizards?</h4>
-            <p>Wizards are <strong>popup windows</strong> that appear when you click action buttons. They ask for input and then perform an action.</p>
+            <h4>TransientModel = Wizards</h4>
+            <p>A <strong>TransientModel</strong> (also called a "wizard") is a popup window that appears when you click action buttons. It collects input and performs an action.</p>
 
-            <p><strong>You've already used wizards:</strong></p>
+            <p><strong>"Transient" means temporary</strong> - the data you enter in these popups is automatically deleted after about an hour. This keeps the database clean.</p>
+
+            <p><strong>Common wizards you use daily:</strong></p>
             <table>
                 <tr>
                     <th>When You Click...</th>
@@ -1461,7 +1469,38 @@
                 </tr>
             </table>
 
-            <p><strong>Why this matters:</strong> Wizard data is temporary - if you close the popup without clicking the action button, nothing is saved. That's by design!</p>
+            <p><strong>Why this matters:</strong> If you close a wizard popup without clicking the action button, nothing is saved. That's normal - wizard data is meant to be temporary!</p>
+        </div>
+
+        <div class="technical-box">
+            <h4>AbstractModel = Shared Features</h4>
+            <p>An <strong>AbstractModel</strong> is like a template that adds features to other models. It doesn't store any data itself.</p>
+
+            <p><strong>Common AbstractModels and what they add:</strong></p>
+            <table>
+                <tr>
+                    <th>AbstractModel</th>
+                    <th>Feature It Adds</th>
+                    <th>Where You See It</th>
+                </tr>
+                <tr>
+                    <td><code>mail.thread</code></td>
+                    <td>Chatter (messages, followers, log)</td>
+                    <td>Bottom of Sales Orders, Invoices, etc.</td>
+                </tr>
+                <tr>
+                    <td><code>mail.activity.mixin</code></td>
+                    <td>Scheduled Activities</td>
+                    <td>"Plan Activity" button on records</td>
+                </tr>
+                <tr>
+                    <td><code>portal.mixin</code></td>
+                    <td>Customer portal access</td>
+                    <td>"Share" or "Preview" button on quotations</td>
+                </tr>
+            </table>
+
+            <p><strong>Why this matters:</strong> When you see chatter on a form, that model uses <code>mail.thread</code>. Understanding this helps you know what features are available on different screens.</p>
         </div>
 
         <h3>How to Find a Model Name</h3>
