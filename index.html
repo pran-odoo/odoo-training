@@ -3711,23 +3711,429 @@ domain="[('company_id', '=?', company_id)]"
             </ul>
         </div>
 
-        <h3>Automated Actions</h3>
+        <!-- ==================== SECTION 14: ACTIONS ==================== -->
+        <h2 id="actions">14. Actions: Automation in Odoo</h2>
+
+        <div class="odoo-box">
+            <h4>Three Types of Actions</h4>
+            <p>Odoo provides three powerful tools for automation, each serving a different purpose:</p>
+            <ul>
+                <li><strong>Server Actions</strong> - Manual actions you trigger from UI (e.g., "Send Email", "Export Data")</li>
+                <li><strong>Scheduled Actions</strong> - Time-based recurring tasks (e.g., "Send reminder emails every morning")</li>
+                <li><strong>Automated Actions</strong> - Event-driven rules (e.g., "When lead is won, create project")</li>
+            </ul>
+            <p>All three are accessible from Settings > Technical menu and can be configured without writing Python code (though code is an option for advanced users).</p>
+        </div>
+
+        <!-- SERVER ACTIONS -->
+        <h3>Server Actions (ir.actions.server)</h3>
+
+        <div class="technical-box">
+            <h4>What Are Server Actions?</h4>
+            <p>Server Actions are <strong>manual actions</strong> that users trigger from the UI. They appear in the "Actions" menu or can be added as buttons.</p>
+            <p><strong>Location:</strong> Settings > Technical > Actions > Server Actions</p>
+            <p><strong>Common use cases:</strong> Bulk updates, sending emails, exporting data, custom workflows</p>
+        </div>
+
+        <h4>Action Types Available</h4>
+
+        <table>
+            <tr>
+                <th>Action Type</th>
+                <th>What It Does</th>
+                <th>Example Use Case</th>
+            </tr>
+            <tr>
+                <td><strong>Update Record</strong></td>
+                <td>Modify field values on one or more records</td>
+                <td>Bulk assign salesperson, Mark tasks as complete</td>
+            </tr>
+            <tr>
+                <td><strong>Create Record</strong></td>
+                <td>Create a new record with predefined values</td>
+                <td>Create task from lead, Generate invoice from order</td>
+            </tr>
+            <tr>
+                <td><strong>Execute Code</strong></td>
+                <td>Run custom Python code (requires technical group)</td>
+                <td>Complex calculations, Custom integrations</td>
+            </tr>
+            <tr>
+                <td><strong>Send Webhook</strong></td>
+                <td>POST data to external URL</td>
+                <td>Notify external system, Trigger third-party automation</td>
+            </tr>
+            <tr>
+                <td><strong>Multi Actions</strong></td>
+                <td>Execute multiple actions in sequence</td>
+                <td>Update record, send email, create task - all at once</td>
+            </tr>
+        </table>
+
+        <div class="example-box">
+            <h4>Example: Bulk Assign Salesperson</h4>
+            <p><strong>Scenario:</strong> You want to quickly assign multiple leads to a specific salesperson.</p>
+            <p><strong>Steps:</strong></p>
+            <ol>
+                <li>Go to Settings > Technical > Actions > Server Actions</li>
+                <li>Click Create</li>
+                <li>Set <strong>Name:</strong> "Assign to John"</li>
+                <li>Set <strong>Model:</strong> CRM Lead (crm.lead)</li>
+                <li>Set <strong>Action Type:</strong> Update Record</li>
+                <li>Set <strong>Field to Update:</strong> Salesperson (user_id)</li>
+                <li>Set <strong>Value:</strong> Select "John Doe" from the list</li>
+                <li>Click "Create Contextual Action" to add it to the Actions menu</li>
+            </ol>
+            <p><strong>Usage:</strong> Select multiple leads in list view, go to Actions menu, click "Assign to John"</p>
+        </div>
+
+        <div class="example-box">
+            <h4>Example: Send Webhook to External System</h4>
+            <p><strong>Scenario:</strong> Notify an external CRM when an opportunity is won.</p>
+            <p><strong>Steps:</strong></p>
+            <ol>
+                <li>Create Server Action on CRM Lead model</li>
+                <li>Set <strong>Action Type:</strong> Send Webhook Notification</li>
+                <li>Set <strong>Webhook URL:</strong> https://external-system.com/api/won-lead</li>
+                <li>Select <strong>Fields to Send:</strong> Name, Partner Name, Expected Revenue, etc.</li>
+                <li>The webhook will send JSON payload with selected fields plus _id, _model, and _name</li>
+            </ol>
+            <p><strong>Payload example:</strong> <code>{"_id": 42, "_model": "crm.lead", "_name": "Assign to John", "name": "Big Deal Corp", "expected_revenue": 50000}</code></p>
+        </div>
+
+        <!-- SCHEDULED ACTIONS -->
+        <h3>Scheduled Actions (ir.cron)</h3>
+
+        <div class="technical-box">
+            <h4>What Are Scheduled Actions?</h4>
+            <p>Scheduled Actions (also called Cron Jobs) are <strong>time-based recurring tasks</strong> that run automatically in the background.</p>
+            <p><strong>Location:</strong> Settings > Technical > Automation > Scheduled Actions</p>
+            <p><strong>Common use cases:</strong> Daily reports, reminder emails, data cleanup, periodic synchronization</p>
+        </div>
+
+        <h4>Scheduling Options</h4>
+
+        <table>
+            <tr>
+                <th>Interval Type</th>
+                <th>Example Settings</th>
+                <th>When It Runs</th>
+            </tr>
+            <tr>
+                <td><strong>Minutes</strong></td>
+                <td>Every 15 minutes</td>
+                <td>High-frequency monitoring tasks</td>
+            </tr>
+            <tr>
+                <td><strong>Hours</strong></td>
+                <td>Every 2 hours</td>
+                <td>Regular sync jobs</td>
+            </tr>
+            <tr>
+                <td><strong>Days</strong></td>
+                <td>Every 1 day at 9:00 AM</td>
+                <td>Daily reports, reminders</td>
+            </tr>
+            <tr>
+                <td><strong>Weeks</strong></td>
+                <td>Every 1 week (Monday)</td>
+                <td>Weekly summaries</td>
+            </tr>
+            <tr>
+                <td><strong>Months</strong></td>
+                <td>Every 1 month</td>
+                <td>Monthly reports, billing</td>
+            </tr>
+        </table>
+
+        <div class="example-box">
+            <h4>Example: Daily Overdue Task Reminder</h4>
+            <p><strong>Scenario:</strong> Send email reminder every morning for overdue tasks.</p>
+            <p><strong>Steps:</strong></p>
+            <ol>
+                <li>Go to Settings > Technical > Automation > Scheduled Actions</li>
+                <li>Click Create</li>
+                <li>Set <strong>Name:</strong> "Send Overdue Task Reminders"</li>
+                <li>Set <strong>Model:</strong> Project Task (project.task)</li>
+                <li>Set <strong>Interval Number:</strong> 1</li>
+                <li>Set <strong>Interval Type:</strong> Days</li>
+                <li>Set <strong>Next Execution Date:</strong> Tomorrow at 9:00 AM</li>
+                <li>Set <strong>Action Type:</strong> Execute Code (or create a Server Action for email)</li>
+                <li>In the underlying Server Action, configure it to send emails to assigned users</li>
+            </ol>
+            <p><strong>Behavior:</strong> Every day at 9 AM, the system finds overdue tasks and sends reminder emails.</p>
+        </div>
+
+        <div class="mechanism-box">
+            <h4>How Scheduled Actions Work</h4>
+            <ul>
+                <li><strong>Execution:</strong> Runs in background worker thread (not in user session)</li>
+                <li><strong>User Context:</strong> Runs as the "Scheduler User" specified in the cron config</li>
+                <li><strong>Next Call:</strong> Automatically calculated based on interval after each run</li>
+                <li><strong>Failure Handling:</strong> After 5+ consecutive failures over 7+ days, cron auto-deactivates</li>
+                <li><strong>Manual Trigger:</strong> Use "Run Manually" button to test immediately</li>
+                <li><strong>Monitoring:</strong> Check Last Execution Date and failure counter in the cron record</li>
+            </ul>
+        </div>
+
+        <div class="warning-box">
+            <h4>Scheduled Actions Best Practices</h4>
+            <ul>
+                <li><strong>Don't over-schedule:</strong> Avoid running tasks more frequently than needed (wastes resources)</li>
+                <li><strong>Use batch processing:</strong> Process multiple records per run instead of one at a time</li>
+                <li><strong>Set appropriate user:</strong> Ensure Scheduler User has necessary permissions</li>
+                <li><strong>Test first:</strong> Use "Run Manually" to test before setting to automatic</li>
+                <li><strong>Monitor failures:</strong> Check failure count regularly; investigate if growing</li>
+                <li><strong>Consider timezone:</strong> Next Execution Date is in UTC; plan accordingly</li>
+            </ul>
+        </div>
+
+        <!-- AUTOMATED ACTIONS -->
+        <h3>Automated Actions (base.automation)</h3>
+
+        <div class="technical-box">
+            <h4>What Are Automated Actions?</h4>
+            <p>Automated Actions (also called Automation Rules) are <strong>event-driven rules</strong> that trigger automatically when specific conditions are met.</p>
+            <p><strong>Location:</strong> Settings > Technical > Automation > Automated Actions</p>
+            <p><strong>Common use cases:</strong> Auto-assign records, send notifications, create follow-up tasks, workflow automation</p>
+        </div>
+
+        <h4>Trigger Types</h4>
+
+        <table>
+            <tr>
+                <th>Trigger</th>
+                <th>When It Runs</th>
+                <th>Example Use Case</th>
+            </tr>
+            <tr>
+                <td><strong>On Create</strong></td>
+                <td>When new record is created</td>
+                <td>Assign new leads to salesperson, Send welcome email</td>
+            </tr>
+            <tr>
+                <td><strong>On Update</strong></td>
+                <td>When record is modified</td>
+                <td>Log changes, Notify manager of updates</td>
+            </tr>
+            <tr>
+                <td><strong>On Create and Edit</strong></td>
+                <td>Both creation and updates</td>
+                <td>Validate data, Auto-fill related fields</td>
+            </tr>
+            <tr>
+                <td><strong>On Deletion</strong></td>
+                <td>Before record is deleted</td>
+                <td>Archive instead of delete, Send notification</td>
+            </tr>
+            <tr>
+                <td><strong>Stage is set to</strong></td>
+                <td>When specific stage is reached</td>
+                <td>When lead is "Qualified", create opportunity</td>
+            </tr>
+            <tr>
+                <td><strong>User is set</strong></td>
+                <td>When responsible user is assigned</td>
+                <td>Send notification to newly assigned user</td>
+            </tr>
+            <tr>
+                <td><strong>Tag is added</strong></td>
+                <td>When specific tag is added</td>
+                <td>When "urgent" tag added, notify manager</td>
+            </tr>
+            <tr>
+                <td><strong>State is set to</strong></td>
+                <td>When state field changes to value</td>
+                <td>When order is "confirmed", create invoice</td>
+            </tr>
+            <tr>
+                <td><strong>Priority is set to</strong></td>
+                <td>When priority changes</td>
+                <td>When priority is "High", escalate to manager</td>
+            </tr>
+            <tr>
+                <td><strong>On archived/unarchived</strong></td>
+                <td>When active field changes</td>
+                <td>Log archival, Clean up related records</td>
+            </tr>
+            <tr>
+                <td><strong>Based on date field</strong></td>
+                <td>X days before/after a date field</td>
+                <td>Send reminder 3 days before deadline</td>
+            </tr>
+            <tr>
+                <td><strong>After creation</strong></td>
+                <td>X time after record created</td>
+                <td>Send follow-up email 7 days after lead creation</td>
+            </tr>
+            <tr>
+                <td><strong>After last update</strong></td>
+                <td>X time after last modification</td>
+                <td>Archive inactive leads after 90 days of no updates</td>
+            </tr>
+            <tr>
+                <td><strong>On incoming message</strong></td>
+                <td>When email/message received</td>
+                <td>Auto-reply to customer emails</td>
+            </tr>
+            <tr>
+                <td><strong>On outgoing message</strong></td>
+                <td>When message is sent</td>
+                <td>Log communication, Update status</td>
+            </tr>
+            <tr>
+                <td><strong>On webhook</strong></td>
+                <td>When external HTTP request received</td>
+                <td>Receive data from third-party system</td>
+            </tr>
+        </table>
+
+        <div class="example-box">
+            <h4>Example: Auto-Assign Leads by Country</h4>
+            <p><strong>Scenario:</strong> Automatically assign leads to regional salespeople based on country.</p>
+            <p><strong>Steps:</strong></p>
+            <ol>
+                <li>Go to Settings > Technical > Automation > Automated Actions</li>
+                <li>Click Create</li>
+                <li>Set <strong>Automation Rule Name:</strong> "Auto-assign US Leads"</li>
+                <li>Set <strong>Model:</strong> CRM Lead (crm.lead)</li>
+                <li>Set <strong>Trigger:</strong> On Create</li>
+                <li>Set <strong>Apply on:</strong> <code>[('country_id.code', '=', 'US')]</code></li>
+                <li>In <strong>Actions</strong> tab, click Add a line</li>
+                <li>Create Server Action: Update Record > Salesperson = "John Doe (US)"</li>
+                <li>Save and activate</li>
+            </ol>
+            <p><strong>Result:</strong> Every time a lead is created with country = USA, it's automatically assigned to John.</p>
+        </div>
+
+        <div class="example-box">
+            <h4>Example: Send Reminder Before Deadline</h4>
+            <p><strong>Scenario:</strong> Send email reminder 2 days before task deadline.</p>
+            <p><strong>Steps:</strong></p>
+            <ol>
+                <li>Create Automated Action on Project Task model</li>
+                <li>Set <strong>Trigger:</strong> Based on date field</li>
+                <li>Set <strong>Trigger Date:</strong> Deadline (date_deadline)</li>
+                <li>Set <strong>Delay:</strong> 2 Days</li>
+                <li>Set <strong>Delay Mode:</strong> Before</li>
+                <li>Set <strong>Apply on:</strong> <code>[('user_id', '!=', False)]</code> (only tasks with assigned user)</li>
+                <li>Create Action to send email to assigned user</li>
+            </ol>
+            <p><strong>Result:</strong> System checks daily and sends reminders 2 days before any task deadline.</p>
+        </div>
+
+        <div class="example-box">
+            <h4>Example: Create Project When Opportunity is Won</h4>
+            <p><strong>Scenario:</strong> Automatically create a project when an opportunity reaches "Won" stage.</p>
+            <p><strong>Steps:</strong></p>
+            <ol>
+                <li>Create Automated Action on CRM Lead model</li>
+                <li>Set <strong>Trigger:</strong> Stage is set to</li>
+                <li>Set <strong>Trigger Field:</strong> "Won"</li>
+                <li>No domain filter needed (applies to all won opportunities)</li>
+                <li>In Actions tab, add Server Action: Create Record</li>
+                <li>Set <strong>Record to Create:</strong> Project (project.project)</li>
+                <li>Map fields: Name = Lead Name, Partner = Lead Partner</li>
+            </ol>
+            <p><strong>Result:</strong> When any lead moves to "Won" stage, a project is automatically created.</p>
+        </div>
+
+        <div class="mechanism-box">
+            <h4>How Automated Actions Work</h4>
+            <ul>
+                <li><strong>Real-time triggers:</strong> On Create, On Update, Stage/User/Tag changes run immediately during save</li>
+                <li><strong>Time-based triggers:</strong> Date-based and After creation/update checked by scheduled cron (hourly by default)</li>
+                <li><strong>Filter evaluation:</strong> "Apply on" domain and "Before Update Domain" evaluated against record</li>
+                <li><strong>Trigger fields:</strong> Optionally specify which fields trigger the rule (on update only)</li>
+                <li><strong>Action sequence:</strong> Multiple server actions execute in order specified</li>
+                <li><strong>Execution context:</strong> Runs in the context of the user who triggered the event</li>
+            </ul>
+        </div>
+
+        <div class="warning-box">
+            <h4>Automated Actions Best Practices</h4>
+            <ul>
+                <li><strong>Use precise domains:</strong> Don't trigger on all records; filter to only relevant ones</li>
+                <li><strong>Avoid infinite loops:</strong> Be careful when automation updates fields that trigger other automations</li>
+                <li><strong>Specify trigger fields:</strong> For "On Update", list specific fields to avoid unnecessary triggers</li>
+                <li><strong>Test thoroughly:</strong> Use test records to verify automation works as expected</li>
+                <li><strong>Keep it simple:</strong> Complex logic is better in custom code than chained automations</li>
+                <li><strong>Document your rules:</strong> Use Description field to explain purpose and logic</li>
+                <li><strong>Monitor performance:</strong> Too many automation rules can slow down saves</li>
+            </ul>
+        </div>
+
+        <h4>Comparing the Three Action Types</h4>
+
+        <table>
+            <tr>
+                <th>Feature</th>
+                <th>Server Actions</th>
+                <th>Scheduled Actions</th>
+                <th>Automated Actions</th>
+            </tr>
+            <tr>
+                <td><strong>Trigger</strong></td>
+                <td>Manual (user clicks)</td>
+                <td>Time-based (recurring)</td>
+                <td>Event-driven (automatic)</td>
+            </tr>
+            <tr>
+                <td><strong>When to use</strong></td>
+                <td>User needs control over when action runs</td>
+                <td>Regular maintenance, reports, cleanups</td>
+                <td>Respond to data changes immediately</td>
+            </tr>
+            <tr>
+                <td><strong>Runs on</strong></td>
+                <td>Selected records</td>
+                <td>All matching records (batch)</td>
+                <td>Individual record (on trigger)</td>
+            </tr>
+            <tr>
+                <td><strong>User context</strong></td>
+                <td>Current user</td>
+                <td>Scheduler user</td>
+                <td>User who triggered event</td>
+            </tr>
+            <tr>
+                <td><strong>Visibility</strong></td>
+                <td>Actions menu, buttons</td>
+                <td>Background (invisible to users)</td>
+                <td>Background (invisible to users)</td>
+            </tr>
+            <tr>
+                <td><strong>Performance impact</strong></td>
+                <td>Only when manually run</td>
+                <td>Periodic (controllable)</td>
+                <td>Every matching record change</td>
+            </tr>
+        </table>
 
         <div class="success-box">
-            <h4>Automate Without Code</h4>
-            <p>Odoo allows creating automated actions that trigger on:</p>
+            <h4>Choosing the Right Action Type</h4>
+            <p><strong>Use Server Actions when:</strong></p>
             <ul>
-                <li><strong>On Creation</strong> - When record is created</li>
-                <li><strong>On Update</strong> - When specific fields change</li>
-                <li><strong>On Creation & Update</strong> - Both</li>
-                <li><strong>On Deletion</strong> - When record is deleted</li>
-                <li><strong>Based on Time</strong> - Scheduled (e.g., daily at 9 AM)</li>
+                <li>Users need to decide when to run the action</li>
+                <li>Action should work on multiple selected records</li>
+                <li>Action is not something that should happen automatically</li>
             </ul>
-            <p><strong>Location:</strong> Settings > Technical > Automation > Automated Actions</p>
+            <p><strong>Use Scheduled Actions when:</strong></p>
+            <ul>
+                <li>Task needs to run at specific time intervals</li>
+                <li>Processing data in batches is more efficient</li>
+                <li>Action is maintenance-related (cleanup, sync, reports)</li>
+            </ul>
+            <p><strong>Use Automated Actions when:</strong></p>
+            <ul>
+                <li>Response to changes should be immediate</li>
+                <li>Business rule should apply consistently to all records</li>
+                <li>Workflow needs to progress automatically</li>
+            </ul>
         </div>
 
         <!-- ==================== SECTION 15: STUDIO ==================== -->
-        <h2 id="studio">14. Odoo Studio Basics <span class="badge badge-enterprise">Enterprise</span></h2>
+        <h2 id="studio">15. Odoo Studio Basics <span class="badge badge-enterprise">Enterprise</span></h2>
 
         <div class="odoo-box">
             <h4>What Is Odoo Studio?</h4>
@@ -3789,7 +4195,7 @@ domain="[('company_id', '=?', company_id)]"
         </div>
 
         <!-- ==================== SECTION 16: PERFORMANCE ==================== -->
-        <h2 id="performance">15. Performance Considerations</h2>
+        <h2 id="performance">16. Performance Considerations</h2>
 
         <div class="technical-box">
             <h4>Why Performance Matters</h4>
