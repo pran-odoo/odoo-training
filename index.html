@@ -832,6 +832,35 @@
         .code-string { color: #a5f3fc; }
         .code-function { color: #fbbf24; }
 
+        /* Pre blocks inside colored boxes - ensure dark background */
+        .critical-box pre,
+        .technical-box pre,
+        .foundation-box pre,
+        .success-box pre,
+        .mechanism-box pre,
+        .analogy-box pre,
+        .warning-box pre,
+        .info-box pre,
+        .odoo-box pre,
+        .example-box pre {
+            background: #1e293b !important;
+            color: #e2e8f0 !important;
+        }
+
+        .critical-box pre code,
+        .technical-box pre code,
+        .foundation-box pre code,
+        .success-box pre code,
+        .mechanism-box pre code,
+        .analogy-box pre code,
+        .warning-box pre code,
+        .info-box pre code,
+        .odoo-box pre code,
+        .example-box pre code {
+            background: transparent !important;
+            color: inherit !important;
+        }
+
         /* Inline code in colored boxes - ensure visibility */
         .critical-box code,
         .warning-box code {
@@ -3405,9 +3434,9 @@
             </ol>
 
             <p><strong>Example breakdown:</strong></p>
-            <pre><code>[('state', '=', 'draft'), ('amount', '>', 1000)]
- ↓         ↓       ↓
- field   operator  value</code></pre>
+            <pre style="background: #1e293b; color: #e2e8f0; padding: 16px; border-radius: 8px;"><code style="background: transparent; color: inherit;">[('state', '=', 'draft'), ('amount', '>', 1000)]
+ <span style="color: #fbbf24;">↓</span>         <span style="color: #fbbf24;">↓</span>       <span style="color: #fbbf24;">↓</span>
+ <span style="color: #60a5fa;">field</span>   <span style="color: #34d399;">operator</span>  <span style="color: #f472b6;">value</span></code></pre>
 
             <p><strong>Default behavior:</strong> Multiple conditions are combined with AND (all must be true).</p>
         </div>
@@ -3682,29 +3711,29 @@ domain="[('company_id', '=?', company_id)]"
             <p><strong>Key rule:</strong> The operator applies to the conditions that follow it.</p>
 
             <p><strong>Simple OR:</strong></p>
-            <pre><code>['|', ('state', '=', 'draft'), ('state', '=', 'sent')]
-  ↓         ↓                        ↓
- OR    first condition        second condition
+            <pre style="background: #1e293b; color: #e2e8f0; padding: 16px; border-radius: 8px;"><code style="background: transparent; color: inherit;">['|', ('state', '=', 'draft'), ('state', '=', 'sent')]
+  <span style="color: #fbbf24;">↓</span>         <span style="color: #fbbf24;">↓</span>                        <span style="color: #fbbf24;">↓</span>
+ <span style="color: #f472b6;">OR</span>    <span style="color: #60a5fa;">first condition</span>        <span style="color: #60a5fa;">second condition</span>
 
-→ state is draft OR state is sent</code></pre>
+<span style="color: #34d399;">→ state is draft OR state is sent</span></code></pre>
 
             <p><strong>Chained OR (A OR B OR C):</strong></p>
-            <pre><code>['|', '|', ('a', '=', 1), ('b', '=', 2), ('c', '=', 3)]
-  ↓    ↓       ↓              ↓              ↓
- OR   OR      A              B              C
+            <pre style="background: #1e293b; color: #e2e8f0; padding: 16px; border-radius: 8px;"><code style="background: transparent; color: inherit;">['|', '|', ('a', '=', 1), ('b', '=', 2), ('c', '=', 3)]
+  <span style="color: #fbbf24;">↓</span>    <span style="color: #fbbf24;">↓</span>       <span style="color: #fbbf24;">↓</span>              <span style="color: #fbbf24;">↓</span>              <span style="color: #fbbf24;">↓</span>
+ <span style="color: #f472b6;">OR</span>   <span style="color: #f472b6;">OR</span>      <span style="color: #60a5fa;">A</span>              <span style="color: #60a5fa;">B</span>              <span style="color: #60a5fa;">C</span>
 
-→ First | applies to (result of second |) and C
-→ Second | applies to A and B
-→ Final: A OR B OR C</code></pre>
+<span style="color: #94a3b8;">→ First | applies to (result of second |) and C</span>
+<span style="color: #94a3b8;">→ Second | applies to A and B</span>
+<span style="color: #34d399;">→ Final: A OR B OR C</span></code></pre>
 
             <p><strong>Mixed AND/OR (A AND (B OR C)):</strong></p>
-            <pre><code>['&', ('a', '=', 1), '|', ('b', '=', 2), ('c', '=', 3)]
-  ↓       ↓          ↓       ↓              ↓
- AND      A         OR       B              C
+            <pre style="background: #1e293b; color: #e2e8f0; padding: 16px; border-radius: 8px;"><code style="background: transparent; color: inherit;">['&', ('a', '=', 1), '|', ('b', '=', 2), ('c', '=', 3)]
+  <span style="color: #fbbf24;">↓</span>       <span style="color: #fbbf24;">↓</span>          <span style="color: #fbbf24;">↓</span>       <span style="color: #fbbf24;">↓</span>              <span style="color: #fbbf24;">↓</span>
+ <span style="color: #a78bfa;">AND</span>      <span style="color: #60a5fa;">A</span>         <span style="color: #f472b6;">OR</span>       <span style="color: #60a5fa;">B</span>              <span style="color: #60a5fa;">C</span>
 
-→ & applies to A and (result of |)
-→ | applies to B and C
-→ Final: A AND (B OR C)</code></pre>
+<span style="color: #94a3b8;">→ & applies to A and (result of |)</span>
+<span style="color: #94a3b8;">→ | applies to B and C</span>
+<span style="color: #34d399;">→ Final: A AND (B OR C)</span></code></pre>
         </div>
 
         <div class="success-box">
