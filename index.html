@@ -92,6 +92,46 @@
             }
         }
 
+        /* ==================== CUSTOM SCROLLBAR ==================== */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: rgba(113, 75, 103, 0.4);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(113, 75, 103, 0.6);
+        }
+
+        /* Sidebar scrollbar - lighter for dark background */
+        .sidebar::-webkit-scrollbar-thumb,
+        .sidebar nav::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .sidebar::-webkit-scrollbar-thumb:hover,
+        .sidebar nav::-webkit-scrollbar-thumb:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        /* Firefox scrollbar */
+        * {
+            scrollbar-width: thin;
+            scrollbar-color: rgba(113, 75, 103, 0.4) transparent;
+        }
+
+        .sidebar, .sidebar nav {
+            scrollbar-color: rgba(255, 255, 255, 0.2) transparent;
+        }
+
         /* ==================== SIDEBAR NAVIGATION ==================== */
         .sidebar {
             position: fixed;
@@ -101,8 +141,7 @@
             height: 100vh;
             height: 100dvh; /* Dynamic viewport height for mobile */
             background: var(--bg-sidebar);
-            overflow-y: auto;
-            overflow-x: hidden;
+            overflow: hidden; /* Don't scroll the whole sidebar */
             z-index: 1000;
             display: flex;
             flex-direction: column;
@@ -508,9 +547,14 @@
         }
 
         .sidebar nav {
-            padding: 12px 16px;
+            padding: 12px 16px 24px 16px;
             flex: 1;
             overflow-y: auto;
+            overflow-x: hidden;
+            /* Smooth scrolling for keyboard navigation */
+            scroll-behavior: smooth;
+            /* Padding at bottom for last items */
+            padding-bottom: 100px;
         }
 
         .sidebar a {
@@ -787,6 +831,56 @@
         .code-keyword { color: #f472b6; }
         .code-string { color: #a5f3fc; }
         .code-function { color: #fbbf24; }
+
+        /* Inline code in colored boxes - ensure visibility */
+        .critical-box code,
+        .warning-box code {
+            background: rgba(220, 38, 38, 0.15);
+            color: #991b1b;
+        }
+
+        .technical-box code,
+        .info-box code {
+            background: rgba(37, 99, 235, 0.15);
+            color: #1d4ed8;
+        }
+
+        .foundation-box code {
+            background: rgba(217, 119, 6, 0.15);
+            color: #92400e;
+        }
+
+        .success-box code,
+        .example-box code {
+            background: rgba(16, 185, 129, 0.15);
+            color: #065f46;
+        }
+
+        .mechanism-box code {
+            background: rgba(79, 70, 229, 0.15);
+            color: #3730a3;
+        }
+
+        .analogy-box code,
+        .odoo-box code {
+            background: rgba(236, 72, 153, 0.15);
+            color: #9d174d;
+        }
+
+        /* Dark mode: lighten code in boxes */
+        body.dark-mode .critical-box code,
+        body.dark-mode .warning-box code,
+        body.dark-mode .technical-box code,
+        body.dark-mode .info-box code,
+        body.dark-mode .foundation-box code,
+        body.dark-mode .success-box code,
+        body.dark-mode .example-box code,
+        body.dark-mode .mechanism-box code,
+        body.dark-mode .analogy-box code,
+        body.dark-mode .odoo-box code {
+            background: rgba(255, 255, 255, 0.15);
+            color: #f0abfc;
+        }
 
         /* ==================== TABLES ==================== */
         .table-wrapper {
@@ -1207,6 +1301,44 @@
                 }
             }
         }
+
+        /* ==================== ACCESSIBILITY - FOCUS STATES ==================== */
+        /* Visible focus for keyboard navigation */
+        a:focus-visible,
+        button:focus-visible,
+        input:focus-visible,
+        .sidebar a:focus-visible,
+        .toc a:focus-visible {
+            outline: 2px solid var(--primary);
+            outline-offset: 2px;
+            border-radius: 4px;
+        }
+
+        /* Remove default outline when not using keyboard */
+        a:focus:not(:focus-visible),
+        button:focus:not(:focus-visible),
+        input:focus:not(:focus-visible) {
+            outline: none;
+        }
+
+        /* Skip to content link for screen readers */
+        .skip-link {
+            position: absolute;
+            top: -40px;
+            left: 0;
+            background: var(--primary);
+            color: white;
+            padding: 8px 16px;
+            z-index: 10000;
+            text-decoration: none;
+            font-weight: 600;
+            border-radius: 0 0 8px 0;
+        }
+
+        .skip-link:focus {
+            top: 0;
+        }
+
         /* ==================== MOBILE MENU TOGGLE BUTTON ==================== */
         .mobile-menu-toggle {
             display: flex;
@@ -1234,6 +1366,11 @@
 
         .mobile-menu-toggle:active {
             transform: scale(0.95);
+        }
+
+        .mobile-menu-toggle:focus-visible {
+            outline: 2px solid white;
+            outline-offset: 2px;
         }
 
         .mobile-menu-toggle span {
@@ -1299,6 +1436,9 @@
     </style>
 </head>
 <body>
+    <!-- Skip Link for Accessibility -->
+    <a href="#intro" class="skip-link">Skip to main content</a>
+
     <!-- Progress Bar -->
     <div class="progress-container">
         <div class="progress-bar" id="progressBar"></div>
