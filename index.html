@@ -6152,10 +6152,16 @@ Content-Type: text/xml
             </thead>
             <tbody>
                 <tr>
-                    <td><strong>Field must be unique</strong></td>
+                    <td><strong>Field must be globally unique</strong></td>
                     <td style="color: #10b981; text-align: center;">✓</td>
                     <td style="color: #ef4444; text-align: center;">✗</td>
-                    <td>Database handles uniqueness efficiently</td>
+                    <td>Simple unique constraint, database-native</td>
+                </tr>
+                <tr>
+                    <td><strong>Unique with conditions</strong><br><span style="font-size: 12px; color: #64748b;">(per company, per parent, only when active)</span></td>
+                    <td style="color: #ef4444; text-align: center;">✗</td>
+                    <td style="color: #10b981; text-align: center;">✓</td>
+                    <td>Conditional uniqueness needs Python logic</td>
                 </tr>
                 <tr>
                     <td><strong>Value must be positive</strong></td>
