@@ -1387,6 +1387,9 @@
             <a href="#decision">18. Decision Matrix</a>
             <a href="#practical">19. Examples</a>
             <a href="#odoosh">20. Odoo.sh</a>
+            <a href="#chatter">21. Chatter & Activities</a>
+            <a href="#emails">22. Email</a>
+            <a href="#context">23. Context</a>
         </nav>
     </aside>
 
@@ -1430,6 +1433,9 @@
             <a href="#decision">18. Decision Matrix - When to Use What</a>
             <a href="#practical">19. Real-World Business Examples</a>
             <a href="#odoosh">20. Odoo.sh - The Cloud Platform</a>
+            <a href="#chatter">21. Chatter, Followers & Activities</a>
+            <a href="#emails">22. Email in Odoo</a>
+            <a href="#context">23. Context - The Hidden Parameter</a>
         </div>
 
         <!-- ==================== SECTION 1: INTRODUCTION ==================== -->
@@ -5437,13 +5443,78 @@ Content-Type: text/xml
         <h3>The Deployment Flow</h3>
         <div class="mechanism-box">
             <h4>How Changes Move to Production</h4>
-            <pre style="background: #f8fafc; padding: 15px; border-radius: 8px; text-align: center; font-size: 16px;">
-Development → Staging → Production
-    ↓            ↓           ↓
- Build &amp;     Test with    Go Live
-  Test       Real Data
-            </pre>
-            <p><strong>Why this matters:</strong> New customizations are tested with actual business data (in staging) before going live. This catches problems before they affect real users.</p>
+            <div style="background: #1e293b; padding: 20px; border-radius: 8px; text-align: center; font-size: 16px; color: #fff; font-family: monospace;">
+                <div style="display: flex; justify-content: space-around; align-items: center; flex-wrap: wrap; gap: 10px;">
+                    <div style="text-align: center;">
+                        <div style="background: #10b981; color: #fff; padding: 12px 20px; border-radius: 8px; font-weight: bold;">Development</div>
+                        <div style="margin-top: 8px; color: #94a3b8;">Build &amp; Test</div>
+                    </div>
+                    <div style="font-size: 24px; color: #64748b;">→</div>
+                    <div style="text-align: center;">
+                        <div style="background: #f59e0b; color: #fff; padding: 12px 20px; border-radius: 8px; font-weight: bold;">Staging</div>
+                        <div style="margin-top: 8px; color: #94a3b8;">Test with Real Data</div>
+                    </div>
+                    <div style="font-size: 24px; color: #64748b;">→</div>
+                    <div style="text-align: center;">
+                        <div style="background: #ef4444; color: #fff; padding: 12px 20px; border-radius: 8px; font-weight: bold;">Production</div>
+                        <div style="margin-top: 8px; color: #94a3b8;">Go Live</div>
+                    </div>
+                </div>
+            </div>
+            <p style="margin-top: 15px;"><strong>Why this matters:</strong> New customizations are tested with actual business data (in staging) before going live. This catches problems before they affect real users.</p>
+        </div>
+
+        <h3>Development Branches: Testing & Build Status</h3>
+        <p>Every time code is pushed to a development branch, Odoo.sh automatically:</p>
+        <ol>
+            <li>Creates a fresh database with demo data</li>
+            <li>Installs all modules from your repository</li>
+            <li>Runs <strong>all automated tests</strong> (thousands of test cases)</li>
+            <li>Marks the build with a status color</li>
+        </ol>
+
+        <div class="comparison-grid" style="grid-template-columns: repeat(3, 1fr);">
+            <div class="comparison-card" style="border-left: 4px solid #10b981; background: #f0fdf4;">
+                <h4 style="color: #10b981;">🟢 Green Build</h4>
+                <p><strong>All tests passed</strong></p>
+                <ul>
+                    <li>Code is working correctly</li>
+                    <li>No errors detected</li>
+                    <li>Safe to promote to staging</li>
+                </ul>
+            </div>
+            <div class="comparison-card" style="border-left: 4px solid #f59e0b; background: #fffbeb;">
+                <h4 style="color: #f59e0b;">🟡 Yellow Build</h4>
+                <p><strong>Warnings present</strong></p>
+                <ul>
+                    <li>Tests passed but with warnings</li>
+                    <li>Deprecated code detected</li>
+                    <li>Review logs before proceeding</li>
+                </ul>
+            </div>
+            <div class="comparison-card" style="border-left: 4px solid #ef4444; background: #fef2f2;">
+                <h4 style="color: #ef4444;">🔴 Red Build</h4>
+                <p><strong>Build failed</strong></p>
+                <ul>
+                    <li>Tests failed or errors occurred</li>
+                    <li>Code needs fixing</li>
+                    <li>Check logs to find the issue</li>
+                </ul>
+            </div>
+        </div>
+
+        <h3>How to Check Build Logs</h3>
+        <div class="info-box">
+            <h4>Finding Error Details</h4>
+            <p>When a build is yellow or red, you need to check the logs to understand what went wrong:</p>
+            <ol>
+                <li>Go to your Odoo.sh project dashboard</li>
+                <li>Click on the branch with the issue</li>
+                <li>Click the <strong>"Logs"</strong> tab</li>
+                <li>Look for lines with <code>ERROR</code> or <code>WARNING</code></li>
+                <li>The log shows exactly which test failed and why</li>
+            </ol>
+            <p><strong>Tip:</strong> Search for "FAIL" or "Error" in the log to quickly find problems.</p>
         </div>
 
         <h3>Key Features You Should Know</h3>
@@ -5618,6 +5689,397 @@ Development → Staging → Production
             </ul>
         </div>
 
+        <!-- ==================== SECTION 21: CHATTER & ACTIVITIES ==================== -->
+        <h2 id="chatter">21. Chatter, Followers & Activities</h2>
+
+        <div class="info-box">
+            <h4>What is the Chatter?</h4>
+            <p>The Chatter is the message log and communication hub that appears at the bottom of many Odoo records. It tracks all changes, messages, and activities related to that record - like a built-in timeline.</p>
+        </div>
+
+        <h3>Where You'll See the Chatter</h3>
+        <p>The Chatter appears on records that need collaboration or history tracking:</p>
+        <ul>
+            <li><strong>Sales Orders</strong> - Customer communications, status changes</li>
+            <li><strong>Invoices</strong> - Payment reminders, notes</li>
+            <li><strong>CRM Leads/Opportunities</strong> - Sales team discussions</li>
+            <li><strong>Projects & Tasks</strong> - Team collaboration</li>
+            <li><strong>Helpdesk Tickets</strong> - Customer support threads</li>
+            <li><strong>Purchase Orders</strong> - Vendor communications</li>
+            <li><strong>HR Applications</strong> - Interview notes, evaluations</li>
+        </ul>
+
+        <h3>The Three Parts of Chatter</h3>
+
+        <div class="comparison-grid" style="grid-template-columns: repeat(3, 1fr);">
+            <div class="comparison-card">
+                <h4>📝 Messages</h4>
+                <p><strong>What it shows:</strong></p>
+                <ul>
+                    <li>Internal notes (team only)</li>
+                    <li>Emails sent/received</li>
+                    <li>Automatic notifications</li>
+                </ul>
+                <p><em>Icon: Speech bubble</em></p>
+            </div>
+            <div class="comparison-card">
+                <h4>📅 Activities</h4>
+                <p><strong>What it shows:</strong></p>
+                <ul>
+                    <li>Scheduled tasks (calls, meetings)</li>
+                    <li>Due dates and reminders</li>
+                    <li>Assigned responsibilities</li>
+                </ul>
+                <p><em>Icon: Clock</em></p>
+            </div>
+            <div class="comparison-card">
+                <h4>👥 Followers</h4>
+                <p><strong>What it shows:</strong></p>
+                <ul>
+                    <li>Who receives notifications</li>
+                    <li>Customers and team members</li>
+                    <li>Subscription preferences</li>
+                </ul>
+                <p><em>Icon: Person/People</em></p>
+            </div>
+        </div>
+
+        <h3>Understanding Message Types</h3>
+
+        <table>
+            <tr>
+                <th>Type</th>
+                <th>Who Sees It</th>
+                <th>When to Use</th>
+            </tr>
+            <tr>
+                <td><strong>Log Note</strong></td>
+                <td>Internal users only</td>
+                <td>Team discussions, private comments, internal reminders</td>
+            </tr>
+            <tr>
+                <td><strong>Send Message</strong></td>
+                <td>Selected recipients (followers)</td>
+                <td>Communicating with customers, vendors, or external parties</td>
+            </tr>
+            <tr>
+                <td><strong>System Messages</strong></td>
+                <td>All followers</td>
+                <td>Automatic: status changes, field updates, assignments</td>
+            </tr>
+        </table>
+
+        <div class="warning-box">
+            <h4>Critical Difference: Log Note vs Send Message</h4>
+            <p><strong>Log Note:</strong> Never leaves Odoo. Perfect for "Customer called, seemed upset" type notes.</p>
+            <p><strong>Send Message:</strong> Can send actual emails to followers. Be careful - customers might be followers!</p>
+            <p><strong>Tip:</strong> Always check the recipient list before clicking "Send".</p>
+        </div>
+
+        <h3>Understanding Followers</h3>
+        <p>Followers are users or contacts who receive notifications about a record.</p>
+
+        <div class="mechanism-box">
+            <h4>How Someone Becomes a Follower</h4>
+            <ul>
+                <li><strong>Automatically:</strong> Salesperson assigned to a lead, customer on their order</li>
+                <li><strong>Manually:</strong> Click "Add Followers" button</li>
+                <li><strong>By Messaging:</strong> When you mention someone (@username), they become a follower</li>
+            </ul>
+        </div>
+
+        <h4>Follower Subscription Types</h4>
+        <p>Followers can choose what notifications they receive:</p>
+        <ul>
+            <li><strong>All Messages</strong> - Every update, every message</li>
+            <li><strong>Comments Only</strong> - Only direct messages, not system logs</li>
+            <li><strong>Not Following</strong> - No notifications (but can still view if they have access)</li>
+        </ul>
+
+        <h3>Activities: Scheduling Follow-ups</h3>
+        <p>Activities are scheduled tasks linked to a specific record. They help ensure nothing falls through the cracks.</p>
+
+        <table>
+            <tr>
+                <th>Activity Type</th>
+                <th>Common Use</th>
+            </tr>
+            <tr>
+                <td><strong>To Do</strong></td>
+                <td>General tasks: "Review contract", "Update pricing"</td>
+            </tr>
+            <tr>
+                <td><strong>Call</strong></td>
+                <td>Phone follow-ups: "Call customer about renewal"</td>
+            </tr>
+            <tr>
+                <td><strong>Meeting</strong></td>
+                <td>Schedule meetings: "Demo presentation"</td>
+            </tr>
+            <tr>
+                <td><strong>Email</strong></td>
+                <td>Email reminders: "Send proposal by Friday"</td>
+            </tr>
+            <tr>
+                <td><strong>Upload Document</strong></td>
+                <td>Document tasks: "Attach signed contract"</td>
+            </tr>
+        </table>
+
+        <div class="success-box">
+            <h4>Activity Due Date Colors</h4>
+            <ul>
+                <li><strong style="color: #10b981;">Green</strong> - Due in the future, you're on track</li>
+                <li><strong style="color: #f59e0b;">Orange</strong> - Due today, needs attention</li>
+                <li><strong style="color: #ef4444;">Red</strong> - Overdue, requires immediate action</li>
+            </ul>
+        </div>
+
+        <h3>Tracking Field Changes</h3>
+        <p>Some fields have "tracking" enabled, meaning changes are logged in the Chatter automatically.</p>
+
+        <div class="info-box">
+            <h4>Common Tracked Fields</h4>
+            <ul>
+                <li><strong>Status/Stage</strong> - "Stage changed from 'New' to 'Qualified'"</li>
+                <li><strong>Assigned User</strong> - "Salesperson changed from John to Sarah"</li>
+                <li><strong>Expected Revenue</strong> - "Expected Revenue changed from $10,000 to $15,000"</li>
+                <li><strong>Priority</strong> - "Priority changed from 'Normal' to 'Urgent'"</li>
+            </ul>
+            <p>This creates an audit trail showing who changed what and when.</p>
+        </div>
+
+        <h3>Practical Tips</h3>
+
+        <div class="foundation-box">
+            <h4>Best Practices for Chatter</h4>
+            <ul>
+                <li><strong>Use @mentions:</strong> Type @ followed by a name to notify specific people</li>
+                <li><strong>Attach files:</strong> Click the paperclip to add documents directly to the conversation</li>
+                <li><strong>Log notes for context:</strong> When taking over a record, check the Chatter for history</li>
+                <li><strong>Schedule activities:</strong> Don't rely on memory - create activities for follow-ups</li>
+                <li><strong>Check followers before sending:</strong> Know who will receive your message</li>
+            </ul>
+        </div>
+
+        <!-- ==================== SECTION 22: EMAIL CONFIGURATION ==================== -->
+        <h2 id="emails">22. Email in Odoo</h2>
+
+        <div class="info-box">
+            <h4>How Email Works in Odoo</h4>
+            <p>Odoo can both send and receive emails. Outgoing emails deliver invoices, quotes, and notifications. Incoming emails can create leads, tickets, or update existing records.</p>
+        </div>
+
+        <h3>Email Flow Overview</h3>
+
+        <div class="mechanism-box">
+            <h4>Outgoing Emails</h4>
+            <pre style="background: #f8fafc; padding: 15px; border-radius: 8px; text-align: center; font-size: 14px;">
+User clicks "Send" → Odoo creates email → Outgoing Server (SMTP) → Recipient's inbox
+            </pre>
+            <h4 style="margin-top: 20px;">Incoming Emails</h4>
+            <pre style="background: #f8fafc; padding: 15px; border-radius: 8px; text-align: center; font-size: 14px;">
+Customer sends email → Incoming Server (IMAP) → Odoo processes → Creates/updates record
+            </pre>
+        </div>
+
+        <h3>Common Email Features</h3>
+
+        <table>
+            <tr>
+                <th>Feature</th>
+                <th>What It Does</th>
+                <th>Example</th>
+            </tr>
+            <tr>
+                <td><strong>Email Templates</strong></td>
+                <td>Pre-written emails with dynamic placeholders</td>
+                <td>Invoice reminder that auto-fills customer name and amount</td>
+            </tr>
+            <tr>
+                <td><strong>Email Alias</strong></td>
+                <td>Auto-create records from emails to specific addresses</td>
+                <td>sales@company.com creates new CRM leads</td>
+            </tr>
+            <tr>
+                <td><strong>Mail Gateway</strong></td>
+                <td>Route incoming emails to correct records</td>
+                <td>Reply to invoice email updates that invoice's chatter</td>
+            </tr>
+            <tr>
+                <td><strong>Scheduled Emails</strong></td>
+                <td>Queue emails to send later</td>
+                <td>Send newsletter at 9 AM tomorrow</td>
+            </tr>
+        </table>
+
+        <h3>Email Aliases</h3>
+        <p>Aliases automatically create records when emails arrive at specific addresses.</p>
+
+        <div class="comparison-grid">
+            <div class="comparison-card">
+                <h4>Sales Alias</h4>
+                <p><code>sales@yourcompany.com</code></p>
+                <p>→ Creates new CRM Lead</p>
+            </div>
+            <div class="comparison-card">
+                <h4>Support Alias</h4>
+                <p><code>support@yourcompany.com</code></p>
+                <p>→ Creates Helpdesk Ticket</p>
+            </div>
+            <div class="comparison-card">
+                <h4>Jobs Alias</h4>
+                <p><code>jobs@yourcompany.com</code></p>
+                <p>→ Creates HR Application</p>
+            </div>
+        </div>
+
+        <h3>Troubleshooting Email Issues</h3>
+
+        <div class="warning-box">
+            <h4>Common Email Problems</h4>
+            <table style="width: 100%; margin-top: 10px;">
+                <tr>
+                    <th>Problem</th>
+                    <th>Possible Cause</th>
+                    <th>Where to Check</th>
+                </tr>
+                <tr>
+                    <td>Emails not sending</td>
+                    <td>Outgoing server misconfigured</td>
+                    <td>Settings → Technical → Outgoing Mail Servers</td>
+                </tr>
+                <tr>
+                    <td>Emails in outbox stuck</td>
+                    <td>Scheduled action not running</td>
+                    <td>Settings → Technical → Automation → Scheduled Actions</td>
+                </tr>
+                <tr>
+                    <td>Customer not receiving</td>
+                    <td>Spam filters, wrong email address</td>
+                    <td>Check contact's email, ask customer to check spam</td>
+                </tr>
+                <tr>
+                    <td>Incoming emails not creating records</td>
+                    <td>Alias not configured, incoming server issue</td>
+                    <td>Settings → Technical → Incoming Mail Servers</td>
+                </tr>
+            </table>
+        </div>
+
+        <h3>Email Templates</h3>
+        <p>Templates save time by pre-filling common emails with dynamic data.</p>
+
+        <div class="info-box">
+            <h4>Dynamic Placeholders</h4>
+            <p>Templates use placeholders that get replaced with real data:</p>
+            <ul>
+                <li><code>{{ object.partner_id.name }}</code> → Customer's name</li>
+                <li><code>{{ object.amount_total }}</code> → Invoice total</li>
+                <li><code>{{ object.date_order }}</code> → Order date</li>
+                <li><code>{{ object.user_id.name }}</code> → Assigned salesperson</li>
+            </ul>
+            <p>You can view and edit templates at: Settings → Technical → Email → Email Templates</p>
+        </div>
+
+        <!-- ==================== SECTION 23: CONTEXT ==================== -->
+        <h2 id="context">23. Context - The Hidden Parameter</h2>
+
+        <div class="info-box">
+            <h4>What is Context?</h4>
+            <p>Context is invisible information that travels with every action in Odoo. It tells views and actions how to behave, what defaults to set, and how to filter data. Think of it as instructions whispered behind the scenes.</p>
+        </div>
+
+        <h3>What Context Controls</h3>
+
+        <table>
+            <tr>
+                <th>Context Key</th>
+                <th>What It Does</th>
+                <th>Example</th>
+            </tr>
+            <tr>
+                <td><code>default_*</code></td>
+                <td>Pre-fills fields when creating new records</td>
+                <td><code>default_partner_id: 5</code> pre-selects customer ID 5</td>
+            </tr>
+            <tr>
+                <td><code>search_default_*</code></td>
+                <td>Activates a search filter automatically</td>
+                <td><code>search_default_my_tasks: 1</code> shows only your tasks</td>
+            </tr>
+            <tr>
+                <td><code>group_by</code></td>
+                <td>Groups records by a field</td>
+                <td><code>group_by: stage_id</code> groups by stage</td>
+            </tr>
+            <tr>
+                <td><code>active_test</code></td>
+                <td>Controls whether archived records are shown</td>
+                <td><code>active_test: False</code> shows archived records too</td>
+            </tr>
+            <tr>
+                <td><code>lang</code></td>
+                <td>Sets the language for translations</td>
+                <td><code>lang: 'fr_FR'</code> shows French translations</td>
+            </tr>
+        </table>
+
+        <h3>Where You See Context in Action</h3>
+
+        <div class="mechanism-box">
+            <h4>Example: Sales Team Button</h4>
+            <p>When you click "Quotations" from a Sales Team, the context includes:</p>
+            <pre style="background: #f8fafc; padding: 15px; border-radius: 8px; font-size: 14px;">
+{
+    'default_team_id': 3,           // New quotes get this team
+    'search_default_team_id': 3,    // Filter shows only this team's quotes
+}</pre>
+            <p>This is why you only see that team's quotations, and new ones are assigned to that team automatically.</p>
+        </div>
+
+        <h3>Common Context Patterns</h3>
+
+        <div class="comparison-grid">
+            <div class="comparison-card">
+                <h4>Smart Buttons</h4>
+                <p>The "Invoices" button on a customer uses context to filter:</p>
+                <p><code>search_default_partner_id</code></p>
+                <p>Shows only that customer's invoices</p>
+            </div>
+            <div class="comparison-card">
+                <h4>Kanban Views</h4>
+                <p>CRM Pipeline uses context:</p>
+                <p><code>group_by: stage_id</code></p>
+                <p>Groups opportunities by stage automatically</p>
+            </div>
+            <div class="comparison-card">
+                <h4>Create Buttons</h4>
+                <p>"New Task" in a project uses:</p>
+                <p><code>default_project_id</code></p>
+                <p>Links the task to current project</p>
+            </div>
+        </div>
+
+        <h3>Why Context Matters for Consultants</h3>
+
+        <div class="success-box">
+            <h4>Practical Uses</h4>
+            <ul>
+                <li><strong>Understanding Filters:</strong> When data seems filtered unexpectedly, check if context is applying a search_default</li>
+                <li><strong>Default Values:</strong> If new records auto-fill with specific values, it's likely from context defaults</li>
+                <li><strong>Studio Customization:</strong> When configuring menu items or buttons, you can set context to control behavior</li>
+                <li><strong>Debugging:</strong> Enable Developer Mode → Debug Menu → Edit Action to see the context being passed</li>
+            </ul>
+        </div>
+
+        <div class="warning-box">
+            <h4>Common Confusion</h4>
+            <p><strong>Problem:</strong> "I created a record but it's not showing in the list!"</p>
+            <p><strong>Cause:</strong> The list might have a <code>search_default_*</code> filter active that excludes your record.</p>
+            <p><strong>Solution:</strong> Clear all filters (click the ✕ on filter tags) to see all records.</p>
+        </div>
+
         <!-- ==================== CONCLUSION ==================== -->
         <hr style="margin: 60px 0; border: 2px solid #e2e8f0;"/>
 
@@ -5644,6 +6106,8 @@ Development → Staging → Production
                         <li>Access Rights and Record Rules</li>
                         <li>Workflow and status management</li>
                         <li>Odoo Studio and Odoo.sh basics</li>
+                        <li>Chatter, followers, and activities</li>
+                        <li>Email configuration and context</li>
                     </ul>
                 </div>
             </div>
@@ -5656,6 +6120,7 @@ Development → Staging → Production
                 <li>Enable Developer Mode and explore model structures</li>
                 <li>Try creating a simple custom field in Studio</li>
                 <li>Review access rights for your user groups</li>
+                <li>Use the Chatter to track communications on records</li>
                 <li>Document customization requirements using proper terminology</li>
             </ol>
         </div>
