@@ -1390,6 +1390,7 @@
             <a href="#chatter">21. Chatter & Activities</a>
             <a href="#emails">22. Email</a>
             <a href="#context">23. Context</a>
+            <a href="#constraints">24. Constraints</a>
         </nav>
     </aside>
 
@@ -1436,6 +1437,7 @@
             <a href="#chatter">21. Chatter, Followers & Activities</a>
             <a href="#emails">22. Email in Odoo</a>
             <a href="#context">23. Context - The Hidden Parameter</a>
+            <a href="#constraints">24. Constraints - Data Validation Rules</a>
         </div>
 
         <!-- ==================== SECTION 1: INTRODUCTION ==================== -->
@@ -5874,13 +5876,13 @@ Content-Type: text/xml
 
         <div class="mechanism-box">
             <h4>Outgoing Emails</h4>
-            <pre style="background: #f8fafc; padding: 15px; border-radius: 8px; text-align: center; font-size: 14px;">
-User clicks "Send" → Odoo creates email → Outgoing Server (SMTP) → Recipient's inbox
-            </pre>
+            <div style="background: #1e293b; color: #e2e8f0; padding: 16px; border-radius: 8px; text-align: center; font-size: 14px; font-family: monospace; margin: 10px 0;">
+                <span style="color: #60a5fa;">User clicks "Send"</span> → <span style="color: #fbbf24;">Odoo creates email</span> → <span style="color: #a78bfa;">Outgoing Server (SMTP)</span> → <span style="color: #34d399;">Recipient's inbox</span>
+            </div>
             <h4 style="margin-top: 20px;">Incoming Emails</h4>
-            <pre style="background: #f8fafc; padding: 15px; border-radius: 8px; text-align: center; font-size: 14px;">
-Customer sends email → Incoming Server (IMAP) → Odoo processes → Creates/updates record
-            </pre>
+            <div style="background: #1e293b; color: #e2e8f0; padding: 16px; border-radius: 8px; text-align: center; font-size: 14px; font-family: monospace; margin: 10px 0;">
+                <span style="color: #34d399;">Customer sends email</span> → <span style="color: #a78bfa;">Incoming Server (IMAP)</span> → <span style="color: #fbbf24;">Odoo processes</span> → <span style="color: #60a5fa;">Creates/updates record</span>
+            </div>
         </div>
 
         <h3>Common Email Features</h3>
@@ -6030,10 +6032,10 @@ Customer sends email → Incoming Server (IMAP) → Odoo processes → Creates/u
         <div class="mechanism-box">
             <h4>Example: Sales Team Button</h4>
             <p>When you click "Quotations" from a Sales Team, the context includes:</p>
-            <pre style="background: #f8fafc; padding: 15px; border-radius: 8px; font-size: 14px;">
+            <pre style="background: #1e293b; color: #e2e8f0; padding: 16px; border-radius: 8px; font-size: 14px;">
 {
-    'default_team_id': 3,           // New quotes get this team
-    'search_default_team_id': 3,    // Filter shows only this team's quotes
+    'default_team_id': 3,           <span style="color: #10b981;">// New quotes get this team</span>
+    'search_default_team_id': 3,    <span style="color: #10b981;">// Filter shows only this team's quotes</span>
 }</pre>
             <p>This is why you only see that team's quotations, and new ones are assigned to that team automatically.</p>
         </div>
@@ -6080,6 +6082,418 @@ Customer sends email → Incoming Server (IMAP) → Odoo processes → Creates/u
             <p><strong>Solution:</strong> Clear all filters (click the ✕ on filter tags) to see all records.</p>
         </div>
 
+        <!-- ==================== SECTION 24: CONSTRAINTS ==================== -->
+        <h2 id="constraints">24. Constraints - Data Validation Rules</h2>
+
+        <div class="info-box">
+            <h4>What Are Constraints?</h4>
+            <p>Constraints are rules that enforce data integrity. They're like bouncers at a club - they check if your data meets certain conditions before letting it in. If data doesn't meet the rules, Odoo shows an error and prevents saving.</p>
+        </div>
+
+        <h3>Why Constraints Exist</h3>
+
+        <p>Without constraints, users could:</p>
+        <ul>
+            <li>Enter negative values where only positive makes sense (like negative stock quantities)</li>
+            <li>Create duplicate records that should be unique (like two products with the same barcode)</li>
+            <li>Create circular relationships (Department A reports to B, B reports to A)</li>
+            <li>Enter invalid percentages (like 150% discount)</li>
+        </ul>
+
+        <p>Constraints catch these issues <strong>at save time</strong> and display a clear error message explaining what's wrong.</p>
+
+        <h3>Two Types of Constraints</h3>
+
+        <div class="comparison-grid" style="grid-template-columns: 1fr 1fr;">
+            <div class="comparison-card" style="border-left: 4px solid #0284c7;">
+                <h4>SQL Constraints</h4>
+                <p><strong>What:</strong> Rules enforced by the database itself</p>
+                <p><strong>When checked:</strong> When data is written to database</p>
+                <p><strong>Speed:</strong> Very fast (database-level)</p>
+                <p><strong>Best for:</strong></p>
+                <ul>
+                    <li>Uniqueness (no duplicates)</li>
+                    <li>Simple value checks (positive numbers)</li>
+                    <li>Required combinations</li>
+                </ul>
+                <p><strong>Example errors you'll see:</strong></p>
+                <p style="color: var(--error); font-style: italic;">"Code must be unique."</p>
+                <p style="color: var(--error); font-style: italic;">"Quotation validity days cannot be negative."</p>
+            </div>
+            <div class="comparison-card" style="border-left: 4px solid #7c3aed;">
+                <h4>Python Constraints</h4>
+                <p><strong>What:</strong> Custom validation logic in code</p>
+                <p><strong>When checked:</strong> Before data reaches database</p>
+                <p><strong>Flexibility:</strong> Can check anything (related records, complex logic)</p>
+                <p><strong>Best for:</strong></p>
+                <ul>
+                    <li>Business logic validation</li>
+                    <li>Cross-field checks</li>
+                    <li>Relationship validation</li>
+                </ul>
+                <p><strong>Example errors you'll see:</strong></p>
+                <p style="color: var(--error); font-style: italic;">"You cannot create recursive departments."</p>
+                <p style="color: var(--error); font-style: italic;">"Prepayment percentage must be a valid percentage."</p>
+            </div>
+        </div>
+
+        <h3>SQL vs Python Constraints: Decision Matrix</h3>
+
+        <p>When developers need to add validation rules, they must choose between SQL and Python constraints. Here's how to decide:</p>
+
+        <table class="field-table">
+            <thead>
+                <tr>
+                    <th>Scenario</th>
+                    <th>Use SQL</th>
+                    <th>Use Python</th>
+                    <th>Why</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><strong>Field must be unique</strong></td>
+                    <td style="color: #10b981; text-align: center;">✓</td>
+                    <td style="color: #ef4444; text-align: center;">✗</td>
+                    <td>Database handles uniqueness efficiently</td>
+                </tr>
+                <tr>
+                    <td><strong>Value must be positive</strong></td>
+                    <td style="color: #10b981; text-align: center;">✓</td>
+                    <td style="color: #ef4444; text-align: center;">✗</td>
+                    <td>Simple CHECK constraint, very fast</td>
+                </tr>
+                <tr>
+                    <td><strong>Value must be in range</strong></td>
+                    <td style="color: #10b981; text-align: center;">✓</td>
+                    <td style="color: #ef4444; text-align: center;">✗</td>
+                    <td>Simple CHECK constraint (e.g., 0-100)</td>
+                </tr>
+                <tr>
+                    <td><strong>Combination must be unique</strong></td>
+                    <td style="color: #10b981; text-align: center;">✓</td>
+                    <td style="color: #ef4444; text-align: center;">✗</td>
+                    <td>unique(field1, field2) is database-level</td>
+                </tr>
+                <tr>
+                    <td><strong>No circular references</strong></td>
+                    <td style="color: #ef4444; text-align: center;">✗</td>
+                    <td style="color: #10b981; text-align: center;">✓</td>
+                    <td>Requires traversing parent relationships</td>
+                </tr>
+                <tr>
+                    <td><strong>Check related records</strong></td>
+                    <td style="color: #ef4444; text-align: center;">✗</td>
+                    <td style="color: #10b981; text-align: center;">✓</td>
+                    <td>SQL can't check data in other tables</td>
+                </tr>
+                <tr>
+                    <td><strong>Conditional validation</strong></td>
+                    <td style="color: #ef4444; text-align: center;">✗</td>
+                    <td style="color: #10b981; text-align: center;">✓</td>
+                    <td>"Only check if other field is set"</td>
+                </tr>
+                <tr>
+                    <td><strong>Date comparison logic</strong></td>
+                    <td style="color: #ef4444; text-align: center;">✗</td>
+                    <td style="color: #10b981; text-align: center;">✓</td>
+                    <td>Complex date math needs Python</td>
+                </tr>
+                <tr>
+                    <td><strong>Multi-company checks</strong></td>
+                    <td style="color: #ef4444; text-align: center;">✗</td>
+                    <td style="color: #10b981; text-align: center;">✓</td>
+                    <td>Requires context and ORM access</td>
+                </tr>
+                <tr>
+                    <td><strong>Custom error messages</strong></td>
+                    <td style="color: #f59e0b; text-align: center;">~</td>
+                    <td style="color: #10b981; text-align: center;">✓</td>
+                    <td>SQL can have messages, but Python is more flexible</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h4>Pros and Cons Comparison</h4>
+
+        <div class="comparison-grid" style="grid-template-columns: 1fr 1fr;">
+            <div class="comparison-card" style="background: #eff6ff; border: 1px solid #bfdbfe;">
+                <h4 style="color: #1d4ed8;">SQL Constraints</h4>
+                <p><strong style="color: #10b981;">Pros:</strong></p>
+                <ul>
+                    <li>Extremely fast (database-native)</li>
+                    <li>100% reliable - can't be bypassed even by raw SQL</li>
+                    <li>Works even when ORM is bypassed</li>
+                    <li>Less code to maintain</li>
+                    <li>Enforced at the lowest level</li>
+                </ul>
+                <p><strong style="color: #ef4444;">Cons:</strong></p>
+                <ul>
+                    <li>Limited to single-table checks</li>
+                    <li>Can't access related records</li>
+                    <li>Error messages can be cryptic</li>
+                    <li>No access to Python logic or context</li>
+                    <li>Harder to test in isolation</li>
+                </ul>
+            </div>
+            <div class="comparison-card" style="background: #f5f3ff; border: 1px solid #ddd6fe;">
+                <h4 style="color: #6d28d9;">Python Constraints</h4>
+                <p><strong style="color: #10b981;">Pros:</strong></p>
+                <ul>
+                    <li>Full flexibility - any logic possible</li>
+                    <li>Access to ORM and related records</li>
+                    <li>Clear, customizable error messages</li>
+                    <li>Can use context and environment</li>
+                    <li>Easy to debug and test</li>
+                </ul>
+                <p><strong style="color: #ef4444;">Cons:</strong></p>
+                <ul>
+                    <li>Slower (runs Python code)</li>
+                    <li>Can be bypassed with raw SQL</li>
+                    <li>More code to maintain</li>
+                    <li>Only runs through ORM operations</li>
+                    <li>Must handle recordsets properly</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="foundation-box">
+            <h4>The Golden Rule for Developers</h4>
+            <p><strong>Use SQL constraints when possible, Python constraints when necessary.</strong></p>
+            <p>SQL constraints are simpler, faster, and more reliable. Only reach for Python when you need:</p>
+            <ul>
+                <li>To check data in other tables/models</li>
+                <li>Complex business logic that SQL can't express</li>
+                <li>Context-aware validation</li>
+                <li>Rich, dynamic error messages</li>
+            </ul>
+        </div>
+
+        <h3>Real Examples from Odoo 19</h3>
+
+        <h4>SQL Constraints (models.Constraint)</h4>
+
+        <p>These are defined in the model class and translated directly to database-level rules:</p>
+
+        <div class="comparison-grid" style="grid-template-columns: 1fr;">
+            <div class="comparison-card">
+                <h4>Example 1: Unique Code</h4>
+                <p><strong>Model:</strong> Link Tracker (for tracking marketing links)</p>
+                <pre style="background: #1e293b; color: #e2e8f0; padding: 16px; border-radius: 8px; font-size: 14px; overflow-x: auto;">
+<span style="color: #fbbf24;">_code</span> = models.Constraint(
+    <span style="color: #34d399;">'unique(code)'</span>,
+    <span style="color: #34d399;">'Code must be unique.'</span>,
+)</pre>
+                <p><strong>What it prevents:</strong> Two tracking links with the same short code</p>
+                <p><strong>User sees:</strong> Error when trying to create a link with an existing code</p>
+            </div>
+        </div>
+
+        <div class="comparison-grid" style="grid-template-columns: 1fr;">
+            <div class="comparison-card">
+                <h4>Example 2: Positive Value Only</h4>
+                <p><strong>Model:</strong> Company Settings (Sale module)</p>
+                <pre style="background: #1e293b; color: #e2e8f0; padding: 16px; border-radius: 8px; font-size: 14px; overflow-x: auto;">
+<span style="color: #fbbf24;">_check_quotation_validity_days</span> = models.Constraint(
+    <span style="color: #34d399;">'CHECK(quotation_validity_days >= 0)'</span>,
+    <span style="color: #34d399;">'You cannot set a negative number for the default quotation validity.'</span>,
+)</pre>
+                <p><strong>What it prevents:</strong> Negative expiration days on quotations</p>
+                <p><strong>User sees:</strong> Error when entering -5 for quotation validity</p>
+            </div>
+        </div>
+
+        <div class="comparison-grid" style="grid-template-columns: 1fr;">
+            <div class="comparison-card">
+                <h4>Example 3: Time Range Validation</h4>
+                <p><strong>Model:</strong> Lunch Supplier</p>
+                <pre style="background: #1e293b; color: #e2e8f0; padding: 16px; border-radius: 8px; font-size: 14px; overflow-x: auto;">
+<span style="color: #fbbf24;">_automatic_email_time_range</span> = models.Constraint(
+    <span style="color: #34d399;">'CHECK(automatic_email_time >= 0 AND automatic_email_time <= 12)'</span>,
+    <span style="color: #34d399;">'Automatic Email Sending Time should be between 0 and 12'</span>,
+)</pre>
+                <p><strong>What it prevents:</strong> Invalid hour values (must be 0-12 for AM/PM)</p>
+            </div>
+        </div>
+
+        <div class="comparison-grid" style="grid-template-columns: 1fr;">
+            <div class="comparison-card">
+                <h4>Example 4: Multi-Field Uniqueness</h4>
+                <p><strong>Model:</strong> Slide/Partner (eLearning)</p>
+                <pre style="background: #1e293b; color: #e2e8f0; padding: 16px; border-radius: 8px; font-size: 14px; overflow-x: auto;">
+<span style="color: #fbbf24;">_slide_partner_uniq</span> = models.Constraint(
+    <span style="color: #34d399;">'unique(slide_id, partner_id)'</span>,
+    <span style="color: #34d399;">'A partner membership to a slide must be unique!'</span>,
+)</pre>
+                <p><strong>What it prevents:</strong> Same user being enrolled twice in the same slide</p>
+                <p><strong>Note:</strong> The combination must be unique, not each field individually</p>
+            </div>
+        </div>
+
+        <h4>Python Constraints (@api.constrains)</h4>
+
+        <p>These use the <code>@api.constrains</code> decorator and can contain complex business logic:</p>
+
+        <div class="comparison-grid" style="grid-template-columns: 1fr;">
+            <div class="comparison-card">
+                <h4>Example 1: Preventing Circular References</h4>
+                <p><strong>Model:</strong> HR Department</p>
+                <pre style="background: #1e293b; color: #e2e8f0; padding: 16px; border-radius: 8px; font-size: 14px; overflow-x: auto;">
+<span style="color: #60a5fa;">@api.constrains</span>(<span style="color: #34d399;">'parent_id'</span>)
+<span style="color: #c084fc;">def</span> <span style="color: #fbbf24;">_check_parent_id</span>(self):
+    <span style="color: #c084fc;">if</span> self._has_cycle():
+        <span style="color: #c084fc;">raise</span> ValidationError(<span style="color: #34d399;">'You cannot create recursive departments.'</span>)</pre>
+                <p><strong>What it prevents:</strong> Department A → Parent: B → Parent: A (circular loop)</p>
+                <p><strong>Why Python:</strong> Checking for cycles requires traversing relationships - can't be done in SQL</p>
+            </div>
+        </div>
+
+        <div class="comparison-grid" style="grid-template-columns: 1fr;">
+            <div class="comparison-card">
+                <h4>Example 2: Percentage Validation</h4>
+                <p><strong>Model:</strong> Company Settings (prepayment)</p>
+                <pre style="background: #1e293b; color: #e2e8f0; padding: 16px; border-radius: 8px; font-size: 14px; overflow-x: auto;">
+<span style="color: #60a5fa;">@api.constrains</span>(<span style="color: #34d399;">'prepayment_percent'</span>)
+<span style="color: #c084fc;">def</span> <span style="color: #fbbf24;">_check_prepayment_percent</span>(self):
+    <span style="color: #c084fc;">for</span> company <span style="color: #c084fc;">in</span> self:
+        <span style="color: #c084fc;">if</span> company.portal_confirmation_pay <span style="color: #c084fc;">and not</span> (<span style="color: #f472b6;">0</span> < company.prepayment_percent <= <span style="color: #f472b6;">1.0</span>):
+            <span style="color: #c084fc;">raise</span> ValidationError(<span style="color: #34d399;">'Prepayment percentage must be a valid percentage.'</span>)</pre>
+                <p><strong>What it prevents:</strong> Invalid percentages like 0%, -10%, or 150%</p>
+                <p><strong>Why Python:</strong> The check depends on another field (portal_confirmation_pay)</p>
+            </div>
+        </div>
+
+        <div class="comparison-grid" style="grid-template-columns: 1fr;">
+            <div class="comparison-card">
+                <h4>Example 3: Cross-Company Product Validation</h4>
+                <p><strong>Model:</strong> Sale Order</p>
+                <pre style="background: #1e293b; color: #e2e8f0; padding: 16px; border-radius: 8px; font-size: 14px; overflow-x: auto;">
+<span style="color: #60a5fa;">@api.constrains</span>(<span style="color: #34d399;">'company_id'</span>, <span style="color: #34d399;">'order_line'</span>)
+<span style="color: #c084fc;">def</span> <span style="color: #fbbf24;">_check_order_line_company_id</span>(self):
+    <span style="color: #c084fc;">for</span> order <span style="color: #c084fc;">in</span> self:
+        companies = order.order_line.product_id.company_id
+        <span style="color: #c084fc;">if</span> companies <span style="color: #c084fc;">and</span> companies != order.company_id:
+            <span style="color: #c084fc;">raise</span> ValidationError(
+                <span style="color: #34d399;">'Your quotation contains products from another company.'</span>
+            )</pre>
+                <p><strong>What it prevents:</strong> Adding Company B's products to Company A's quotation</p>
+                <p><strong>Why Python:</strong> Requires checking related records across multiple models</p>
+            </div>
+        </div>
+
+        <h3>How to Identify Constraint Errors</h3>
+
+        <p>When you see a validation error popup in Odoo, it's usually from a constraint. Here's how to understand them:</p>
+
+        <div class="comparison-grid" style="grid-template-columns: 1fr 1fr;">
+            <div class="comparison-card" style="background: #fef2f2; border: 1px solid #fecaca;">
+                <h4 style="color: #dc2626;">SQL Constraint Error</h4>
+                <p>Usually appears as:</p>
+                <ul>
+                    <li>"duplicate key value violates unique constraint"</li>
+                    <li>"check constraint violated"</li>
+                    <li>Technical message followed by the custom error message</li>
+                </ul>
+                <p><strong>Fix:</strong> The value you're entering already exists or doesn't meet the rule</p>
+            </div>
+            <div class="comparison-card" style="background: #fef2f2; border: 1px solid #fecaca;">
+                <h4 style="color: #dc2626;">Python Constraint Error</h4>
+                <p>Usually appears as:</p>
+                <ul>
+                    <li>A clear message in a popup</li>
+                    <li>"Validation Error" in the title</li>
+                    <li>Human-readable explanation of the problem</li>
+                </ul>
+                <p><strong>Fix:</strong> Follow the instructions in the error message</p>
+            </div>
+        </div>
+
+        <h3>Common Constraints You'll Encounter</h3>
+
+        <table class="field-table">
+            <thead>
+                <tr>
+                    <th>Module</th>
+                    <th>What's Checked</th>
+                    <th>Error You'll See</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><strong>Products</strong></td>
+                    <td>Barcode uniqueness</td>
+                    <td>"Barcode must be unique."</td>
+                </tr>
+                <tr>
+                    <td><strong>HR</strong></td>
+                    <td>No recursive departments</td>
+                    <td>"You cannot create recursive departments."</td>
+                </tr>
+                <tr>
+                    <td><strong>Sale</strong></td>
+                    <td>Valid prepayment percentage</td>
+                    <td>"Prepayment percentage must be a valid percentage."</td>
+                </tr>
+                <tr>
+                    <td><strong>Sale</strong></td>
+                    <td>Confirmed orders need date</td>
+                    <td>"A confirmed sales order requires a confirmation date."</td>
+                </tr>
+                <tr>
+                    <td><strong>Accounting</strong></td>
+                    <td>Journal entry balance</td>
+                    <td>"The balance of the journal entry is not zero."</td>
+                </tr>
+                <tr>
+                    <td><strong>Stock</strong></td>
+                    <td>No negative on-hand (if configured)</td>
+                    <td>"It is not possible to have a negative quantity."</td>
+                </tr>
+                <tr>
+                    <td><strong>Partners</strong></td>
+                    <td>Valid email format</td>
+                    <td>"Invalid email address."</td>
+                </tr>
+                <tr>
+                    <td><strong>Categories</strong></td>
+                    <td>No recursive categories</td>
+                    <td>"Error! You cannot create recursive categories."</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h3>For Consultants: What This Means</h3>
+
+        <div class="success-box">
+            <h4>Key Takeaways</h4>
+            <ul>
+                <li><strong>Constraints protect data quality:</strong> They prevent mistakes before they happen</li>
+                <li><strong>Error messages are clues:</strong> Read them carefully - they tell you exactly what's wrong</li>
+                <li><strong>Can't be bypassed:</strong> Unlike access rights, constraints apply to everyone including admins</li>
+                <li><strong>Studio can't add them:</strong> Constraints require code - if you need custom validation, you need a developer</li>
+            </ul>
+        </div>
+
+        <div class="warning-box">
+            <h4>When Users Report Constraint Errors</h4>
+            <ol>
+                <li><strong>Read the error message</strong> - It usually explains the problem clearly</li>
+                <li><strong>Check for duplicates</strong> - Uniqueness constraints are the most common cause</li>
+                <li><strong>Look at related records</strong> - Python constraints often check relationships</li>
+                <li><strong>Verify the data makes sense</strong> - Is the percentage valid? Is the quantity positive?</li>
+            </ol>
+        </div>
+
+        <div class="foundation-box">
+            <h4>Constraints vs Required Fields</h4>
+            <p>Don't confuse these two concepts:</p>
+            <ul>
+                <li><strong>Required Field:</strong> Must have a value (any value) - enforced by <code>required=True</code></li>
+                <li><strong>Constraint:</strong> Must have a <em>valid</em> value that meets specific rules</li>
+            </ul>
+            <p>A field can be both required AND constrained - for example, the field must exist AND be positive.</p>
+        </div>
+
         <!-- ==================== CONCLUSION ==================== -->
         <hr style="margin: 60px 0; border: 2px solid #e2e8f0;"/>
 
@@ -6108,6 +6522,7 @@ Customer sends email → Incoming Server (IMAP) → Odoo processes → Creates/u
                         <li>Odoo Studio and Odoo.sh basics</li>
                         <li>Chatter, followers, and activities</li>
                         <li>Email configuration and context</li>
+                        <li>Constraints and data validation</li>
                     </ul>
                 </div>
             </div>
