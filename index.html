@@ -986,6 +986,23 @@
             border-color: var(--error);
         }
 
+        /* Mobile: Override inline grid-template-columns for 3-column grids */
+        @media (max-width: 639px) {
+            .comparison-grid[style*="repeat(3"] {
+                grid-template-columns: 1fr !important;
+            }
+            .comparison-grid[style*="1fr 1fr"] {
+                grid-template-columns: 1fr !important;
+            }
+        }
+
+        /* Tablet: 3-column grids become 2-column */
+        @media (min-width: 640px) and (max-width: 899px) {
+            .comparison-grid[style*="repeat(3"] {
+                grid-template-columns: 1fr 1fr !important;
+            }
+        }
+
         /* ==================== HEADER STYLES ==================== */
         .subtitle {
             text-align: center;
@@ -1133,6 +1150,163 @@
                 transform: translateY(0);
             }
         }
+
+        /* ==================== MOBILE OPTIMIZATIONS (< 640px) ==================== */
+        @media (max-width: 639px) {
+            /* Reduce heading sizes further on small screens */
+            h1 { font-size: 1.5rem; }
+            h2 { font-size: 1.25rem; margin-top: 40px; }
+            h3 { font-size: 1rem; padding: 12px 14px; }
+            h4 { font-size: 0.95rem; }
+
+            /* Tighter padding on content boxes */
+            .critical-box, .technical-box, .foundation-box, .success-box,
+            .mechanism-box, .analogy-box, .warning-box, .info-box, .odoo-box, .example-box {
+                padding: 16px;
+                margin: 16px 0;
+            }
+
+            /* Smaller code blocks */
+            .code-block, pre {
+                padding: 12px;
+                font-size: 12px;
+            }
+
+            /* Full-width tables with horizontal scroll indicator */
+            table {
+                font-size: 13px;
+            }
+
+            th, td {
+                padding: 10px 12px;
+                min-width: 100px;
+            }
+
+            /* Stack flow diagrams vertically */
+            [style*="display: flex"][style*="gap"] {
+                flex-direction: column !important;
+                align-items: center !important;
+            }
+
+            /* Ensure database diagram tables scroll nicely */
+            [style*="background: #1e293b"] table {
+                min-width: 500px;
+            }
+
+            /* Smaller back-to-top button on mobile */
+            .back-to-top {
+                width: 44px;
+                height: 44px;
+                bottom: 16px;
+                right: 16px;
+                font-size: 18px;
+            }
+
+            /* Adjust TOC */
+            .toc {
+                padding: 16px;
+            }
+
+            .toc a {
+                font-size: 13px;
+                padding: 6px 0;
+            }
+        }
+
+        /* ==================== TABLET OPTIMIZATIONS (640px - 1023px) ==================== */
+        @media (min-width: 640px) and (max-width: 1023px) {
+            /* Container adjustments for tablet */
+            .container {
+                padding: 60px 24px 40px 24px;
+            }
+
+            /* Slightly smaller headings */
+            h1 { font-size: 2rem; }
+            h2 { font-size: 1.5rem; }
+
+            /* Tablet-specific back-to-top position */
+            .back-to-top {
+                bottom: 20px;
+                right: 20px;
+            }
+        }
+
+        /* ==================== TOUCH DEVICE OPTIMIZATIONS ==================== */
+        @media (hover: none) and (pointer: coarse) {
+            /* Larger touch targets */
+            .sidebar a {
+                padding: 14px 16px;
+                min-height: 48px;
+            }
+
+            .toc a {
+                padding: 10px 0;
+                min-height: 44px;
+                display: flex;
+                align-items: center;
+            }
+
+            /* Remove hover effects that don't work well on touch */
+            .sidebar a:hover {
+                background: transparent;
+            }
+
+            .sidebar a:active {
+                background: rgba(255,255,255,0.1);
+            }
+
+            /* Disable hover-dependent tooltips */
+            [title]:hover::after {
+                display: none;
+            }
+
+            /* Larger buttons for touch */
+            .toolbar-btn {
+                min-width: 48px;
+                min-height: 48px;
+            }
+        }
+
+        /* ==================== LANDSCAPE MOBILE ==================== */
+        @media (max-width: 900px) and (orientation: landscape) {
+            .container {
+                padding-top: 60px;
+            }
+
+            /* Reduce vertical spacing in landscape */
+            h2 { margin-top: 32px; }
+            h3 { margin-top: 24px; }
+
+            .critical-box, .technical-box, .foundation-box, .success-box,
+            .mechanism-box, .analogy-box, .warning-box, .info-box, .odoo-box, .example-box {
+                margin: 16px 0;
+            }
+        }
+
+        /* ==================== HIGH DPI / RETINA DISPLAYS ==================== */
+        @media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
+            /* Sharper borders on retina */
+            .comparison-card,
+            .critical-box, .technical-box, .foundation-box, .success-box,
+            .mechanism-box, .analogy-box, .warning-box, .info-box {
+                border-width: 0.5px;
+            }
+        }
+
+        /* ==================== REDUCED MOTION ==================== */
+        @media (prefers-reduced-motion: reduce) {
+            *, *::before, *::after {
+                animation-duration: 0.01ms !important;
+                animation-iteration-count: 1 !important;
+                transition-duration: 0.01ms !important;
+                scroll-behavior: auto !important;
+            }
+
+            .progress-bar {
+                transition: none;
+            }
+        }
+
         /* ==================== PRINT / PDF OPTIMIZATION ==================== */
         @media print {
             /* Hide ALL interactive elements - including search, toolbar, resume banner, keyboard hints */
