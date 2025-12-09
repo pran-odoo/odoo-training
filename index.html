@@ -1732,6 +1732,249 @@
             <p>The model name appears in the URL path! (Older versions used hash format: <code>#model=sale.order&id=5</code>)</p>
         </div>
 
+        <h3>How Data is Actually Stored - The Relational Database</h3>
+
+        <div class="info-box">
+            <h4>Beyond the Excel Analogy</h4>
+            <p>While the Excel analogy helps understand the basics, Odoo uses a <strong>relational database (PostgreSQL)</strong> which is more powerful. The key difference: <strong>tables are connected to each other using IDs</strong>.</p>
+            <p>When you create a Sales Order in Odoo, you're not just creating one record - you're creating <strong>multiple records across several tables</strong>, all linked together by their IDs.</p>
+        </div>
+
+        <h4>What Happens When You Create a Sales Order?</h4>
+
+        <p>Let's say you create a quotation for customer "Acme Corp" with 2 product lines. Here's what actually gets stored in the database:</p>
+
+        <!-- Visual Database Tables Diagram -->
+        <div style="background: #1e293b; padding: 24px; border-radius: 12px; margin: 20px 0; overflow-x: auto;">
+            <p style="color: #94a3b8; font-size: 13px; margin-bottom: 16px; text-align: center;">DATABASE TABLES - What Odoo Creates Behind the Scenes</p>
+
+            <!-- res_partner table -->
+            <div style="margin-bottom: 20px;">
+                <div style="background: #3b82f6; color: white; padding: 8px 16px; border-radius: 8px 8px 0 0; font-weight: 600; font-size: 14px;">
+                    📋 res_partner (Contacts Table)
+                </div>
+                <table style="width: 100%; border-collapse: collapse; background: #334155; font-size: 13px;">
+                    <tr style="background: #475569;">
+                        <th style="padding: 10px; color: #fbbf24; text-align: left; border: 1px solid #4b5563;">id</th>
+                        <th style="padding: 10px; color: #e2e8f0; text-align: left; border: 1px solid #4b5563;">name</th>
+                        <th style="padding: 10px; color: #e2e8f0; text-align: left; border: 1px solid #4b5563;">email</th>
+                        <th style="padding: 10px; color: #e2e8f0; text-align: left; border: 1px solid #4b5563;">phone</th>
+                    </tr>
+                    <tr>
+                        <td style="padding: 10px; color: #fbbf24; font-weight: bold; border: 1px solid #4b5563;">42</td>
+                        <td style="padding: 10px; color: #e2e8f0; border: 1px solid #4b5563;">Acme Corp</td>
+                        <td style="padding: 10px; color: #e2e8f0; border: 1px solid #4b5563;">contact@acme.com</td>
+                        <td style="padding: 10px; color: #e2e8f0; border: 1px solid #4b5563;">+1 555-0100</td>
+                    </tr>
+                </table>
+            </div>
+
+            <!-- product_product table -->
+            <div style="margin-bottom: 20px;">
+                <div style="background: #10b981; color: white; padding: 8px 16px; border-radius: 8px 8px 0 0; font-weight: 600; font-size: 14px;">
+                    📦 product_product (Products Table)
+                </div>
+                <table style="width: 100%; border-collapse: collapse; background: #334155; font-size: 13px;">
+                    <tr style="background: #475569;">
+                        <th style="padding: 10px; color: #34d399; text-align: left; border: 1px solid #4b5563;">id</th>
+                        <th style="padding: 10px; color: #e2e8f0; text-align: left; border: 1px solid #4b5563;">name</th>
+                        <th style="padding: 10px; color: #e2e8f0; text-align: left; border: 1px solid #4b5563;">list_price</th>
+                        <th style="padding: 10px; color: #e2e8f0; text-align: left; border: 1px solid #4b5563;">default_code</th>
+                    </tr>
+                    <tr>
+                        <td style="padding: 10px; color: #34d399; font-weight: bold; border: 1px solid #4b5563;">15</td>
+                        <td style="padding: 10px; color: #e2e8f0; border: 1px solid #4b5563;">Laptop Pro</td>
+                        <td style="padding: 10px; color: #e2e8f0; border: 1px solid #4b5563;">1,200.00</td>
+                        <td style="padding: 10px; color: #e2e8f0; border: 1px solid #4b5563;">LAPTOP-001</td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 10px; color: #34d399; font-weight: bold; border: 1px solid #4b5563;">23</td>
+                        <td style="padding: 10px; color: #e2e8f0; border: 1px solid #4b5563;">Wireless Mouse</td>
+                        <td style="padding: 10px; color: #e2e8f0; border: 1px solid #4b5563;">45.00</td>
+                        <td style="padding: 10px; color: #e2e8f0; border: 1px solid #4b5563;">MOUSE-001</td>
+                    </tr>
+                </table>
+            </div>
+
+            <!-- sale_order table -->
+            <div style="margin-bottom: 20px;">
+                <div style="background: #8b5cf6; color: white; padding: 8px 16px; border-radius: 8px 8px 0 0; font-weight: 600; font-size: 14px;">
+                    🛒 sale_order (Sales Orders Table) - THE HEADER
+                </div>
+                <table style="width: 100%; border-collapse: collapse; background: #334155; font-size: 13px;">
+                    <tr style="background: #475569;">
+                        <th style="padding: 10px; color: #a78bfa; text-align: left; border: 1px solid #4b5563;">id</th>
+                        <th style="padding: 10px; color: #e2e8f0; text-align: left; border: 1px solid #4b5563;">name</th>
+                        <th style="padding: 10px; color: #fbbf24; text-align: left; border: 1px solid #4b5563;">partner_id 🔗</th>
+                        <th style="padding: 10px; color: #e2e8f0; text-align: left; border: 1px solid #4b5563;">date_order</th>
+                        <th style="padding: 10px; color: #e2e8f0; text-align: left; border: 1px solid #4b5563;">state</th>
+                        <th style="padding: 10px; color: #e2e8f0; text-align: left; border: 1px solid #4b5563;">amount_total</th>
+                    </tr>
+                    <tr>
+                        <td style="padding: 10px; color: #a78bfa; font-weight: bold; border: 1px solid #4b5563;">108</td>
+                        <td style="padding: 10px; color: #e2e8f0; border: 1px solid #4b5563;">S00108</td>
+                        <td style="padding: 10px; color: #fbbf24; font-weight: bold; border: 1px solid #4b5563;">42 → Acme Corp</td>
+                        <td style="padding: 10px; color: #e2e8f0; border: 1px solid #4b5563;">2024-12-09</td>
+                        <td style="padding: 10px; color: #e2e8f0; border: 1px solid #4b5563;">draft</td>
+                        <td style="padding: 10px; color: #e2e8f0; border: 1px solid #4b5563;">2,490.00</td>
+                    </tr>
+                </table>
+            </div>
+
+            <!-- sale_order_line table -->
+            <div style="margin-bottom: 10px;">
+                <div style="background: #f59e0b; color: white; padding: 8px 16px; border-radius: 8px 8px 0 0; font-weight: 600; font-size: 14px;">
+                    📝 sale_order_line (Order Lines Table) - THE LINES
+                </div>
+                <table style="width: 100%; border-collapse: collapse; background: #334155; font-size: 13px;">
+                    <tr style="background: #475569;">
+                        <th style="padding: 10px; color: #fbbf24; text-align: left; border: 1px solid #4b5563;">id</th>
+                        <th style="padding: 10px; color: #a78bfa; text-align: left; border: 1px solid #4b5563;">order_id 🔗</th>
+                        <th style="padding: 10px; color: #34d399; text-align: left; border: 1px solid #4b5563;">product_id 🔗</th>
+                        <th style="padding: 10px; color: #e2e8f0; text-align: left; border: 1px solid #4b5563;">product_uom_qty</th>
+                        <th style="padding: 10px; color: #e2e8f0; text-align: left; border: 1px solid #4b5563;">price_unit</th>
+                        <th style="padding: 10px; color: #e2e8f0; text-align: left; border: 1px solid #4b5563;">price_subtotal</th>
+                    </tr>
+                    <tr>
+                        <td style="padding: 10px; color: #fbbf24; font-weight: bold; border: 1px solid #4b5563;">201</td>
+                        <td style="padding: 10px; color: #a78bfa; font-weight: bold; border: 1px solid #4b5563;">108 → S00108</td>
+                        <td style="padding: 10px; color: #34d399; font-weight: bold; border: 1px solid #4b5563;">15 → Laptop Pro</td>
+                        <td style="padding: 10px; color: #e2e8f0; border: 1px solid #4b5563;">2</td>
+                        <td style="padding: 10px; color: #e2e8f0; border: 1px solid #4b5563;">1,200.00</td>
+                        <td style="padding: 10px; color: #e2e8f0; border: 1px solid #4b5563;">2,400.00</td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 10px; color: #fbbf24; font-weight: bold; border: 1px solid #4b5563;">202</td>
+                        <td style="padding: 10px; color: #a78bfa; font-weight: bold; border: 1px solid #4b5563;">108 → S00108</td>
+                        <td style="padding: 10px; color: #34d399; font-weight: bold; border: 1px solid #4b5563;">23 → Mouse</td>
+                        <td style="padding: 10px; color: #e2e8f0; border: 1px solid #4b5563;">2</td>
+                        <td style="padding: 10px; color: #e2e8f0; border: 1px solid #4b5563;">45.00</td>
+                        <td style="padding: 10px; color: #e2e8f0; border: 1px solid #4b5563;">90.00</td>
+                    </tr>
+                </table>
+            </div>
+
+            <!-- Legend -->
+            <div style="margin-top: 16px; padding: 12px; background: #475569; border-radius: 8px;">
+                <p style="color: #e2e8f0; font-size: 12px; margin: 0;">
+                    <span style="color: #fbbf24;">🔗 Yellow = Foreign Key (ID linking to another table)</span> &nbsp;|&nbsp;
+                    <span style="color: #a78bfa;">Purple = Sale Order ID</span> &nbsp;|&nbsp;
+                    <span style="color: #34d399;">Green = Product ID</span> &nbsp;|&nbsp;
+                    <span style="color: #3b82f6;">Blue = Partner ID</span>
+                </p>
+            </div>
+        </div>
+
+        <h4>Understanding the Relationships</h4>
+
+        <div class="comparison-grid" style="grid-template-columns: 1fr 1fr;">
+            <div class="comparison-card" style="border-left: 4px solid #8b5cf6;">
+                <h4>The "Header" Record</h4>
+                <p><strong>sale_order</strong> (id: 108)</p>
+                <ul>
+                    <li>Stores order-level info: date, state, totals</li>
+                    <li><code>partner_id = 42</code> links to the customer</li>
+                    <li>This is ONE record for the whole order</li>
+                </ul>
+            </div>
+            <div class="comparison-card" style="border-left: 4px solid #f59e0b;">
+                <h4>The "Line" Records</h4>
+                <p><strong>sale_order_line</strong> (ids: 201, 202)</p>
+                <ul>
+                    <li>Each product line = separate record</li>
+                    <li><code>order_id = 108</code> links back to header</li>
+                    <li><code>product_id</code> links to the product</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="foundation-box">
+            <h4>Why IDs Matter - The Magic of Relational Databases</h4>
+            <p>Every record in Odoo has a unique <strong>id</strong> (also called primary key). This ID is:</p>
+            <ul>
+                <li><strong>Auto-generated:</strong> Odoo creates it automatically when you save</li>
+                <li><strong>Unique:</strong> No two records in the same table have the same ID</li>
+                <li><strong>Permanent:</strong> Once assigned, the ID never changes</li>
+                <li><strong>The Link:</strong> Other tables reference this ID to create relationships</li>
+            </ul>
+            <p style="margin-top: 12px;"><strong>Example:</strong> When Odoo displays "Acme Corp" on the sales order, it's actually reading <code>partner_id = 42</code>, then looking up id 42 in the res_partner table to get the name.</p>
+        </div>
+
+        <h4>The Full Picture: What Confirming a Sales Order Creates</h4>
+
+        <p>When you click <strong>"Confirm"</strong> on a quotation, Odoo creates even more records:</p>
+
+        <div style="background: #f8fafc; border: 2px solid #e2e8f0; border-radius: 12px; padding: 20px; margin: 20px 0;">
+            <div style="display: flex; flex-wrap: wrap; gap: 12px; justify-content: center; align-items: center;">
+                <div style="background: #8b5cf6; color: white; padding: 12px 20px; border-radius: 8px; text-align: center;">
+                    <strong>sale.order</strong><br><span style="font-size: 12px;">S00108</span>
+                </div>
+                <div style="font-size: 24px; color: #64748b;">→</div>
+                <div style="background: #3b82f6; color: white; padding: 12px 20px; border-radius: 8px; text-align: center;">
+                    <strong>stock.picking</strong><br><span style="font-size: 12px;">Delivery Order</span>
+                </div>
+                <div style="font-size: 24px; color: #64748b;">→</div>
+                <div style="background: #10b981; color: white; padding: 12px 20px; border-radius: 8px; text-align: center;">
+                    <strong>stock.move</strong><br><span style="font-size: 12px;">Stock Movements</span>
+                </div>
+            </div>
+            <div style="display: flex; flex-wrap: wrap; gap: 12px; justify-content: center; align-items: center; margin-top: 16px;">
+                <div style="background: #8b5cf6; color: white; padding: 12px 20px; border-radius: 8px; text-align: center;">
+                    <strong>sale.order</strong><br><span style="font-size: 12px;">S00108</span>
+                </div>
+                <div style="font-size: 24px; color: #64748b;">→</div>
+                <div style="background: #ef4444; color: white; padding: 12px 20px; border-radius: 8px; text-align: center;">
+                    <strong>account.move</strong><br><span style="font-size: 12px;">Invoice</span>
+                </div>
+                <div style="font-size: 24px; color: #64748b;">→</div>
+                <div style="background: #f59e0b; color: white; padding: 12px 20px; border-radius: 8px; text-align: center;">
+                    <strong>account.move.line</strong><br><span style="font-size: 12px;">Journal Items</span>
+                </div>
+            </div>
+            <p style="text-align: center; color: #64748b; font-size: 13px; margin-top: 16px;">All these records are linked back to the original Sale Order using IDs!</p>
+        </div>
+
+        <div class="warning-box">
+            <h4>Why This Matters for Consultants</h4>
+            <ul>
+                <li><strong>Debugging:</strong> When something looks wrong, understanding that data lives in multiple tables helps you investigate</li>
+                <li><strong>Reports:</strong> Custom reports often need to join multiple tables using these ID relationships</li>
+                <li><strong>Data Migration:</strong> Moving data between systems requires understanding these connections</li>
+                <li><strong>Smart Buttons:</strong> Those counts you see (like "2 Deliveries") are queries counting related records by ID</li>
+            </ul>
+        </div>
+
+        <div class="analogy-box">
+            <h4>Excel vs Relational Database - Key Difference</h4>
+            <table>
+                <tr>
+                    <th>Concept</th>
+                    <th>Excel Approach</th>
+                    <th>Odoo/Database Approach</th>
+                </tr>
+                <tr>
+                    <td><strong>Customer name on order</strong></td>
+                    <td>Type "Acme Corp" directly in cell</td>
+                    <td>Store ID 42, look up name from res_partner</td>
+                </tr>
+                <tr>
+                    <td><strong>Customer changes name</strong></td>
+                    <td>Must update every order manually</td>
+                    <td>Update once in res_partner, all orders show new name</td>
+                </tr>
+                <tr>
+                    <td><strong>Order lines</strong></td>
+                    <td>Multiple columns: Product1, Qty1, Product2, Qty2...</td>
+                    <td>Separate table with unlimited rows, linked by order_id</td>
+                </tr>
+                <tr>
+                    <td><strong>Find all orders for customer</strong></td>
+                    <td>Manually search/filter</td>
+                    <td>Query: WHERE partner_id = 42</td>
+                </tr>
+            </table>
+        </div>
+
         <!-- ==================== SECTION 3: FIELD TYPES ==================== -->
         <h2 id="field-types">2. Complete Field Types Guide</h2>
 
