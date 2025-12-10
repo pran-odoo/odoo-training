@@ -866,6 +866,25 @@ function initSpiderEngine() {
         t /= 1000;
         spider.tick(t);
 
+        // Draw cursor crosshair at actual mouse position for click accuracy
+        ctx.strokeStyle = color;
+        ctx.lineWidth = 1.5;
+        ctx.beginPath();
+        // Small crosshair
+        ctx.moveTo(mouseX - 8, mouseY);
+        ctx.lineTo(mouseX - 3, mouseY);
+        ctx.moveTo(mouseX + 3, mouseY);
+        ctx.lineTo(mouseX + 8, mouseY);
+        ctx.moveTo(mouseX, mouseY - 8);
+        ctx.lineTo(mouseX, mouseY - 3);
+        ctx.moveTo(mouseX, mouseY + 3);
+        ctx.lineTo(mouseX, mouseY + 8);
+        ctx.stroke();
+        // Center dot
+        ctx.beginPath();
+        ctx.arc(mouseX, mouseY, 2, 0, Math.PI * 2);
+        ctx.fill();
+
         spiderAnimationId = requestAnimationFrame(animate);
     }
 
