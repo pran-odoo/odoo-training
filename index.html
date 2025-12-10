@@ -9,28 +9,8 @@
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-    <!-- Spider-Man Cursor - Web shooter hand -->
-    <div class="spidey-cursor" id="spideyCursor">
-        <svg viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg">
-            <!-- Hand base (red glove) -->
-            <path d="M8 20 L8 28 Q8 30 10 30 L22 30 Q24 30 24 28 L24 20" fill="#e23636" stroke="#111" stroke-width="0.5"/>
-            <!-- Palm -->
-            <ellipse cx="16" cy="18" rx="9" ry="6" fill="#e23636" stroke="#111" stroke-width="0.5"/>
-            <!-- Web pattern on hand -->
-            <path d="M16 12 L16 24" stroke="#111" stroke-width="0.3" fill="none"/>
-            <path d="M7 18 L25 18" stroke="#111" stroke-width="0.3" fill="none"/>
-            <!-- Pinky finger (curled) -->
-            <ellipse cx="7" cy="14" rx="2.5" ry="4" fill="#e23636" stroke="#111" stroke-width="0.5"/>
-            <!-- Ring finger (curled) -->
-            <ellipse cx="11" cy="12" rx="2.5" ry="5" fill="#e23636" stroke="#111" stroke-width="0.5"/>
-            <!-- Index finger (extended - pointing) -->
-            <path d="M18 14 L18 3 Q18 1 20 1 Q22 1 22 3 L22 14" fill="#e23636" stroke="#111" stroke-width="0.5"/>
-            <!-- Pinky finger (extended) -->
-            <path d="M24 15 L26 5 Q26.5 3 28 3.5 Q29.5 4 29 6 L27 15" fill="#e23636" stroke="#111" stroke-width="0.5"/>
-            <!-- Web shooter dot -->
-            <circle cx="16" cy="18" r="2" fill="#111"/>
-        </svg>
-    </div>
+    <!-- Spider Animation Canvas - Transparent overlay for cursor effect -->
+    <canvas id="spiderCanvas"></canvas>
 
     <!-- Skip Link for Accessibility -->
     <a href="#intro" class="skip-link">Skip to main content</a>

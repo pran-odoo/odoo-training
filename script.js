@@ -269,6 +269,10 @@ function buildSearchIndex() {
 function performSearch(query) {
     if (!query || query.length < 2) {
         searchResults.innerHTML = '';
+        searchResults._results = null;
+        // Clear ARIA attributes when search is cleared
+        searchInput.setAttribute('aria-expanded', 'false');
+        searchInput.removeAttribute('aria-activedescendant');
         return;
     }
 
@@ -304,7 +308,6 @@ function performSearch(query) {
 
     searchResults.innerHTML = html;
     searchResults._results = results;
-    searchResults._selectedIndex = -1;
     searchInput.setAttribute('aria-expanded', 'true');
 }
 
@@ -650,11 +653,15 @@ function init() {
     setTimeout(loadReadingProgress, 500);
 }
 
-// ==================== SPIDER-MAN CURSOR ====================
-const spideyCursor = document.getElementById('spideyCursor');
+// ==================== SPIDER ANIMATION (Canvas-based) ====================
+// Adapted from codingtorque.com spider cursor animation
+// Features: Single spider that follows cursor with animated legs
+// Performance optimized: reduced point count, respects reduced-motion
+
+const spiderCanvas = document.getElementById('spiderCanvas');
 const spideyToggleBtn = document.getElementById('spideyToggleBtn');
-let lastX = 0, lastY = 0;
 let isSpideyActive = false;
+let spiderAnimationId = null;
 
 // Check if user prefers reduced motion (reactive to changes)
 const reducedMotionQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
@@ -671,27 +678,248 @@ function isSpideyAvailable() {
     return window.innerWidth >= 768 && !prefersReducedMotion;
 }
 
-function enableSpidey() {
+// ==================== SPIDER ANIMATION ENGINE ====================
+let spiderEngine = null;
+
+function initSpiderEngine() {
+    if (!spiderCanvas) return null;
+
+    const ctx = spiderCanvas.getContext('2d');
+    const { sin, cos, PI, hypot, min, max } = Math;
+
+    // Helper functions
+    function rnd(x = 1, dx = 0) {
+        return Math.random() * x + dx;
+    }
+
+    function lerp(a, b, t) {
+        return a + (b - a) * t;
+    }
+
+    function noise(x, y, t = 101) {
+        const w0 = sin(0.3 * x + 1.4 * t + 2.0 + 2.5 * sin(0.4 * y + -1.3 * t + 1.0));
+        const w1 = sin(0.2 * y + 1.5 * t + 2.8 + 2.3 * sin(0.5 * x + -1.2 * t + 0.5));
+        return w0 + w1;
+    }
+
+    function many(n, f) {
+        return [...Array(n)].map((_, i) => f(i));
+    }
+
+    // Get spider color based on dark mode
+    function getSpiderColor() {
+        const isDarkMode = document.body.classList.contains('dark-mode');
+        return isDarkMode ? '#ffffff' : '#1e293b'; // White in dark mode, dark in light mode
+    }
+
+    function drawCircle(x, y, r) {
+        ctx.beginPath();
+        ctx.ellipse(x, y, r, r, 0, 0, PI * 2);
+        ctx.fill();
+    }
+
+    function drawLine(x0, y0, x1, y1) {
+        ctx.beginPath();
+        ctx.moveTo(x0, y0);
+        many(50, (i) => { // Reduced from 100 for performance
+            i = (i + 1) / 50;
+            const x = lerp(x0, x1, i);
+            const y = lerp(y0, y1, i);
+            const k = noise(x / 5 + x0, y / 5 + y0) * 1.5;
+            ctx.lineTo(x + k, y + k);
+        });
+        ctx.stroke();
+    }
+
+    // Create a single spider that follows cursor
+    function createSpider() {
+        // Reduced point count for performance (150 instead of 333)
+        const pts = many(150, () => ({
+            x: rnd(innerWidth),
+            y: rnd(innerHeight),
+            len: 0,
+            r: 0
+        }));
+
+        // 8 legs around the body
+        const pts2 = many(8, (i) => ({
+            x: cos((i / 8) * PI * 2),
+            y: sin((i / 8) * PI * 2)
+        }));
+
+        const seed = rnd(100);
+        let tx = innerWidth / 2;
+        let ty = innerHeight / 2;
+        let x = innerWidth / 2;
+        let y = innerHeight / 2;
+        const kx = rnd(0.5, 0.5);
+        const ky = rnd(0.5, 0.5);
+        const walkRadius = { x: rnd(30, 20), y: rnd(30, 20) }; // Smaller walk radius
+        let r = min(innerWidth, innerHeight) / rnd(80, 100); // Smaller spider body
+
+        function paintPt(pt) {
+            pts2.forEach((pt2) => {
+                if (!pt.len) return;
+                drawLine(
+                    lerp(x + pt2.x * r, pt.x, pt.len * pt.len),
+                    lerp(y + pt2.y * r, pt.y, pt.len * pt.len),
+                    x + pt2.x * r,
+                    y + pt2.y * r
+                );
+            });
+            drawCircle(pt.x, pt.y, pt.r);
+        }
+
+        return {
+            follow(newX, newY) {
+                tx = newX;
+                ty = newY;
+            },
+
+            tick(t) {
+                const selfMoveX = cos(t * kx + seed) * walkRadius.x;
+                const selfMoveY = sin(t * ky + seed) * walkRadius.y;
+                const fx = tx + selfMoveX;
+                const fy = ty + selfMoveY;
+
+                // Smoother, faster following
+                x += min(innerWidth / 80, (fx - x) / 8);
+                y += min(innerWidth / 80, (fy - y) / 8);
+
+                let legCount = 0;
+                pts.forEach((pt) => {
+                    const dx = pt.x - x;
+                    const dy = pt.y - y;
+                    const len = hypot(dx, dy);
+                    let ptR = min(2.5, innerWidth / len / 6);
+                    const increasing = len < innerWidth / 12 && (legCount++) < 8;
+                    const dir = increasing ? 0.12 : -0.08;
+                    if (increasing) ptR *= 1.3;
+                    pt.r = ptR;
+                    pt.len = max(0, min(pt.len + dir, 1));
+                    paintPt(pt);
+                });
+
+                // Draw spider body (center)
+                drawCircle(x, y, r * 0.8);
+                // Draw spider head (smaller, offset)
+                drawCircle(x, y - r * 0.6, r * 0.5);
+            }
+        };
+    }
+
+    // Single spider instance
+    let spider = null;
+    let mouseX = innerWidth / 2;
+    let mouseY = innerHeight / 2;
+    let w = 0, h = 0;
+
+    function animate(t) {
+        if (!isSpideyActive) {
+            spiderAnimationId = null;
+            return;
+        }
+
+        // Resize canvas if needed
+        if (w !== innerWidth) w = spiderCanvas.width = innerWidth;
+        if (h !== innerHeight) h = spiderCanvas.height = innerHeight;
+
+        // Clear canvas (transparent)
+        ctx.clearRect(0, 0, w, h);
+
+        // Set spider color based on theme
+        const color = getSpiderColor();
+        ctx.fillStyle = color;
+        ctx.strokeStyle = color;
+        ctx.lineWidth = 1;
+
+        // Initialize spider if needed
+        if (!spider) {
+            spider = createSpider();
+        }
+
+        // Update spider target
+        spider.follow(mouseX, mouseY);
+
+        // Animate
+        t /= 1000;
+        spider.tick(t);
+
+        spiderAnimationId = requestAnimationFrame(animate);
+    }
+
+    // Mouse tracking
+    function handleMouseMove(e) {
+        mouseX = e.clientX;
+        mouseY = e.clientY;
+    }
+
+    return {
+        start() {
+            spider = null; // Reset spider
+            document.addEventListener('mousemove', handleMouseMove);
+            if (!spiderAnimationId) {
+                spiderAnimationId = requestAnimationFrame(animate);
+            }
+        },
+        stop() {
+            document.removeEventListener('mousemove', handleMouseMove);
+            if (spiderAnimationId) {
+                cancelAnimationFrame(spiderAnimationId);
+                spiderAnimationId = null;
+            }
+            // Clear canvas
+            if (spiderCanvas) {
+                const ctx = spiderCanvas.getContext('2d');
+                ctx.clearRect(0, 0, spiderCanvas.width, spiderCanvas.height);
+            }
+            spider = null;
+        }
+    };
+}
+
+// ==================== SPIDEY TOGGLE FUNCTIONS ====================
+function enableSpidey(savePreference = true) {
     if (!isSpideyAvailable()) return;
     isSpideyActive = true;
     document.body.classList.add('spidey-mode');
     spideyToggleBtn.classList.add('active');
-    safeSetItem(STORAGE_KEYS.spideyCursor, 'true');
+
+    // Initialize and start spider animation
+    if (!spiderEngine) {
+        spiderEngine = initSpiderEngine();
+    }
+    if (spiderEngine) {
+        spiderEngine.start();
+    }
+
+    // Only persist if user explicitly toggled (not on forced enable)
+    if (savePreference) {
+        safeSetItem(STORAGE_KEYS.spideyCursor, 'true');
+    }
 }
 
-function disableSpidey() {
+function disableSpidey(savePreference = true) {
     isSpideyActive = false;
     document.body.classList.remove('spidey-mode');
-    if (spideyCursor) spideyCursor.style.display = 'none';
     spideyToggleBtn.classList.remove('active');
-    safeSetItem(STORAGE_KEYS.spideyCursor, 'false');
+
+    // Stop spider animation
+    if (spiderEngine) {
+        spiderEngine.stop();
+    }
+
+    // Only persist if user explicitly toggled (not on forced disable like resize)
+    if (savePreference) {
+        safeSetItem(STORAGE_KEYS.spideyCursor, 'false');
+    }
 }
 
 function toggleSpidey() {
     if (isSpideyActive) {
-        disableSpidey();
+        disableSpidey(true); // User action - save preference
     } else {
-        enableSpidey();
+        enableSpidey(true); // User action - save preference
     }
 }
 
@@ -701,23 +929,30 @@ function updateSpideyAvailability() {
     spideyToggleBtn.style.display = available ? '' : 'none';
 
     if (!available && isSpideyActive) {
-        // Disable if no longer available (e.g., resized to mobile)
-        disableSpidey();
+        // Disable WITHOUT saving - don't overwrite user's preference
+        disableSpidey(false);
+    } else if (available && !isSpideyActive) {
+        // Re-check saved preference when becoming available again
+        const saved = safeGetItem(STORAGE_KEYS.spideyCursor);
+        if (saved === 'true') {
+            enableSpidey(false); // Restore without re-saving
+        }
     }
 }
 
-// Load saved preference (default: enabled on desktop if available)
+// Load saved preference - DEFAULT TO OFF for first-time users
 function loadSpideyPreference() {
     if (!isSpideyAvailable()) {
         spideyToggleBtn.style.display = 'none';
         return;
     }
     const saved = safeGetItem(STORAGE_KEYS.spideyCursor);
-    if (saved === 'false') {
-        disableSpidey();
-    } else {
-        enableSpidey();
+    // Only enable if user previously opted in (saved === 'true')
+    // Default is OFF (null or any other value)
+    if (saved === 'true') {
+        enableSpidey(false); // Don't re-save on load
     }
+    // Otherwise leave disabled (default state)
 }
 
 // Handle resize/orientation changes
@@ -725,106 +960,8 @@ window.addEventListener('resize', updateSpideyAvailability);
 
 spideyToggleBtn.addEventListener('click', toggleSpidey);
 
-// Track mouse movement (always track, but only show cursor if active)
-document.addEventListener('mousemove', function(e) {
-    lastX = e.clientX;
-    lastY = e.clientY;
-    if (isSpideyActive && spideyCursor) {
-        spideyCursor.style.left = e.clientX + 'px';
-        spideyCursor.style.top = e.clientY + 'px';
-        spideyCursor.style.display = 'block';
-    }
-});
-
-// Hide cursor when mouse leaves window
-document.addEventListener('mouseleave', function() {
-    if (spideyCursor) {
-        spideyCursor.style.display = 'none';
-    }
-});
-
-// Web-slinging on click
-document.addEventListener('mousedown', function(e) {
-    if (!isSpideyActive) return;
-    if (spideyCursor) spideyCursor.classList.add('clicking');
-    // Shoot web from cursor to a random point above/around
-    const angle = -Math.PI/2 + (Math.random() - 0.5) * Math.PI/2; // -90° ± 45°
-    const distance = 150 + Math.random() * 100;
-    const targetX = lastX + Math.cos(angle) * distance;
-    const targetY = lastY + Math.sin(angle) * distance;
-    shootWeb(lastX, lastY, targetX, targetY);
-});
-
-document.addEventListener('mouseup', function() {
-    if (spideyCursor) spideyCursor.classList.remove('clicking');
-});
-
 // Initialize spidey preference
 loadSpideyPreference();
-
-function shootWeb(fromX, fromY, toX, toY) {
-    // Create SVG for web line
-    const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
-    svg.style.cssText = 'position:fixed;left:0;top:0;width:100%;height:100%;pointer-events:none;z-index:9999;';
-
-    // Create the web line path
-    const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
-    path.setAttribute('d', `M ${fromX} ${fromY} L ${toX} ${toY}`);
-    path.setAttribute('stroke', '#ffffff');
-    path.setAttribute('stroke-width', '2');
-    path.setAttribute('fill', 'none');
-    path.setAttribute('stroke-linecap', 'round');
-
-    svg.appendChild(path);
-    document.body.appendChild(svg);
-
-    // Animate the web shooting out
-    const pathLength = path.getTotalLength();
-    path.style.strokeDasharray = pathLength;
-    path.style.strokeDashoffset = pathLength;
-    path.style.transition = 'stroke-dashoffset 0.2s ease-out';
-
-    // Trigger animation
-    requestAnimationFrame(() => {
-        path.style.strokeDashoffset = '0';
-    });
-
-    // Create web splat at end point
-    const splat = document.createElement('div');
-    splat.innerHTML = `
-        <svg viewBox="0 0 40 40" width="24" height="24">
-            <circle cx="20" cy="20" r="3" fill="#fff"/>
-            <line x1="20" y1="20" x2="20" y2="6" stroke="#fff" stroke-width="1.5"/>
-            <line x1="20" y1="20" x2="20" y2="34" stroke="#fff" stroke-width="1.5"/>
-            <line x1="20" y1="20" x2="6" y2="20" stroke="#fff" stroke-width="1.5"/>
-            <line x1="20" y1="20" x2="34" y2="20" stroke="#fff" stroke-width="1.5"/>
-            <line x1="20" y1="20" x2="10" y2="10" stroke="#fff" stroke-width="1"/>
-            <line x1="20" y1="20" x2="30" y2="10" stroke="#fff" stroke-width="1"/>
-            <line x1="20" y1="20" x2="10" y2="30" stroke="#fff" stroke-width="1"/>
-            <line x1="20" y1="20" x2="30" y2="30" stroke="#fff" stroke-width="1"/>
-        </svg>
-    `;
-    splat.style.cssText = `position:fixed;left:${toX - 12}px;top:${toY - 12}px;pointer-events:none;z-index:9998;opacity:0;transform:scale(0);transition:all 0.15s ease-out;`;
-    document.body.appendChild(splat);
-
-    // Show splat after web reaches target
-    setTimeout(() => {
-        splat.style.opacity = '1';
-        splat.style.transform = 'scale(1)';
-    }, 150);
-
-    // Fade out and clean up
-    setTimeout(() => {
-        svg.style.transition = 'opacity 0.3s';
-        svg.style.opacity = '0';
-        splat.style.opacity = '0';
-        splat.style.transform = 'scale(0.5)';
-        setTimeout(() => {
-            svg.remove();
-            splat.remove();
-        }, 300);
-    }, 500);
-}
 
 init();
 });
