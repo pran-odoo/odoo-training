@@ -289,6 +289,7 @@ function performSearch(query) {
     if (results.length === 0) {
         searchResults.innerHTML = '<div class="no-results" role="status">No results found for "' + escapeHtml(query) + '"</div>';
         searchInput.setAttribute('aria-expanded', 'false');
+        searchInput.removeAttribute('aria-activedescendant'); // Clear stale reference
         return;
     }
 
@@ -309,6 +310,7 @@ function performSearch(query) {
     searchResults.innerHTML = html;
     searchResults._results = results;
     searchInput.setAttribute('aria-expanded', 'true');
+    searchInput.removeAttribute('aria-activedescendant'); // Reset on new results
 }
 
 function highlightMatch(text, query) {
@@ -561,6 +563,9 @@ document.addEventListener('keydown', function(e) {
         keyboardHint.classList.remove('visible');
         searchInput.blur();
         searchResults.innerHTML = '';
+        searchResults._results = null;
+        searchInput.setAttribute('aria-expanded', 'false');
+        searchInput.removeAttribute('aria-activedescendant');
     }
 });
 
@@ -819,6 +824,7 @@ function initSpiderEngine() {
     let mouseX = innerWidth / 2;
     let mouseY = innerHeight / 2;
     let w = 0, h = 0;
+    let dpr = window.devicePixelRatio || 1;
 
     function animate(t) {
         if (!isSpideyActive) {
@@ -826,9 +832,18 @@ function initSpiderEngine() {
             return;
         }
 
-        // Resize canvas if needed
-        if (w !== innerWidth) w = spiderCanvas.width = innerWidth;
-        if (h !== innerHeight) h = spiderCanvas.height = innerHeight;
+        // Resize canvas if needed (with HiDPI/Retina support)
+        const newDpr = window.devicePixelRatio || 1;
+        if (w !== innerWidth || h !== innerHeight || dpr !== newDpr) {
+            dpr = newDpr;
+            w = innerWidth;
+            h = innerHeight;
+            // Set canvas size scaled for device pixel ratio
+            spiderCanvas.width = w * dpr;
+            spiderCanvas.height = h * dpr;
+            // Scale context to match
+            ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+        }
 
         // Clear canvas (transparent)
         ctx.clearRect(0, 0, w, h);
