@@ -912,6 +912,214 @@
             </table>
         </div>
 
+        <h3>The ir.model Model (Model Registry)</h3>
+
+        <div class="technical-box">
+            <p><code>ir.model</code> is Odoo's <strong>meta-model</strong> - it stores information about all models in the system. You can access it via Settings → Technical → Database Structure → Models.</p>
+        </div>
+
+        <table>
+            <tr>
+                <th>Field</th>
+                <th>Type</th>
+                <th>Description</th>
+            </tr>
+            <tr>
+                <td><code>name</code></td>
+                <td>Char</td>
+                <td>Human-readable model name (e.g., "Sales Order")</td>
+            </tr>
+            <tr>
+                <td><code>model</code></td>
+                <td>Char</td>
+                <td>Technical model name (e.g., "sale.order"). Custom models start with "x_"</td>
+            </tr>
+            <tr>
+                <td><code>order</code></td>
+                <td>Char</td>
+                <td>Default SQL ordering (e.g., "date desc, id desc")</td>
+            </tr>
+            <tr>
+                <td><code>info</code></td>
+                <td>Text</td>
+                <td>Model documentation/description</td>
+            </tr>
+            <tr>
+                <td><code>field_id</code></td>
+                <td>One2many</td>
+                <td>Link to all fields defined on this model (ir.model.fields)</td>
+            </tr>
+            <tr>
+                <td><code>access_ids</code></td>
+                <td>One2many</td>
+                <td>Access control rules for this model (ir.model.access)</td>
+            </tr>
+            <tr>
+                <td><code>rule_ids</code></td>
+                <td>One2many</td>
+                <td>Record rules / row-level security (ir.rule)</td>
+            </tr>
+            <tr>
+                <td><code>state</code></td>
+                <td>Selection</td>
+                <td><code>manual</code> = Created via Studio/UI, <code>base</code> = Defined in Python code</td>
+            </tr>
+            <tr>
+                <td><code>transient</code></td>
+                <td>Boolean</td>
+                <td>True for wizard models (auto-deleted after use)</td>
+            </tr>
+            <tr>
+                <td><code>abstract</code></td>
+                <td>Boolean</td>
+                <td>True for mixin models (no database table)</td>
+            </tr>
+            <tr>
+                <td><code>modules</code></td>
+                <td>Char (computed)</td>
+                <td>Which installed modules define/extend this model</td>
+            </tr>
+            <tr>
+                <td><code>view_ids</code></td>
+                <td>One2many (computed)</td>
+                <td>All views (form, tree, kanban, etc.) for this model</td>
+            </tr>
+            <tr>
+                <td><code>count</code></td>
+                <td>Integer (computed)</td>
+                <td>Total number of records in this model</td>
+            </tr>
+        </table>
+
+        <h3>The ir.model.fields Model (Field Registry)</h3>
+
+        <div class="technical-box">
+            <p><code>ir.model.fields</code> stores metadata about every field in Odoo. Access via Settings → Technical → Database Structure → Fields. This is where Studio stores custom field definitions.</p>
+        </div>
+
+        <table>
+            <tr>
+                <th>Field</th>
+                <th>Type</th>
+                <th>Description</th>
+            </tr>
+            <tr>
+                <td><code>name</code></td>
+                <td>Char</td>
+                <td>Technical field name (e.g., "partner_id"). Custom fields start with "x_"</td>
+            </tr>
+            <tr>
+                <td><code>field_description</code></td>
+                <td>Char</td>
+                <td>Human-readable label shown in UI (e.g., "Customer")</td>
+            </tr>
+            <tr>
+                <td><code>model_id</code></td>
+                <td>Many2one</td>
+                <td>The model this field belongs to (ir.model)</td>
+            </tr>
+            <tr>
+                <td><code>ttype</code></td>
+                <td>Selection</td>
+                <td>Field type: char, integer, float, boolean, date, datetime, text, html, binary, selection, many2one, one2many, many2many, reference, monetary, properties</td>
+            </tr>
+            <tr>
+                <td><code>relation</code></td>
+                <td>Char</td>
+                <td>For relational fields: target model name (e.g., "res.partner")</td>
+            </tr>
+            <tr>
+                <td><code>relation_field</code></td>
+                <td>Char</td>
+                <td>For One2many: the Many2one field on the related model</td>
+            </tr>
+            <tr>
+                <td><code>required</code></td>
+                <td>Boolean</td>
+                <td>Field must have a value (cannot be empty)</td>
+            </tr>
+            <tr>
+                <td><code>readonly</code></td>
+                <td>Boolean</td>
+                <td>Field cannot be edited by users</td>
+            </tr>
+            <tr>
+                <td><code>index</code></td>
+                <td>Boolean</td>
+                <td>Database index for faster searches</td>
+            </tr>
+            <tr>
+                <td><code>store</code></td>
+                <td>Boolean</td>
+                <td>True = saved in database, False = computed on-the-fly</td>
+            </tr>
+            <tr>
+                <td><code>copied</code></td>
+                <td>Boolean</td>
+                <td>Value is copied when duplicating records</td>
+            </tr>
+            <tr>
+                <td><code>translate</code></td>
+                <td>Selection</td>
+                <td>Translation mode: standard, html_translate, xml_translate</td>
+            </tr>
+            <tr>
+                <td><code>company_dependent</code></td>
+                <td>Boolean</td>
+                <td>Different value per company (multi-company)</td>
+            </tr>
+            <tr>
+                <td><code>domain</code></td>
+                <td>Char</td>
+                <td>Filter for relational fields (e.g., "[('active','=',True)]")</td>
+            </tr>
+            <tr>
+                <td><code>on_delete</code></td>
+                <td>Selection</td>
+                <td>For Many2one: cascade, set null, or restrict</td>
+            </tr>
+            <tr>
+                <td><code>related</code></td>
+                <td>Char</td>
+                <td>Dot-path for related fields (e.g., "partner_id.email")</td>
+            </tr>
+            <tr>
+                <td><code>compute</code></td>
+                <td>Text</td>
+                <td>Python code for computed fields</td>
+            </tr>
+            <tr>
+                <td><code>depends</code></td>
+                <td>Char</td>
+                <td>Fields that trigger recomputation (e.g., "quantity,price_unit")</td>
+            </tr>
+            <tr>
+                <td><code>selection_ids</code></td>
+                <td>One2many</td>
+                <td>For Selection fields: the available options</td>
+            </tr>
+            <tr>
+                <td><code>state</code></td>
+                <td>Selection</td>
+                <td><code>manual</code> = Custom field, <code>base</code> = Defined in code</td>
+            </tr>
+            <tr>
+                <td><code>groups</code></td>
+                <td>Many2many</td>
+                <td>Security groups that can see this field</td>
+            </tr>
+        </table>
+
+        <div class="info-box">
+            <h4>Why This Matters</h4>
+            <ul>
+                <li><strong>Debugging</strong>: Check field properties when something isn't working as expected</li>
+                <li><strong>Studio</strong>: All custom fields you create are stored in ir.model.fields</li>
+                <li><strong>Export/Import</strong>: Understanding field metadata helps with data migration</li>
+                <li><strong>Security</strong>: Verify which fields are company_dependent or have access restrictions</li>
+            </ul>
+        </div>
+
         <!-- ==================== SECTION 3: FIELD TYPES ==================== -->
         <h2 id="field-types">2. Complete Field Types Guide</h2>
 
