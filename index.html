@@ -7916,32 +7916,36 @@ Content-Type: text/xml
 
             // ==================== SPIDER-MAN CURSOR ====================
             const spideyCursor = document.getElementById('spideyCursor');
-            const container = document.querySelector('.container');
             let lastX = 0, lastY = 0;
+            let isSpideyEnabled = window.innerWidth >= 768;
 
-            // Track mouse movement
-            document.addEventListener('mousemove', function(e) {
-                lastX = e.clientX;
-                lastY = e.clientY;
-                spideyCursor.style.left = e.clientX + 'px';
-                spideyCursor.style.top = e.clientY + 'px';
-                spideyCursor.style.display = 'block';
-            });
+            if (isSpideyEnabled && spideyCursor) {
+                document.body.classList.add('spidey-mode');
 
-            // Hide cursor when mouse leaves window
-            document.addEventListener('mouseleave', function() {
-                spideyCursor.style.display = 'none';
-            });
+                // Track mouse movement
+                document.addEventListener('mousemove', function(e) {
+                    lastX = e.clientX;
+                    lastY = e.clientY;
+                    spideyCursor.style.left = e.clientX + 'px';
+                    spideyCursor.style.top = e.clientY + 'px';
+                    spideyCursor.style.display = 'block';
+                });
 
-            // Web-slinging on click
-            document.addEventListener('mousedown', function(e) {
-                spideyCursor.classList.add('clicking');
-                shootWeb(lastX, lastY, e.clientX, e.clientY);
-            });
+                // Hide cursor when mouse leaves window
+                document.addEventListener('mouseleave', function() {
+                    spideyCursor.style.display = 'none';
+                });
 
-            document.addEventListener('mouseup', function() {
-                spideyCursor.classList.remove('clicking');
-            });
+                // Web-slinging on click
+                document.addEventListener('mousedown', function(e) {
+                    spideyCursor.classList.add('clicking');
+                    shootWeb(lastX, lastY, e.clientX, e.clientY);
+                });
+
+                document.addEventListener('mouseup', function() {
+                    spideyCursor.classList.remove('clicking');
+                });
+            }
 
             function shootWeb(fromX, fromY, toX, toY) {
                 // Create SVG for web line
@@ -8006,11 +8010,6 @@ Content-Type: text/xml
                         splat.remove();
                     }, 300);
                 }, 600);
-            }
-
-            // Enable Spider-Man cursor (desktop only)
-            if (window.innerWidth >= 768) {
-                document.body.classList.add('spidey-mode');
             }
 
             init();
