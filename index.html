@@ -69,7 +69,8 @@
         <!-- Search Bar -->
         <div class="search-container">
             <div class="search-wrapper">
-                <span class="search-icon">🔍</span>
+                <label for="searchInput" class="visually-hidden">Search topics</label>
+                <span class="search-icon" aria-hidden="true">🔍</span>
                 <input type="text" class="search-input" id="searchInput" placeholder="Search topics... (Press /)" autocomplete="off" role="combobox" aria-autocomplete="list" aria-controls="searchResults" aria-expanded="false">
             </div>
             <div class="search-results" id="searchResults" role="listbox" aria-label="Search results" aria-live="polite"></div>
