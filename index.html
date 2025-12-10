@@ -51,10 +51,15 @@
         <div class="sidebar-header">
             <div class="sidebar-logo">
                 <div class="sidebar-logo-icon">
-                    <!-- Odoo logo: the purple "o" ring from official branding -->
+                    <!-- Odoo logo: purple "o" ring -->
                     <svg viewBox="0 0 150 150" width="28" height="28">
-                        <circle cx="75" cy="75" r="75" fill="#714B67"/>
-                        <circle cx="75" cy="75" r="44" fill="white"/>
+                        <defs>
+                            <mask id="ring-mask">
+                                <circle cx="75" cy="75" r="75" fill="white"/>
+                                <circle cx="75" cy="75" r="44" fill="black"/>
+                            </mask>
+                        </defs>
+                        <circle cx="75" cy="75" r="75" fill="#714B67" mask="url(#ring-mask)"/>
                     </svg>
                 </div>
                 <span>Odoo Training</span>
