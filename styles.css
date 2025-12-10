@@ -1353,83 +1353,34 @@ strong {
     }
 }
 
-/* ==================== SPIDER-MAN CURSOR ==================== */
-/* Hide default cursor globally (desktop only via JS) */
+/* ==================== SPIDER ANIMATION ==================== */
+/* Hide default cursor globally when spider mode is active (desktop only via JS) */
 body.spidey-mode,
 body.spidey-mode * {
     cursor: none !important;
 }
 
-/* Custom Spider-Man cursor */
-.spidey-cursor {
+/* Spider animation canvas - transparent overlay */
+#spiderCanvas {
     position: fixed;
-    width: 32px;
-    height: 32px;
-    pointer-events: none;
-    z-index: 10000;
-    transform: translate(-50%, -50%);
-    transition: transform 0.1s ease;
-    display: none; /* Hidden until mouse moves */
-}
-
-.spidey-cursor svg {
+    top: 0;
+    left: 0;
     width: 100%;
     height: 100%;
-    filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3));
+    pointer-events: none; /* Allow clicks to pass through */
+    z-index: 10000;
+    display: none; /* Hidden until spidey mode enabled */
 }
 
-.spidey-cursor.clicking {
-    transform: translate(-50%, -50%) scale(0.85);
+/* Show canvas when spidey mode is active */
+body.spidey-mode #spiderCanvas {
+    display: block;
 }
 
-/* Web sling animation */
-.web-sling {
-    position: fixed;
-    pointer-events: none;
-    z-index: 9999;
-}
-
-.web-line {
-    stroke: #ccc;
-    stroke-width: 2;
-    fill: none;
-    stroke-dasharray: 200;
-    stroke-dashoffset: 200;
-    animation: shootWeb 0.4s ease-out forwards;
-}
-
-.web-splat {
-    position: absolute;
-    width: 30px;
-    height: 30px;
-    opacity: 0;
-    animation: splatAppear 0.4s ease-out 0.2s forwards;
-}
-
-@keyframes shootWeb {
-    to {
-        stroke-dashoffset: 0;
-    }
-}
-
-@keyframes splatAppear {
-    0% {
-        opacity: 0;
-        transform: scale(0.3);
-    }
-    50% {
-        opacity: 1;
-        transform: scale(1.2);
-    }
-    100% {
-        opacity: 0.8;
-        transform: scale(1);
-    }
-}
-
-@keyframes webFade {
-    to {
-        opacity: 0;
+/* Hide spider canvas on print */
+@media print {
+    #spiderCanvas {
+        display: none !important;
     }
 }
 
