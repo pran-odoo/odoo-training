@@ -531,11 +531,9 @@ document.addEventListener('keydown', function(e) {
         return;
     }
 
-    // Press 'S' to toggle spider cursor (only if available on desktop)
-    if ((e.key === 's' || e.key === 'S') && !e.ctrlKey && !e.metaKey) {
-        if (isSpideyAvailable()) {
-            toggleSpidey();
-        }
+    // Press 'Escape' to disable spider cursor (if active)
+    if (e.key === 'Escape' && isSpideyActive) {
+        disableSpidey(true);
         return;
     }
 
