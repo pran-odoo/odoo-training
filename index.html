@@ -1759,24 +1759,26 @@
     </style>
 </head>
 <body>
-    <!-- Spider-Man Cursor -->
+    <!-- Spider-Man Cursor - Web shooter hand -->
     <div class="spidey-cursor" id="spideyCursor">
-        <svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
-            <!-- Spider-Man head/mask -->
-            <ellipse cx="32" cy="30" rx="20" ry="22" fill="#e23636"/>
-            <!-- Eyes (white with black outline) -->
-            <path d="M20 24 Q16 20 14 26 Q16 34 24 30 Q26 26 20 24Z" fill="white" stroke="#111" stroke-width="1.5"/>
-            <path d="M44 24 Q48 20 50 26 Q48 34 40 30 Q38 26 44 24Z" fill="white" stroke="#111" stroke-width="1.5"/>
-            <!-- Web pattern lines -->
-            <path d="M32 8 L32 52" stroke="#111" stroke-width="0.8" fill="none"/>
-            <path d="M12 30 L52 30" stroke="#111" stroke-width="0.8" fill="none"/>
-            <path d="M16 14 L48 46" stroke="#111" stroke-width="0.8" fill="none"/>
-            <path d="M48 14 L16 46" stroke="#111" stroke-width="0.8" fill="none"/>
-            <!-- Curved web lines -->
-            <path d="M32 30 Q24 18 12 16" stroke="#111" stroke-width="0.6" fill="none"/>
-            <path d="M32 30 Q40 18 52 16" stroke="#111" stroke-width="0.6" fill="none"/>
-            <path d="M32 30 Q20 36 12 44" stroke="#111" stroke-width="0.6" fill="none"/>
-            <path d="M32 30 Q44 36 52 44" stroke="#111" stroke-width="0.6" fill="none"/>
+        <svg viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg">
+            <!-- Hand base (red glove) -->
+            <path d="M8 20 L8 28 Q8 30 10 30 L22 30 Q24 30 24 28 L24 20" fill="#e23636" stroke="#111" stroke-width="0.5"/>
+            <!-- Palm -->
+            <ellipse cx="16" cy="18" rx="9" ry="6" fill="#e23636" stroke="#111" stroke-width="0.5"/>
+            <!-- Web pattern on hand -->
+            <path d="M16 12 L16 24" stroke="#111" stroke-width="0.3" fill="none"/>
+            <path d="M7 18 L25 18" stroke="#111" stroke-width="0.3" fill="none"/>
+            <!-- Pinky finger (curled) -->
+            <ellipse cx="7" cy="14" rx="2.5" ry="4" fill="#e23636" stroke="#111" stroke-width="0.5"/>
+            <!-- Ring finger (curled) -->
+            <ellipse cx="11" cy="12" rx="2.5" ry="5" fill="#e23636" stroke="#111" stroke-width="0.5"/>
+            <!-- Index finger (extended - pointing) -->
+            <path d="M18 14 L18 3 Q18 1 20 1 Q22 1 22 3 L22 14" fill="#e23636" stroke="#111" stroke-width="0.5"/>
+            <!-- Pinky finger (extended) -->
+            <path d="M24 15 L26 5 Q26.5 3 28 3.5 Q29.5 4 29 6 L27 15" fill="#e23636" stroke="#111" stroke-width="0.5"/>
+            <!-- Web shooter dot -->
+            <circle cx="16" cy="18" r="2" fill="#111"/>
         </svg>
     </div>
 
@@ -7939,7 +7941,12 @@ Content-Type: text/xml
                 // Web-slinging on click
                 document.addEventListener('mousedown', function(e) {
                     spideyCursor.classList.add('clicking');
-                    shootWeb(lastX, lastY, e.clientX, e.clientY);
+                    // Shoot web from cursor to a random point above/around
+                    const angle = -Math.PI/2 + (Math.random() - 0.5) * Math.PI/2; // -90° ± 45°
+                    const distance = 150 + Math.random() * 100;
+                    const targetX = lastX + Math.cos(angle) * distance;
+                    const targetY = lastY + Math.sin(angle) * distance;
+                    shootWeb(lastX, lastY, targetX, targetY);
                 });
 
                 document.addEventListener('mouseup', function() {
@@ -7950,66 +7957,65 @@ Content-Type: text/xml
             function shootWeb(fromX, fromY, toX, toY) {
                 // Create SVG for web line
                 const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
-                svg.classList.add('web-sling');
-                svg.style.position = 'fixed';
-                svg.style.left = '0';
-                svg.style.top = '0';
-                svg.style.width = '100%';
-                svg.style.height = '100%';
-                svg.style.pointerEvents = 'none';
-                svg.style.zIndex = '9999';
+                svg.style.cssText = 'position:fixed;left:0;top:0;width:100%;height:100%;pointer-events:none;z-index:9999;';
 
-                // Calculate path with slight curve for dynamic feel
-                const midX = (fromX + toX) / 2;
-                const midY = (fromY + toY) / 2 - 20; // Slight arc upward
-
+                // Create the web line path
                 const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
-                path.setAttribute('d', `M ${fromX} ${fromY} Q ${midX} ${midY} ${toX} ${toY}`);
-                path.classList.add('web-line');
+                path.setAttribute('d', `M ${fromX} ${fromY} L ${toX} ${toY}`);
+                path.setAttribute('stroke', '#ffffff');
+                path.setAttribute('stroke-width', '2');
+                path.setAttribute('fill', 'none');
+                path.setAttribute('stroke-linecap', 'round');
 
-                // Calculate path length for animation
                 svg.appendChild(path);
                 document.body.appendChild(svg);
 
-                // Get actual path length after adding to DOM
+                // Animate the web shooting out
                 const pathLength = path.getTotalLength();
                 path.style.strokeDasharray = pathLength;
                 path.style.strokeDashoffset = pathLength;
+                path.style.transition = 'stroke-dashoffset 0.2s ease-out';
+
+                // Trigger animation
+                requestAnimationFrame(() => {
+                    path.style.strokeDashoffset = '0';
+                });
 
                 // Create web splat at end point
                 const splat = document.createElement('div');
                 splat.innerHTML = `
-                    <svg viewBox="0 0 40 40" width="30" height="30">
-                        <circle cx="20" cy="20" r="4" fill="#ccc"/>
-                        <path d="M20 20 L20 5" stroke="#ccc" stroke-width="1.5"/>
-                        <path d="M20 20 L20 35" stroke="#ccc" stroke-width="1.5"/>
-                        <path d="M20 20 L5 20" stroke="#ccc" stroke-width="1.5"/>
-                        <path d="M20 20 L35 20" stroke="#ccc" stroke-width="1.5"/>
-                        <path d="M20 20 L8 8" stroke="#ccc" stroke-width="1"/>
-                        <path d="M20 20 L32 8" stroke="#ccc" stroke-width="1"/>
-                        <path d="M20 20 L8 32" stroke="#ccc" stroke-width="1"/>
-                        <path d="M20 20 L32 32" stroke="#ccc" stroke-width="1"/>
+                    <svg viewBox="0 0 40 40" width="24" height="24">
+                        <circle cx="20" cy="20" r="3" fill="#fff"/>
+                        <line x1="20" y1="20" x2="20" y2="6" stroke="#fff" stroke-width="1.5"/>
+                        <line x1="20" y1="20" x2="20" y2="34" stroke="#fff" stroke-width="1.5"/>
+                        <line x1="20" y1="20" x2="6" y2="20" stroke="#fff" stroke-width="1.5"/>
+                        <line x1="20" y1="20" x2="34" y2="20" stroke="#fff" stroke-width="1.5"/>
+                        <line x1="20" y1="20" x2="10" y2="10" stroke="#fff" stroke-width="1"/>
+                        <line x1="20" y1="20" x2="30" y2="10" stroke="#fff" stroke-width="1"/>
+                        <line x1="20" y1="20" x2="10" y2="30" stroke="#fff" stroke-width="1"/>
+                        <line x1="20" y1="20" x2="30" y2="30" stroke="#fff" stroke-width="1"/>
                     </svg>
                 `;
-                splat.style.position = 'fixed';
-                splat.style.left = (toX - 15) + 'px';
-                splat.style.top = (toY - 15) + 'px';
-                splat.style.pointerEvents = 'none';
-                splat.style.zIndex = '9998';
-                splat.style.opacity = '0';
-                splat.style.transform = 'scale(0.3)';
-                splat.style.animation = 'splatAppear 0.4s ease-out 0.2s forwards';
+                splat.style.cssText = `position:fixed;left:${toX - 12}px;top:${toY - 12}px;pointer-events:none;z-index:9998;opacity:0;transform:scale(0);transition:all 0.15s ease-out;`;
                 document.body.appendChild(splat);
 
-                // Clean up after animation
-                setTimeout(function() {
-                    svg.style.animation = 'webFade 0.3s ease-out forwards';
-                    splat.style.animation = 'webFade 0.3s ease-out forwards';
-                    setTimeout(function() {
+                // Show splat after web reaches target
+                setTimeout(() => {
+                    splat.style.opacity = '1';
+                    splat.style.transform = 'scale(1)';
+                }, 150);
+
+                // Fade out and clean up
+                setTimeout(() => {
+                    svg.style.transition = 'opacity 0.3s';
+                    svg.style.opacity = '0';
+                    splat.style.opacity = '0';
+                    splat.style.transform = 'scale(0.5)';
+                    setTimeout(() => {
                         svg.remove();
                         splat.remove();
                     }, 300);
-                }, 600);
+                }, 500);
             }
 
             init();
