@@ -7872,7 +7872,8 @@ Content-Type: text/xml
                     const targetElement = document.querySelector(targetId);
                     if (targetElement) {
                         targetElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                        history.pushState(null, null, targetId);
+                        // Use replaceState to update URL without polluting browser history
+                        history.replaceState(null, null, targetId);
                     }
                 });
             });
