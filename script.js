@@ -531,6 +531,14 @@ document.addEventListener('keydown', function(e) {
         return;
     }
 
+    // Press 'S' to toggle spider cursor (only if available on desktop)
+    if ((e.key === 's' || e.key === 'S') && !e.ctrlKey && !e.metaKey) {
+        if (isSpideyAvailable()) {
+            toggleSpidey();
+        }
+        return;
+    }
+
     // Press '?' for help
     if (e.key === '?' || (e.key === '/' && e.shiftKey)) {
         toggleKeyboardHint();
