@@ -437,6 +437,12 @@
         body.font-large h3 { font-size: 1.5rem; }
         body.font-large h4 { font-size: 1.25rem; }
 
+        body.font-xlarge { font-size: 20px; }
+        body.font-xlarge h1 { font-size: 2.75rem; }
+        body.font-xlarge h2 { font-size: 2.25rem; }
+        body.font-xlarge h3 { font-size: 1.75rem; }
+        body.font-xlarge h4 { font-size: 1.5rem; }
+
         /* ==================== KEYBOARD SHORTCUT HINT ==================== */
         .keyboard-hint {
             position: fixed;
@@ -7601,17 +7607,24 @@ Content-Type: text/xml
             darkModeBtn.addEventListener('click', toggleDarkMode);
 
             // ==================== FONT SIZE ====================
+            // Font sizes: small (14px) -> normal (16px) -> large (18px) -> xlarge (20px)
+            const FONT_SIZES = ['small', 'normal', 'large', 'xlarge'];
+            let currentFontSizeIndex = 1; // Start at normal (index 1)
+
             function setFontSize(size) {
-                document.body.classList.remove('font-small', 'font-large');
-                fontSmallBtn.classList.remove('active');
-                fontLargeBtn.classList.remove('active');
+                document.body.classList.remove('font-small', 'font-large', 'font-xlarge');
 
                 if (size === 'small') {
                     document.body.classList.add('font-small');
-                    fontSmallBtn.classList.add('active');
+                    currentFontSizeIndex = 0;
                 } else if (size === 'large') {
                     document.body.classList.add('font-large');
-                    fontLargeBtn.classList.add('active');
+                    currentFontSizeIndex = 2;
+                } else if (size === 'xlarge') {
+                    document.body.classList.add('font-xlarge');
+                    currentFontSizeIndex = 3;
+                } else {
+                    currentFontSizeIndex = 1; // normal
                 }
 
                 localStorage.setItem(STORAGE_KEYS.fontSize, size || 'normal');
@@ -7624,14 +7637,20 @@ Content-Type: text/xml
                 }
             }
 
+            // A- decreases font size
             fontSmallBtn.addEventListener('click', function() {
-                const isActive = this.classList.contains('active');
-                setFontSize(isActive ? 'normal' : 'small');
+                if (currentFontSizeIndex > 0) {
+                    currentFontSizeIndex--;
+                    setFontSize(FONT_SIZES[currentFontSizeIndex]);
+                }
             });
 
+            // A+ increases font size
             fontLargeBtn.addEventListener('click', function() {
-                const isActive = this.classList.contains('active');
-                setFontSize(isActive ? 'normal' : 'large');
+                if (currentFontSizeIndex < FONT_SIZES.length - 1) {
+                    currentFontSizeIndex++;
+                    setFontSize(FONT_SIZES[currentFontSizeIndex]);
+                }
             });
 
             // ==================== KEYBOARD SHORTCUTS ====================
