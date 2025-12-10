@@ -87,6 +87,7 @@
 
         <nav>
             <div class="sidebar-section-title">Getting Started</div>
+            <a href="#what-is-odoo">What is Odoo?</a>
             <a href="#intro">Introduction</a>
             <a href="#models">1. Models</a>
             <a href="#field-types">2. Field Types</a>
@@ -167,6 +168,229 @@
             <a href="#emails">22. Email in Odoo</a>
             <a href="#context">23. Context - The Hidden Parameter</a>
             <a href="#constraints">24. Constraints - Data Validation Rules</a>
+        </div>
+
+        <!-- ==================== SECTION 0: WHAT IS ODOO ==================== -->
+        <h2 id="what-is-odoo">What is Odoo?</h2>
+
+        <div class="odoo-box">
+            <h4>Odoo at a Glance</h4>
+            <p><strong>Odoo</strong> is an open-source ERP (Enterprise Resource Planning) system that integrates all business operations into one platform. Originally called <strong>OpenERP</strong> (and before that, <strong>TinyERP</strong>), it was created by <strong>Fabien Pinckaers</strong> in Belgium in 2005.</p>
+            <p>Today, Odoo powers <strong>12+ million users</strong> worldwide and offers 80+ official apps covering Sales, Inventory, Accounting, HR, Manufacturing, and more.</p>
+        </div>
+
+        <h3>The Technology Stack</h3>
+        <p>Understanding what powers Odoo helps you troubleshoot issues and communicate with developers.</p>
+
+        <table>
+            <tr>
+                <th>Layer</th>
+                <th>Technology</th>
+                <th>What It Does</th>
+            </tr>
+            <tr>
+                <td><strong>Database</strong></td>
+                <td>PostgreSQL (psql)</td>
+                <td>Stores all your data - customers, orders, products, everything. Each Odoo database is a separate PostgreSQL database.</td>
+            </tr>
+            <tr>
+                <td><strong>Backend</strong></td>
+                <td>Python 3</td>
+                <td>The brain of Odoo. All business logic, calculations, workflows, and data processing happen in Python.</td>
+            </tr>
+            <tr>
+                <td><strong>Frontend</strong></td>
+                <td>JavaScript (OWL Framework)</td>
+                <td>What you see in the browser. OWL (Odoo Web Library) is Odoo's own reactive framework, similar to React or Vue.</td>
+            </tr>
+            <tr>
+                <td><strong>Web Server</strong></td>
+                <td>Werkzeug (Python)</td>
+                <td>Handles HTTP requests. Odoo runs its own web server - no Apache or Nginx required (though often used as proxy).</td>
+            </tr>
+            <tr>
+                <td><strong>API</strong></td>
+                <td>XML-RPC / JSON-RPC</td>
+                <td>How external systems talk to Odoo. Used for integrations, mobile apps, and automation scripts.</td>
+            </tr>
+            <tr>
+                <td><strong>Templating</strong></td>
+                <td>QWeb (XML)</td>
+                <td>Odoo's template engine for reports, website pages, and email templates. Similar to Jinja2 but XML-based.</td>
+            </tr>
+        </table>
+
+        <h3>How It All Connects</h3>
+
+        <div class="diagram">
+            <pre>
+┌─────────────────────────────────────────────────────────────────────────┐
+│                           YOUR BROWSER                                   │
+│                    (Chrome, Firefox, Safari)                            │
+└─────────────────────────────────┬───────────────────────────────────────┘
+                                  │ HTTP/HTTPS
+                                  ▼
+┌─────────────────────────────────────────────────────────────────────────┐
+│                         ODOO WEB SERVER                                  │
+│                     (Werkzeug + Odoo HTTP)                              │
+│  ┌─────────────────────────────────────────────────────────────────┐   │
+│  │                    PYTHON BACKEND                                │   │
+│  │  ┌──────────┐  ┌──────────┐  ┌──────────┐  ┌──────────────┐    │   │
+│  │  │  Models  │  │  Views   │  │ Business │  │   Reports    │    │   │
+│  │  │  (ORM)   │  │  (XML)   │  │  Logic   │  │   (QWeb)     │    │   │
+│  │  └──────────┘  └──────────┘  └──────────┘  └──────────────┘    │   │
+│  └─────────────────────────────────────────────────────────────────┘   │
+│  ┌─────────────────────────────────────────────────────────────────┐   │
+│  │                   JAVASCRIPT FRONTEND                            │   │
+│  │  ┌──────────┐  ┌──────────┐  ┌──────────┐  ┌──────────────┐    │   │
+│  │  │   OWL    │  │ Web      │  │  Action  │  │   Widgets    │    │   │
+│  │  │Components│  │ Client   │  │ Manager  │  │              │    │   │
+│  │  └──────────┘  └──────────┘  └──────────┘  └──────────────┘    │   │
+│  └─────────────────────────────────────────────────────────────────┘   │
+└─────────────────────────────────┬───────────────────────────────────────┘
+                                  │ SQL Queries
+                                  ▼
+┌─────────────────────────────────────────────────────────────────────────┐
+│                         POSTGRESQL DATABASE                              │
+│  ┌────────────┐  ┌────────────┐  ┌────────────┐  ┌────────────┐       │
+│  │ res_partner│  │ sale_order │  │  product   │  │  account   │  ...  │
+│  │ (Contacts) │  │  (Sales)   │  │ (Products) │  │ (Invoices) │       │
+│  └────────────┘  └────────────┘  └────────────┘  └────────────┘       │
+└─────────────────────────────────────────────────────────────────────────┘
+            </pre>
+        </div>
+
+        <h3>Community vs Enterprise</h3>
+
+        <div class="comparison-grid">
+            <div class="comparison-card">
+                <h4>Community Edition (CE)</h4>
+                <ul>
+                    <li><strong>Free & Open Source</strong> (LGPL license)</li>
+                    <li>Core modules: Sales, CRM, Inventory, Accounting basics</li>
+                    <li>Self-hosted only</li>
+                    <li>Community support (forums, GitHub)</li>
+                    <li>No Odoo Studio</li>
+                    <li>Full source code access</li>
+                </ul>
+            </div>
+            <div class="comparison-card">
+                <h4>Enterprise Edition (EE)</h4>
+                <ul>
+                    <li><strong>Paid license</strong> (per user/month)</li>
+                    <li>All CE modules + advanced features</li>
+                    <li>Odoo.sh cloud hosting option</li>
+                    <li>Official Odoo support</li>
+                    <li><strong>Odoo Studio</strong> for no-code customization</li>
+                    <li>Mobile apps, IoT, advanced reporting</li>
+                </ul>
+            </div>
+        </div>
+
+        <h3>Key Terminology</h3>
+
+        <table>
+            <tr>
+                <th>Term</th>
+                <th>What It Means</th>
+                <th>Example</th>
+            </tr>
+            <tr>
+                <td><strong>Module / App</strong></td>
+                <td>A self-contained package of features that can be installed or uninstalled</td>
+                <td><code>sale</code>, <code>stock</code>, <code>hr</code></td>
+            </tr>
+            <tr>
+                <td><strong>Model</strong></td>
+                <td>A database table that stores a specific type of data</td>
+                <td><code>res.partner</code> (contacts), <code>sale.order</code> (quotations)</td>
+            </tr>
+            <tr>
+                <td><strong>Record</strong></td>
+                <td>A single row in a model (one customer, one order)</td>
+                <td>Customer "Acme Corp" with ID 42</td>
+            </tr>
+            <tr>
+                <td><strong>Field</strong></td>
+                <td>A column in a model that stores a specific piece of data</td>
+                <td><code>name</code>, <code>email</code>, <code>amount_total</code></td>
+            </tr>
+            <tr>
+                <td><strong>View</strong></td>
+                <td>How data is displayed to users (form, list, kanban, etc.)</td>
+                <td>The sales order form you fill out</td>
+            </tr>
+            <tr>
+                <td><strong>ORM</strong></td>
+                <td>Object-Relational Mapping - Python code that talks to the database</td>
+                <td><code>self.env['res.partner'].search([])</code></td>
+            </tr>
+            <tr>
+                <td><strong>XML-ID / External ID</strong></td>
+                <td>A unique identifier for records, used in data files and code</td>
+                <td><code>base.main_company</code>, <code>sale.action_orders</code></td>
+            </tr>
+            <tr>
+                <td><strong>Context</strong></td>
+                <td>A dictionary of parameters passed around to control behavior</td>
+                <td><code>{'default_partner_id': 5, 'lang': 'en_US'}</code></td>
+            </tr>
+            <tr>
+                <td><strong>Domain</strong></td>
+                <td>A filter condition written as a list of tuples</td>
+                <td><code>[('state', '=', 'sale'), ('amount_total', '>', 1000)]</code></td>
+            </tr>
+        </table>
+
+        <h3>Common File Types</h3>
+
+        <table>
+            <tr>
+                <th>Extension</th>
+                <th>Purpose</th>
+                <th>Where You'll See It</th>
+            </tr>
+            <tr>
+                <td><code>.py</code></td>
+                <td>Python code - models, business logic, controllers</td>
+                <td><code>models/sale_order.py</code></td>
+            </tr>
+            <tr>
+                <td><code>.xml</code></td>
+                <td>Views, actions, menus, demo data, security rules</td>
+                <td><code>views/sale_order_views.xml</code></td>
+            </tr>
+            <tr>
+                <td><code>.js</code></td>
+                <td>JavaScript - custom widgets, frontend logic</td>
+                <td><code>static/src/js/my_widget.js</code></td>
+            </tr>
+            <tr>
+                <td><code>.scss</code> / <code>.css</code></td>
+                <td>Styling - colors, layouts, fonts</td>
+                <td><code>static/src/scss/style.scss</code></td>
+            </tr>
+            <tr>
+                <td><code>.csv</code></td>
+                <td>Data import files (demo data, initial records)</td>
+                <td><code>data/res.country.csv</code></td>
+            </tr>
+            <tr>
+                <td><code>.po</code> / <code>.pot</code></td>
+                <td>Translation files</td>
+                <td><code>i18n/fr.po</code></td>
+            </tr>
+        </table>
+
+        <div class="info-box">
+            <h4>Version Numbers</h4>
+            <p>Odoo releases a new major version every year. The version number corresponds to the year:</p>
+            <ul>
+                <li><strong>Odoo 17</strong> - Released October 2023 (current LTS candidate)</li>
+                <li><strong>Odoo 18</strong> - Released October 2024</li>
+                <li><strong>Odoo 19</strong> - Expected October 2025</li>
+            </ul>
+            <p>Each version has breaking changes, so modules need to be migrated between versions. Always check module compatibility before upgrading.</p>
         </div>
 
         <!-- ==================== SECTION 1: INTRODUCTION ==================== -->
