@@ -656,14 +656,23 @@ const spideyToggleBtn = document.getElementById('spideyToggleBtn');
 let lastX = 0, lastY = 0;
 let isSpideyActive = false;
 
-// Check if user prefers reduced motion
-const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+// Check if user prefers reduced motion (reactive to changes)
+const reducedMotionQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
+let prefersReducedMotion = reducedMotionQuery.matches;
 
-// Spidey cursor only available on desktop and when reduced motion is not preferred
-const isSpideyAvailable = window.innerWidth >= 768 && !prefersReducedMotion;
+// Re-evaluate when reduced motion preference changes
+reducedMotionQuery.addEventListener('change', function(e) {
+    prefersReducedMotion = e.matches;
+    updateSpideyAvailability();
+});
+
+// Dynamic availability check
+function isSpideyAvailable() {
+    return window.innerWidth >= 768 && !prefersReducedMotion;
+}
 
 function enableSpidey() {
-    if (!isSpideyAvailable) return;
+    if (!isSpideyAvailable()) return;
     isSpideyActive = true;
     document.body.classList.add('spidey-mode');
     spideyToggleBtn.classList.add('active');
@@ -673,7 +682,7 @@ function enableSpidey() {
 function disableSpidey() {
     isSpideyActive = false;
     document.body.classList.remove('spidey-mode');
-    spideyCursor.style.display = 'none';
+    if (spideyCursor) spideyCursor.style.display = 'none';
     spideyToggleBtn.classList.remove('active');
     safeSetItem(STORAGE_KEYS.spideyCursor, 'false');
 }
@@ -686,20 +695,33 @@ function toggleSpidey() {
     }
 }
 
+// Update availability on resize/orientation change
+function updateSpideyAvailability() {
+    const available = isSpideyAvailable();
+    spideyToggleBtn.style.display = available ? '' : 'none';
+
+    if (!available && isSpideyActive) {
+        // Disable if no longer available (e.g., resized to mobile)
+        disableSpidey();
+    }
+}
+
 // Load saved preference (default: enabled on desktop if available)
 function loadSpideyPreference() {
-    if (!isSpideyAvailable) {
-        spideyToggleBtn.style.display = 'none'; // Hide toggle on mobile/reduced-motion
+    if (!isSpideyAvailable()) {
+        spideyToggleBtn.style.display = 'none';
         return;
     }
     const saved = safeGetItem(STORAGE_KEYS.spideyCursor);
-    // Default to enabled if no preference saved
     if (saved === 'false') {
         disableSpidey();
     } else {
         enableSpidey();
     }
 }
+
+// Handle resize/orientation changes
+window.addEventListener('resize', updateSpideyAvailability);
 
 spideyToggleBtn.addEventListener('click', toggleSpidey);
 
