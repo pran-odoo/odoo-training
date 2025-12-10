@@ -745,6 +745,7 @@ h2 {
     padding-bottom: 12px;
     padding-top: 16px;
     scroll-margin-top: 80px;
+    contain: layout style;
 }
 
 @media (min-width: 640px) {
@@ -790,6 +791,7 @@ p {
     border-radius: 12px;
     margin: 20px 0;
     border-left: 4px solid;
+    contain: layout style;
 }
 
 @media (min-width: 640px) {
@@ -960,15 +962,9 @@ table {
     font-size: 14px;
     border-radius: 10px;
     overflow: hidden;
-    display: block;
     overflow-x: auto;
     -webkit-overflow-scrolling: touch;
-}
-
-@media (min-width: 768px) {
-    table {
-        display: table;
-    }
+    contain: layout style;
 }
 
 th {
