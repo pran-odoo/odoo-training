@@ -2168,25 +2168,25 @@ function initPersonalization() {
     // Toggle settings panel
     settingsBtn.addEventListener('click', (e) => {
         e.stopPropagation();
-        const isOpen = settingsPanel.classList.toggle('open');
-        settingsBtn.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
-        settingsPanel.setAttribute('aria-hidden', isOpen ? 'false' : 'true');
+        const willOpen = !settingsPanel.classList.contains('open');
 
-        // Position the panel near the button (only on desktop)
-        if (isOpen && window.innerWidth > 640) {
+        if (willOpen && window.innerWidth > 640) {
+            // Position BEFORE opening (while still hidden) on desktop
             const btnRect = settingsBtn.getBoundingClientRect();
             const viewportHeight = window.innerHeight;
             const viewportWidth = window.innerWidth;
             const panelWidth = 280;
             const margin = 16;
 
-            // Reset position first to measure natural height
+            // Temporarily make visible to measure, but off-screen
+            settingsPanel.style.visibility = 'hidden';
+            settingsPanel.style.display = 'block';
             settingsPanel.style.top = '0';
-            settingsPanel.style.bottom = 'auto';
+            settingsPanel.style.left = '-9999px';
             settingsPanel.style.maxHeight = 'none';
 
             // Get actual panel height
-            const panelHeight = settingsPanel.offsetHeight;
+            const panelHeight = settingsPanel.offsetHeight || 400;
 
             // Calculate available space above and below button
             const spaceBelow = viewportHeight - btnRect.bottom - margin;
@@ -2216,12 +2216,29 @@ function initPersonalization() {
             }
             if (left < margin) left = margin;
             settingsPanel.style.left = left + 'px';
-        } else if (isOpen) {
-            // On mobile, reset inline styles to let CSS handle it
+
+            // Reset visibility - CSS will handle it via .open class
+            settingsPanel.style.visibility = '';
+            settingsPanel.style.display = '';
+
+            // Now open
+            settingsPanel.classList.add('open');
+            settingsBtn.setAttribute('aria-expanded', 'true');
+            settingsPanel.setAttribute('aria-hidden', 'false');
+        } else if (willOpen) {
+            // Mobile - just open, CSS handles positioning
             settingsPanel.style.top = '';
             settingsPanel.style.bottom = '';
             settingsPanel.style.left = '';
             settingsPanel.style.maxHeight = '';
+            settingsPanel.classList.add('open');
+            settingsBtn.setAttribute('aria-expanded', 'true');
+            settingsPanel.setAttribute('aria-hidden', 'false');
+        } else {
+            // Close
+            settingsPanel.classList.remove('open');
+            settingsBtn.setAttribute('aria-expanded', 'false');
+            settingsPanel.setAttribute('aria-hidden', 'true');
         }
     });
 
