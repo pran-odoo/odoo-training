@@ -1120,6 +1120,255 @@
             </ul>
         </div>
 
+        <!-- Quick Tips -->
+        <h3>Quick Tips</h3>
+        <div class="tips-container">
+            <div class="tip-card">
+                <div class="tip-icon">💡</div>
+                <div class="tip-content">
+                    <p>Every model automatically gets 5 "magic" columns: <code>id</code>, <code>create_uid</code>, <code>create_date</code>, <code>write_uid</code>, <code>write_date</code>. These track who created/modified each record and when.</p>
+                </div>
+            </div>
+            <div class="tip-card">
+                <div class="tip-icon">💡</div>
+                <div class="tip-content">
+                    <p>Custom fields created via UI or XML must start with <code>x_</code>. Studio specifically uses <code>x_studio_</code> prefix.</p>
+                </div>
+            </div>
+            <div class="tip-card">
+                <div class="tip-icon">💡</div>
+                <div class="tip-content">
+                    <p>To find a model's technical name, enable Developer Mode, hover over any field, and the tooltip shows "Model:".</p>
+                </div>
+            </div>
+            <div class="tip-card">
+                <div class="tip-icon">💡</div>
+                <div class="tip-content">
+                    <p><code>_rec_name</code> controls what appears in dropdowns. If not set and no <code>name</code> field exists, it shows the record ID.</p>
+                </div>
+            </div>
+            <div class="tip-card">
+                <div class="tip-icon">💡</div>
+                <div class="tip-content">
+                    <p>Models use <code>_order</code> to define default sorting. For example, <code>sale.order</code> uses <code>_order = 'date_order desc, id desc'</code> to show newest records first.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Practical Use Cases -->
+        <h3>Practical Use Cases</h3>
+        <div class="use-cases-container">
+            <div class="use-case-card">
+                <div class="use-case-scenario">Need temporary data for a multi-step wizard</div>
+                <div class="use-case-solution">Use <code>TransientModel</code> - records are automatically cleaned up after a configured time</div>
+            </div>
+            <div class="use-case-card">
+                <div class="use-case-scenario">A dropdown shows IDs instead of meaningful names</div>
+                <div class="use-case-solution">Ensure the model has a <code>name</code> field or set <code>_rec_name</code> to an existing field</div>
+            </div>
+            <div class="use-case-card">
+                <div class="use-case-scenario">Want to know which module created a model</div>
+                <div class="use-case-solution">Go to Settings → Technical → Models → check "In Apps" column</div>
+            </div>
+            <div class="use-case-card">
+                <div class="use-case-scenario">Need to see all fields on a model</div>
+                <div class="use-case-solution">Settings → Technical → Models → select model → "Fields" tab</div>
+            </div>
+            <div class="use-case-card">
+                <div class="use-case-scenario">Check how many records exist in a model</div>
+                <div class="use-case-solution">Settings → Technical → Models → "Count" column shows total records</div>
+            </div>
+        </div>
+
+        <!-- Common Mistakes -->
+        <h3>Common Mistakes</h3>
+        <div class="mistakes-container">
+            <div class="mistake-card">
+                <div class="mistake-header">
+                    <div class="mistake-icon">✕</div>
+                    <div class="mistake-title">Custom field name rejected</div>
+                </div>
+                <div class="mistake-body">
+                    <div class="mistake-cause">
+                        <span class="mistake-label">Cause</span>
+                        <span class="mistake-text">Field name doesn't start with <code>x_</code></span>
+                    </div>
+                    <div class="mistake-solution">
+                        <span class="mistake-label">Solution</span>
+                        <span class="mistake-text">All custom fields must use <code>x_</code> prefix (Studio adds <code>x_studio_</code> automatically)</span>
+                    </div>
+                </div>
+            </div>
+            <div class="mistake-card">
+                <div class="mistake-header">
+                    <div class="mistake-icon">✕</div>
+                    <div class="mistake-title">Dropdown shows IDs like "42"</div>
+                </div>
+                <div class="mistake-body">
+                    <div class="mistake-cause">
+                        <span class="mistake-label">Cause</span>
+                        <span class="mistake-text">No <code>_rec_name</code> set and no <code>name</code> field exists</span>
+                    </div>
+                    <div class="mistake-solution">
+                        <span class="mistake-label">Solution</span>
+                        <span class="mistake-text">Add a <code>name</code> field or configure <code>_rec_name</code> to point to an existing field</span>
+                    </div>
+                </div>
+            </div>
+            <div class="mistake-card">
+                <div class="mistake-header">
+                    <div class="mistake-icon">✕</div>
+                    <div class="mistake-title">Wizard data disappears</div>
+                </div>
+                <div class="mistake-body">
+                    <div class="mistake-cause">
+                        <span class="mistake-label">Cause</span>
+                        <span class="mistake-text">Using <code>TransientModel</code> which auto-deletes records</span>
+                    </div>
+                    <div class="mistake-solution">
+                        <span class="mistake-label">Solution</span>
+                        <span class="mistake-text">This is expected behavior - transient records auto-delete. Use regular <code>Model</code> for persistent data</span>
+                    </div>
+                </div>
+            </div>
+            <div class="mistake-card">
+                <div class="mistake-header">
+                    <div class="mistake-icon">✕</div>
+                    <div class="mistake-title">Can't find custom model in Technical menu</div>
+                </div>
+                <div class="mistake-body">
+                    <div class="mistake-cause">
+                        <span class="mistake-label">Cause</span>
+                        <span class="mistake-text">Model is transient (a wizard)</span>
+                    </div>
+                    <div class="mistake-solution">
+                        <span class="mistake-label">Solution</span>
+                        <span class="mistake-text">Transient models (wizards) don't appear in the Models list - this is normal</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Knowledge Check Quiz -->
+        <h3>Knowledge Check</h3>
+        <div class="quiz-container">
+            <div class="quiz-card" data-correct="a">
+                <div class="quiz-header">
+                    <div class="quiz-number">Q1</div>
+                    <div class="quiz-question">What's the difference between a regular Model and a TransientModel?</div>
+                </div>
+                <div class="quiz-options">
+                    <div class="quiz-option" data-option="a">
+                        <div class="quiz-option-letter">A</div>
+                        <div class="quiz-option-text">Model stores data permanently; TransientModel auto-deletes old records</div>
+                    </div>
+                    <div class="quiz-option" data-option="b">
+                        <div class="quiz-option-letter">B</div>
+                        <div class="quiz-option-text">Model is faster than TransientModel</div>
+                    </div>
+                    <div class="quiz-option" data-option="c">
+                        <div class="quiz-option-letter">C</div>
+                        <div class="quiz-option-text">TransientModel cannot have relationships</div>
+                    </div>
+                    <div class="quiz-option" data-option="d">
+                        <div class="quiz-option-letter">D</div>
+                        <div class="quiz-option-text">There is no difference</div>
+                    </div>
+                </div>
+                <div class="quiz-answer">
+                    <div class="quiz-answer-label">Correct Answer: A</div>
+                    <div class="quiz-explanation">TransientModel is used for wizards. Records are automatically cleaned up based on time/count limits configured in the system.</div>
+                </div>
+            </div>
+
+            <div class="quiz-card" data-correct="b">
+                <div class="quiz-header">
+                    <div class="quiz-number">Q2</div>
+                    <div class="quiz-question">Which columns does Odoo automatically add to every record?</div>
+                </div>
+                <div class="quiz-options">
+                    <div class="quiz-option" data-option="a">
+                        <div class="quiz-option-letter">A</div>
+                        <div class="quiz-option-text">id, name, active</div>
+                    </div>
+                    <div class="quiz-option" data-option="b">
+                        <div class="quiz-option-letter">B</div>
+                        <div class="quiz-option-text">id, create_uid, create_date, write_uid, write_date</div>
+                    </div>
+                    <div class="quiz-option" data-option="c">
+                        <div class="quiz-option-letter">C</div>
+                        <div class="quiz-option-text">id, sequence, parent_id</div>
+                    </div>
+                    <div class="quiz-option" data-option="d">
+                        <div class="quiz-option-letter">D</div>
+                        <div class="quiz-option-text">id, company_id, user_id</div>
+                    </div>
+                </div>
+                <div class="quiz-answer">
+                    <div class="quiz-answer-label">Correct Answer: B</div>
+                    <div class="quiz-explanation">These "magic columns" track record creation and modification. Useful for auditing who changed what and when.</div>
+                </div>
+            </div>
+
+            <div class="quiz-card" data-correct="c">
+                <div class="quiz-header">
+                    <div class="quiz-number">Q3</div>
+                    <div class="quiz-question">You created a custom field via Studio but can't find it in the database. What prefix should it have?</div>
+                </div>
+                <div class="quiz-options">
+                    <div class="quiz-option" data-option="a">
+                        <div class="quiz-option-letter">A</div>
+                        <div class="quiz-option-text">custom_</div>
+                    </div>
+                    <div class="quiz-option" data-option="b">
+                        <div class="quiz-option-letter">B</div>
+                        <div class="quiz-option-text">studio_</div>
+                    </div>
+                    <div class="quiz-option" data-option="c">
+                        <div class="quiz-option-letter">C</div>
+                        <div class="quiz-option-text">x_studio_</div>
+                    </div>
+                    <div class="quiz-option" data-option="d">
+                        <div class="quiz-option-letter">D</div>
+                        <div class="quiz-option-text">field_</div>
+                    </div>
+                </div>
+                <div class="quiz-answer">
+                    <div class="quiz-answer-label">Correct Answer: C</div>
+                    <div class="quiz-explanation">Studio fields use <code>x_studio_</code> prefix. Manual custom fields (via UI or XML) use <code>x_</code> prefix.</div>
+                </div>
+            </div>
+
+            <div class="quiz-card" data-correct="b">
+                <div class="quiz-header">
+                    <div class="quiz-number">Q4</div>
+                    <div class="quiz-question">A dropdown field shows record IDs (like "42") instead of names. What's likely missing?</div>
+                </div>
+                <div class="quiz-options">
+                    <div class="quiz-option" data-option="a">
+                        <div class="quiz-option-letter">A</div>
+                        <div class="quiz-option-text">The active field</div>
+                    </div>
+                    <div class="quiz-option" data-option="b">
+                        <div class="quiz-option-letter">B</div>
+                        <div class="quiz-option-text">The _rec_name attribute or a name field</div>
+                    </div>
+                    <div class="quiz-option" data-option="c">
+                        <div class="quiz-option-letter">C</div>
+                        <div class="quiz-option-text">Access rights</div>
+                    </div>
+                    <div class="quiz-option" data-option="d">
+                        <div class="quiz-option-letter">D</div>
+                        <div class="quiz-option-text">The field's domain</div>
+                    </div>
+                </div>
+                <div class="quiz-answer">
+                    <div class="quiz-answer-label">Correct Answer: B</div>
+                    <div class="quiz-explanation"><code>_rec_name</code> tells Odoo which field to display in dropdowns. If not set and no <code>name</code> field exists, it shows the ID.</div>
+                </div>
+            </div>
+        </div>
+
         <!-- ==================== SECTION 3: FIELD TYPES ==================== -->
         <h2 id="field-types">2. Complete Field Types Guide</h2>
 
