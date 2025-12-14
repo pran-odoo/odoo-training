@@ -4429,11 +4429,13 @@ body.links-never .main-content a:hover {
 
 /* Content Width Control */
 :root {
-    --content-max-width: 720px;
+    --content-max-width: 1000px;
 }
 
-.main-content > section {
-    max-width: var(--content-max-width);
+@media (min-width: 769px) {
+    .container {
+        max-width: var(--content-max-width);
+    }
 }
 
 /* High Contrast Mode */

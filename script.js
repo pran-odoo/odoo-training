@@ -2146,10 +2146,10 @@ const SIDEBAR_WIDTHS = {
 };
 
 const CONTENT_WIDTHS = {
-    narrow: '640px',
-    default: '720px',
-    wide: '800px',
-    full: '100%'
+    narrow: '800px',
+    default: '1000px',
+    wide: '1200px',
+    full: 'none'
 };
 
 let currentSettings = { ...DEFAULT_SETTINGS };
