@@ -58,6 +58,11 @@ function updateProgressBar() {
     }
 }
 
+// ==================== SCROLL BEHAVIOR (respects reduced-motion) ====================
+function getScrollBehavior() {
+    return window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth';
+}
+
 // ==================== BACK TO TOP ====================
 function toggleBackToTop() {
     if (window.scrollY > 500) {
@@ -68,7 +73,7 @@ function toggleBackToTop() {
 }
 
 backToTop.addEventListener('click', function() {
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    window.scrollTo({ top: 0, behavior: getScrollBehavior() });
 });
 
 // ==================== ACTIVE SECTION TRACKING ====================
@@ -99,7 +104,7 @@ function updateActiveSection() {
                     const linkRect = link.getBoundingClientRect();
                     const sidebarRect = sidebar.getBoundingClientRect();
                     if (linkRect.top < sidebarRect.top + 150 || linkRect.bottom > sidebarRect.bottom - 50) {
-                        link.scrollIntoView({ block: 'center', behavior: 'smooth' });
+                        link.scrollIntoView({ block: 'center', behavior: getScrollBehavior() });
                     }
                 }
             }
@@ -356,7 +361,7 @@ searchResults.addEventListener('click', function(e) {
         const index = parseInt(resultItem.dataset.index, 10);
         const result = searchResults._results[index];
         if (result && result.element) {
-            result.element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            result.element.scrollIntoView({ behavior: getScrollBehavior(), block: 'start' });
             searchInput.value = '';
             searchResults.innerHTML = '';
             searchResults._results = null;
@@ -387,6 +392,7 @@ searchInput.addEventListener('keydown', function(e) {
     if (e.key === 'Escape') {
         this.value = '';
         searchResults.innerHTML = '';
+        searchResults._results = null;
         searchInput.setAttribute('aria-expanded', 'false');
         searchInput.removeAttribute('aria-activedescendant');
         this.blur();
@@ -433,6 +439,7 @@ function toggleDarkMode() {
     const isDark = document.body.classList.contains('dark-mode');
     darkModeBtn.textContent = isDark ? '☀️' : '🌙';
     darkModeBtn.classList.toggle('active', isDark);
+    darkModeBtn.setAttribute('aria-pressed', isDark ? 'true' : 'false');
     safeSetItem(STORAGE_KEYS.darkMode, isDark ? 'true' : 'false');
 }
 
@@ -442,6 +449,7 @@ function loadDarkMode() {
         document.body.classList.add('dark-mode');
         darkModeBtn.textContent = '☀️';
         darkModeBtn.classList.add('active');
+        darkModeBtn.setAttribute('aria-pressed', 'true');
     }
 }
 
@@ -497,6 +505,8 @@ fontLargeBtn.addEventListener('click', function() {
 // ==================== KEYBOARD SHORTCUTS ====================
 function toggleKeyboardHint() {
     keyboardHint.classList.toggle('visible');
+    const isVisible = keyboardHint.classList.contains('visible');
+    helpBtn.setAttribute('aria-pressed', isVisible ? 'true' : 'false');
 }
 
 helpBtn.addEventListener('click', toggleKeyboardHint);
@@ -510,7 +520,7 @@ function navigateSection(direction) {
 
     const targetSection = sectionsArray[newIndex];
     if (targetSection) {
-        targetSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        targetSection.scrollIntoView({ behavior: getScrollBehavior(), block: 'start' });
     }
 }
 
@@ -600,7 +610,7 @@ resumeBanner.addEventListener('click', function(e) {
     if (lastSection) {
         const target = document.getElementById(lastSection);
         if (target) {
-            target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            target.scrollIntoView({ behavior: getScrollBehavior(), block: 'start' });
         }
     }
     resumeBanner.style.display = 'none';
@@ -618,9 +628,13 @@ sidebarLinks.forEach(link => {
         const targetId = this.getAttribute('href');
         const targetElement = document.querySelector(targetId);
         if (targetElement) {
-            targetElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            targetElement.scrollIntoView({ behavior: getScrollBehavior(), block: 'start' });
             // Use replaceState to update URL without polluting browser history
-            history.replaceState(null, null, targetId);
+            try {
+                history.replaceState(null, null, targetId);
+            } catch (e) {
+                // Ignore if replaceState fails (e.g., in restricted contexts)
+            }
         }
     });
 });
@@ -1026,6 +1040,7 @@ function enableSpidey(savePreference = true) {
     isSpideyActive = true;
     document.body.classList.add('spidey-mode');
     spideyToggleBtn.classList.add('active');
+    spideyToggleBtn.setAttribute('aria-pressed', 'true');
 
     // Initialize and start spider animation
     if (!spiderEngine) {
@@ -1045,6 +1060,7 @@ function disableSpidey(savePreference = true) {
     isSpideyActive = false;
     document.body.classList.remove('spidey-mode');
     spideyToggleBtn.classList.remove('active');
+    spideyToggleBtn.setAttribute('aria-pressed', 'false');
 
     // Stop spider animation
     if (spiderEngine) {
@@ -1115,34 +1131,58 @@ function initQuiz() {
         const answerSection = card.querySelector('.quiz-answer');
         let answered = false;
 
-        options.forEach(option => {
-            option.addEventListener('click', function() {
-                if (answered) return; // Prevent re-answering
-                answered = true;
+        // Add accessibility attributes
+        options.forEach((option, index) => {
+            option.setAttribute('role', 'button');
+            option.setAttribute('tabindex', '0');
+            option.setAttribute('aria-pressed', 'false');
+        });
 
-                const selectedOption = this.dataset.option;
-                const isCorrect = selectedOption === correctAnswer;
+        function selectOption(option) {
+            if (answered) return; // Prevent re-answering
+            answered = true;
 
-                // Mark all options
-                options.forEach(opt => {
-                    opt.classList.add('disabled');
-                    if (opt.dataset.option === correctAnswer) {
-                        opt.classList.add('correct');
-                    } else if (opt === this && !isCorrect) {
-                        opt.classList.add('incorrect');
-                    }
-                });
+            const selectedOption = option.dataset.option;
+            const isCorrect = selectedOption === correctAnswer;
 
-                // Show the answer explanation
-                if (answerSection) {
-                    answerSection.classList.add('show');
+            // Mark all options
+            options.forEach(opt => {
+                opt.classList.add('disabled');
+                opt.setAttribute('tabindex', '-1');
+                opt.setAttribute('aria-disabled', 'true');
+                if (opt.dataset.option === correctAnswer) {
+                    opt.classList.add('correct');
+                    opt.setAttribute('aria-pressed', 'true');
+                } else if (opt === option && !isCorrect) {
+                    opt.classList.add('incorrect');
+                    opt.setAttribute('aria-pressed', 'true');
                 }
+            });
 
-                // Add visual feedback
-                if (isCorrect) {
-                    card.classList.add('answered-correct');
-                } else {
-                    card.classList.add('answered-incorrect');
+            // Show the answer explanation
+            if (answerSection) {
+                answerSection.classList.add('show');
+            }
+
+            // Add visual feedback
+            if (isCorrect) {
+                card.classList.add('answered-correct');
+            } else {
+                card.classList.add('answered-incorrect');
+            }
+        }
+
+        options.forEach(option => {
+            // Click handler
+            option.addEventListener('click', function() {
+                selectOption(this);
+            });
+
+            // Keyboard handler (Enter and Space)
+            option.addEventListener('keydown', function(e) {
+                if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    selectOption(this);
                 }
             });
         });

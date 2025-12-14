@@ -501,8 +501,10 @@ body.font-xlarge h4 { font-size: 1.5rem; }
     background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
     color: white;
     padding: 10px 16px;
+    border: none;
     border-radius: 12px;
     font-size: 13px;
+    font-family: inherit;
     z-index: 999;
     box-shadow: var(--shadow-md);
     display: none;
@@ -891,10 +893,6 @@ pre code {
     color: inherit;
 }
 
-.code-comment { color: #94a3b8; }
-.code-keyword { color: #f472b6; }
-.code-string { color: #a5f3fc; }
-.code-function { color: #fbbf24; }
 
 /* Pre blocks inside colored boxes - ensure dark background */
 .critical-box pre,
@@ -976,13 +974,6 @@ body.dark-mode .odoo-box code {
 }
 
 /* ==================== TABLES ==================== */
-.table-wrapper {
-    overflow-x: auto;
-    margin: 20px 0;
-    border-radius: 10px;
-    box-shadow: var(--shadow-sm);
-}
-
 table {
     width: 100%;
     border-collapse: collapse;
@@ -1018,6 +1009,19 @@ tr:nth-child(even) {
 
 tr:hover {
     background: rgba(113, 75, 103, 0.05);
+}
+
+/* Field table - decision matrix style */
+.field-table {
+    border: 2px solid var(--primary);
+}
+
+.field-table th {
+    background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+}
+
+.field-table td {
+    vertical-align: middle;
 }
 
 /* ==================== LISTS ==================== */
@@ -1896,26 +1900,6 @@ body.dark-mode .quiz-explanation code {
     color: #f0abfc;
 }
 
-.quiz-reveal-btn {
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    padding: 10px 20px;
-    background: var(--primary);
-    color: white;
-    border: none;
-    border-radius: 8px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.2s ease;
-    margin-top: 16px;
-}
-
-.quiz-reveal-btn:hover {
-    background: #5d3a52;
-    transform: translateY(-1px);
-}
-
 /* ==================== HIGH DPI / RETINA DISPLAYS ==================== */
 @media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
     /* Sharper borders on retina */
@@ -1989,8 +1973,8 @@ body.spidey-mode #spiderCanvas {
     /* Hide ALL interactive elements - including search, toolbar, resume banner, keyboard hints */
     .sidebar, .progress-container, .back-to-top, .current-section,
     .mobile-menu-toggle, .sidebar-overlay,
-    .search-container, .toolbar, .resume-banner, .keyboard-hint-overlay,
-    .search-results, .keyboard-hint-badge {
+    .search-container, .toolbar, .resume-banner, .keyboard-hint,
+    .search-results {
         display: none !important;
     }
 
@@ -2463,50 +2447,6 @@ blockquote p {
     color: #4ade80;
     font-size: 14px;
     font-weight: bold;
-}
-
-/* Smooth scroll indicator */
-.scroll-indicator {
-    position: fixed;
-    bottom: 100px;
-    right: 24px;
-    width: 40px;
-    height: 40px;
-    background: var(--bg-card);
-    border: 2px solid var(--primary);
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 18px;
-    color: var(--primary);
-    opacity: 0;
-    visibility: hidden;
-    transition: all 0.3s ease;
-    z-index: 997;
-    box-shadow: var(--shadow-md);
-}
-
-.scroll-indicator.visible {
-    opacity: 1;
-    visibility: visible;
-}
-
-/* Reading time estimate badge */
-.reading-time {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    padding: 6px 12px;
-    background: rgba(113, 75, 103, 0.1);
-    border-radius: 20px;
-    font-size: 13px;
-    color: var(--text-muted);
-    margin-bottom: 24px;
-}
-
-.reading-time::before {
-    content: '⏱️';
 }
 
 /* Subtle text selection */
