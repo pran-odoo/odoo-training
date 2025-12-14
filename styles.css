@@ -3854,20 +3854,22 @@ body.dark-mode .glossary-popover.below::after {
 
 /* ==================== PERSONALIZATION SETTINGS PANEL ==================== */
 .settings-panel {
-    position: absolute;
-    top: 100%;
-    left: 0;
+    position: fixed;
+    top: auto;
+    bottom: auto;
+    left: var(--space-4);
     width: 280px;
+    max-height: calc(100vh - 200px);
+    overflow-y: auto;
     background: var(--bg-primary);
     border: 1px solid var(--border);
     border-radius: var(--radius-lg);
     box-shadow: var(--shadow-xl);
     opacity: 0;
     visibility: hidden;
-    transform: translateY(-10px);
+    transform: translateY(10px);
     transition: all var(--transition-normal);
-    z-index: 100;
-    margin-top: var(--space-2);
+    z-index: 1100;
 }
 
 .settings-panel.open {
@@ -4078,18 +4080,39 @@ body.dark-mode .font-option {
 @media (max-width: 640px) {
     .settings-panel {
         position: fixed;
-        top: auto;
-        bottom: 0;
-        left: 0;
+        top: auto !important;
+        bottom: 0 !important;
+        left: 0 !important;
         right: 0;
         width: 100%;
+        max-width: 100%;
+        max-height: 70vh;
         border-radius: var(--radius-xl) var(--radius-xl) 0 0;
         transform: translateY(100%);
-        margin-top: 0;
     }
 
     .settings-panel.open {
         transform: translateY(0);
+    }
+
+    /* Add dark overlay behind panel on mobile */
+    .settings-panel::before {
+        content: '';
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 100%;
+        background: rgba(0, 0, 0, 0.5);
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity var(--transition-normal);
+    }
+
+    .settings-panel.open::before {
+        bottom: 0;
+        opacity: 1;
+        pointer-events: auto;
     }
 }
 
