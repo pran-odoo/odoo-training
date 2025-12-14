@@ -4067,3 +4067,132 @@ body.dark-mode .font-option {
         transform: translateY(0);
     }
 }
+
+/* ==================== SHAREABILITY ==================== */
+/* Section share button */
+.section-share-wrapper {
+    display: inline-flex;
+    margin-left: var(--space-3);
+    vertical-align: middle;
+}
+
+.section-share-btn {
+    opacity: 0;
+    background: var(--bg-secondary);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    padding: var(--space-1) var(--space-2);
+    font-size: var(--text-sm);
+    cursor: pointer;
+    transition: all var(--transition-fast);
+}
+
+h2:hover .section-share-btn,
+.section-share-btn:focus {
+    opacity: 1;
+}
+
+.section-share-btn:hover {
+    background: var(--primary);
+    border-color: var(--primary);
+}
+
+.section-share-btn.copied {
+    background: var(--success);
+    border-color: var(--success);
+}
+
+/* Toast notification */
+.toast {
+    position: fixed;
+    bottom: var(--space-8);
+    left: 50%;
+    transform: translateX(-50%) translateY(20px);
+    background: var(--bg-primary);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: var(--space-3) var(--space-6);
+    font-size: var(--text-sm);
+    color: var(--text-primary);
+    box-shadow: var(--shadow-xl);
+    z-index: var(--z-toast);
+    opacity: 0;
+    transition: all var(--transition-normal);
+}
+
+.toast.visible {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+}
+
+/* Share menu */
+.share-menu {
+    position: fixed;
+    bottom: var(--space-4);
+    right: var(--space-4);
+    background: var(--bg-primary);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-xl);
+    padding: var(--space-2);
+    z-index: var(--z-dropdown);
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(10px);
+    transition: all var(--transition-fast);
+}
+
+.share-menu.visible {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+}
+
+.share-menu-item {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+    width: 100%;
+    padding: var(--space-3) var(--space-4);
+    background: transparent;
+    border: none;
+    border-radius: var(--radius-md);
+    font-size: var(--text-sm);
+    color: var(--text-primary);
+    cursor: pointer;
+    transition: background var(--transition-fast);
+    text-align: left;
+}
+
+.share-menu-item:hover {
+    background: var(--bg-hover);
+}
+
+.share-icon {
+    font-size: var(--text-lg);
+}
+
+/* Dark mode */
+body.dark-mode .toast {
+    background: var(--bg-secondary);
+    border-color: var(--border-dark);
+}
+
+body.dark-mode .share-menu {
+    background: var(--bg-secondary);
+    border-color: var(--border-dark);
+}
+
+body.dark-mode .section-share-btn {
+    background: var(--bg-tertiary);
+    border-color: var(--border-dark);
+}
+
+/* Print styles */
+@media print {
+    .section-share-wrapper,
+    .share-menu,
+    .toast {
+        display: none !important;
+    }
+}

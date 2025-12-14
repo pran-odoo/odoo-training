@@ -2121,6 +2121,192 @@ function initPersonalization() {
 
 initPersonalization();
 
+// ==================== SHAREABILITY FEATURES ====================
+function initShareability() {
+    // Add share button to each h2 section heading
+    const sections = document.querySelectorAll('h2[id]');
+
+    sections.forEach(section => {
+        const shareWrapper = document.createElement('span');
+        shareWrapper.className = 'section-share-wrapper';
+
+        const shareBtn = document.createElement('button');
+        shareBtn.className = 'section-share-btn';
+        shareBtn.innerHTML = '🔗';
+        shareBtn.title = 'Copy link to this section';
+        shareBtn.setAttribute('aria-label', 'Copy link to ' + section.textContent);
+
+        shareBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            const url = window.location.origin + window.location.pathname + '#' + section.id;
+            copyToClipboard(url, shareBtn);
+        });
+
+        shareWrapper.appendChild(shareBtn);
+        section.appendChild(shareWrapper);
+    });
+
+    // Add share menu for mobile/touch
+    createShareMenu();
+}
+
+function copyToClipboard(text, triggerElement) {
+    navigator.clipboard.writeText(text).then(() => {
+        showToast('Link copied to clipboard!');
+        // Visual feedback on button
+        if (triggerElement) {
+            triggerElement.classList.add('copied');
+            setTimeout(() => triggerElement.classList.remove('copied'), 1500);
+        }
+    }).catch(() => {
+        // Fallback for older browsers
+        const textarea = document.createElement('textarea');
+        textarea.value = text;
+        textarea.style.position = 'fixed';
+        textarea.style.opacity = '0';
+        document.body.appendChild(textarea);
+        textarea.select();
+        try {
+            document.execCommand('copy');
+            showToast('Link copied to clipboard!');
+        } catch (e) {
+            showToast('Failed to copy link');
+        }
+        document.body.removeChild(textarea);
+    });
+}
+
+function showToast(message) {
+    // Remove existing toast
+    const existing = document.querySelector('.toast');
+    if (existing) existing.remove();
+
+    const toast = document.createElement('div');
+    toast.className = 'toast';
+    toast.textContent = message;
+    toast.setAttribute('role', 'alert');
+    document.body.appendChild(toast);
+
+    // Trigger animation
+    requestAnimationFrame(() => {
+        toast.classList.add('visible');
+    });
+
+    // Auto-remove
+    setTimeout(() => {
+        toast.classList.remove('visible');
+        setTimeout(() => toast.remove(), 300);
+    }, 2500);
+}
+
+function createShareMenu() {
+    const shareMenu = document.createElement('div');
+    shareMenu.className = 'share-menu';
+    shareMenu.id = 'shareMenu';
+    shareMenu.setAttribute('role', 'menu');
+    shareMenu.setAttribute('aria-hidden', 'true');
+    shareMenu.innerHTML = `
+        <button class="share-menu-item" data-action="copy-link">
+            <span class="share-icon">🔗</span>
+            <span>Copy link</span>
+        </button>
+        <button class="share-menu-item" data-action="copy-snippet">
+            <span class="share-icon">📋</span>
+            <span>Copy as text</span>
+        </button>
+        <button class="share-menu-item" data-action="print">
+            <span class="share-icon">🖨️</span>
+            <span>Print page</span>
+        </button>
+        ${navigator.share ? `
+        <button class="share-menu-item" data-action="native-share">
+            <span class="share-icon">📤</span>
+            <span>Share...</span>
+        </button>
+        ` : ''}
+    `;
+    document.body.appendChild(shareMenu);
+
+    // Handle share menu actions
+    shareMenu.querySelectorAll('.share-menu-item').forEach(item => {
+        item.addEventListener('click', () => {
+            const action = item.dataset.action;
+            handleShareAction(action);
+            closeShareMenu();
+        });
+    });
+
+    // Close on outside click
+    document.addEventListener('click', (e) => {
+        if (!shareMenu.contains(e.target) && !e.target.classList.contains('section-share-btn')) {
+            closeShareMenu();
+        }
+    });
+}
+
+function handleShareAction(action) {
+    const currentUrl = window.location.href;
+    const title = document.title;
+
+    switch (action) {
+        case 'copy-link':
+            copyToClipboard(currentUrl);
+            break;
+
+        case 'copy-snippet':
+            // Copy visible section as text
+            const activeSection = document.querySelector('h2.active') ||
+                                 document.querySelector('h2[id]');
+            if (activeSection) {
+                let content = activeSection.textContent + '\n\n';
+                let next = activeSection.nextElementSibling;
+                while (next && next.tagName !== 'H2') {
+                    if (next.tagName === 'P' || next.tagName === 'LI') {
+                        content += next.textContent.trim() + '\n';
+                    }
+                    next = next.nextElementSibling;
+                }
+                content += '\n— ' + currentUrl;
+                copyToClipboard(content.trim());
+            }
+            break;
+
+        case 'print':
+            window.print();
+            break;
+
+        case 'native-share':
+            if (navigator.share) {
+                navigator.share({
+                    title: title,
+                    url: currentUrl
+                }).catch(() => {}); // Ignore cancel
+            }
+            break;
+    }
+}
+
+function closeShareMenu() {
+    const shareMenu = document.getElementById('shareMenu');
+    if (shareMenu) {
+        shareMenu.classList.remove('visible');
+        shareMenu.setAttribute('aria-hidden', 'true');
+    }
+}
+
+// Add share command to command palette
+function addShareCommand() {
+    if (typeof commands !== 'undefined' && Array.isArray(commands)) {
+        commands.push(
+            { type: 'action', icon: '🔗', title: 'Copy Page Link', action: () => { closeCommandPalette(); copyToClipboard(window.location.href); }, keywords: ['share', 'copy', 'link', 'url'] },
+            { type: 'action', icon: '📤', title: 'Share Page', action: () => { closeCommandPalette(); if (navigator.share) { navigator.share({ title: document.title, url: window.location.href }); } else { copyToClipboard(window.location.href); } }, keywords: ['share', 'send'] }
+        );
+    }
+}
+
+initShareability();
+addShareCommand();
+
 // ==================== SERVICE WORKER REGISTRATION ====================
 if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
