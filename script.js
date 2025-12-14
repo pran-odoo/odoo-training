@@ -662,6 +662,108 @@ function init() {
 
     // Show resume banner after a short delay
     setTimeout(loadReadingProgress, 500);
+
+    // Initialize TrueFocus animation on title
+    initTrueFocus();
+}
+
+// ==================== TRUE FOCUS ANIMATION ====================
+function initTrueFocus() {
+    const containers = document.querySelectorAll('[data-true-focus]');
+
+    containers.forEach(container => {
+        const text = container.textContent.trim();
+        const words = text.split(' ');
+        const manualMode = container.dataset.trueFocusManual === 'true';
+        const duration = parseFloat(container.dataset.trueFocusDuration) || 0.5;
+        const pause = parseFloat(container.dataset.trueFocusPause) || 1.5;
+
+        // Clear original content
+        container.textContent = '';
+        container.classList.add('true-focus-container');
+
+        // Create word spans
+        const wordElements = words.map((word, index) => {
+            const span = document.createElement('span');
+            span.className = 'true-focus-word' + (manualMode ? ' manual-mode' : '');
+            span.textContent = word;
+            span.dataset.index = index;
+            container.appendChild(span);
+            return span;
+        });
+
+        // Create focus frame with corners
+        const frame = document.createElement('div');
+        frame.className = 'true-focus-frame';
+        frame.innerHTML = `
+            <span class="true-focus-corner top-left"></span>
+            <span class="true-focus-corner top-right"></span>
+            <span class="true-focus-corner bottom-left"></span>
+            <span class="true-focus-corner bottom-right"></span>
+        `;
+        container.appendChild(frame);
+
+        let currentIndex = 0;
+        let intervalId = null;
+
+        // Update frame position
+        function updateFrame(index) {
+            if (index < 0 || index >= wordElements.length) return;
+
+            const word = wordElements[index];
+            const containerRect = container.getBoundingClientRect();
+            const wordRect = word.getBoundingClientRect();
+
+            frame.style.left = (wordRect.left - containerRect.left) + 'px';
+            frame.style.top = (wordRect.top - containerRect.top) + 'px';
+            frame.style.width = wordRect.width + 'px';
+            frame.style.height = wordRect.height + 'px';
+            frame.classList.add('visible');
+        }
+
+        // Set active word
+        function setActiveWord(index) {
+            wordElements.forEach((el, i) => {
+                el.classList.toggle('active', i === index);
+            });
+            updateFrame(index);
+            currentIndex = index;
+        }
+
+        // Auto-advance animation
+        function startAutoAnimation() {
+            if (manualMode) return;
+
+            // Initial activation
+            setActiveWord(0);
+
+            intervalId = setInterval(() => {
+                const nextIndex = (currentIndex + 1) % wordElements.length;
+                setActiveWord(nextIndex);
+            }, (duration + pause) * 1000);
+        }
+
+        // Manual mode: hover to focus
+        if (manualMode) {
+            wordElements.forEach((word, index) => {
+                word.addEventListener('mouseenter', () => setActiveWord(index));
+            });
+            // Start with first word active
+            setActiveWord(0);
+        } else {
+            startAutoAnimation();
+        }
+
+        // Handle window resize
+        window.addEventListener('resize', () => {
+            updateFrame(currentIndex);
+        });
+
+        // Cleanup on page unload
+        window.addEventListener('beforeunload', () => {
+            if (intervalId) clearInterval(intervalId);
+        });
+    });
 }
 
 // ==================== SPIDER ANIMATION (Canvas-based) ====================
