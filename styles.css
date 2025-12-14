@@ -1531,6 +1531,23 @@ body.dark-mode .use-case-scenario {
     margin-top: 2px;
 }
 
+/* Code inside use-case cards */
+.use-case-solution code,
+.use-case-scenario code {
+    background: rgba(139, 92, 246, 0.15);
+    color: #7c3aed;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-size: 0.85em;
+    white-space: nowrap;
+}
+
+body.dark-mode .use-case-solution code,
+body.dark-mode .use-case-scenario code {
+    background: rgba(167, 139, 250, 0.2);
+    color: #c4b5fd;
+}
+
 /* ==================== COMMON MISTAKES ==================== */
 .mistakes-container {
     display: flex;
@@ -1636,6 +1653,21 @@ body.dark-mode .mistake-solution .mistake-label {
 .mistake-text {
     color: var(--text-secondary);
     line-height: 1.6;
+}
+
+/* Code inside mistake cards */
+.mistake-text code {
+    background: rgba(239, 68, 68, 0.1);
+    color: #dc2626;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-size: 0.85em;
+    white-space: nowrap;
+}
+
+body.dark-mode .mistake-text code {
+    background: rgba(248, 113, 113, 0.15);
+    color: #fca5a5;
 }
 
 /* ==================== QUIZ ==================== */
@@ -1834,6 +1866,25 @@ body.dark-mode .quiz-answer-label::before {
 
 body.dark-mode .quiz-explanation {
     color: #86efac;
+}
+
+/* Code inside quiz cards */
+.quiz-option-text code,
+.quiz-question code,
+.quiz-explanation code {
+    background: rgba(113, 75, 103, 0.12);
+    color: var(--primary);
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-size: 0.85em;
+    white-space: nowrap;
+}
+
+body.dark-mode .quiz-option-text code,
+body.dark-mode .quiz-question code,
+body.dark-mode .quiz-explanation code {
+    background: rgba(240, 171, 252, 0.15);
+    color: #f0abfc;
 }
 
 .quiz-reveal-btn {
