@@ -1958,5 +1958,41 @@ function initGlossary() {
 // Initialize glossary after a short delay to not block initial render
 setTimeout(initGlossary, 500);
 
+// ==================== SERVICE WORKER REGISTRATION ====================
+if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+        navigator.serviceWorker.register('/sw.js')
+            .then(registration => {
+                console.log('[PWA] Service Worker registered:', registration.scope);
+
+                // Check for updates
+                registration.addEventListener('updatefound', () => {
+                    const newWorker = registration.installing;
+                    newWorker.addEventListener('statechange', () => {
+                        if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                            // New version available - show update notification
+                            showUpdateNotification();
+                        }
+                    });
+                });
+            })
+            .catch(error => {
+                console.log('[PWA] Service Worker registration failed:', error);
+            });
+    });
+}
+
+function showUpdateNotification() {
+    const notification = document.createElement('div');
+    notification.className = 'update-notification';
+    notification.innerHTML = `
+        <span>A new version is available!</span>
+        <button class="update-btn" onclick="location.reload()">Update</button>
+        <button class="update-dismiss" onclick="this.parentElement.remove()">&times;</button>
+    `;
+    document.body.appendChild(notification);
+    setTimeout(() => notification.classList.add('visible'), 100);
+}
+
 init();
 });
