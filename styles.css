@@ -15,54 +15,149 @@
 }
 
 :root {
-    /* Odoo Colors */
+    /* ========== DESIGN SYSTEM TOKENS ========== */
+
+    /* Brand Colors */
     --primary: #714B67;
     --primary-dark: #5a3d53;
     --primary-light: #9f7aea;
+    --accent-color: #714B67;
 
-    /* Neutrals */
+    /* Semantic Colors */
+    --success: #10b981;
+    --success-light: #d1fae5;
+    --warning: #f59e0b;
+    --warning-light: #fef3c7;
+    --error: #ef4444;
+    --error-light: #fee2e2;
+    --info: #0284c7;
+    --info-light: #e0f2fe;
+
+    /* Neutrals (Light Mode) */
     --bg-main: #f8fafc;
     --bg-card: #ffffff;
     --bg-primary: #ffffff;
     --bg-secondary: #f8fafc;
+    --bg-tertiary: #f1f5f9;
     --bg-code: #1e293b;
     --bg-sidebar: #0f172a;
+    --bg-hover: rgba(113, 75, 103, 0.08);
+    --bg-active: rgba(113, 75, 103, 0.12);
 
-    /* Text */
+    /* Text Colors */
     --text-primary: #1e293b;
     --text-secondary: #475569;
     --text-muted: #64748b;
     --text-light: #94a3b8;
+    --text-inverse: #ffffff;
 
     /* Borders */
     --border: #e2e8f0;
-    --border-light: #e2e8f0;
+    --border-light: #f1f5f9;
     --border-dark: #334155;
+    --border-focus: var(--primary);
 
-    /* Status Colors */
-    --success: #10b981;
-    --warning: #f59e0b;
-    --error: #ef4444;
-    --info: #0284c7;
+    /* ========== FLUID TYPOGRAPHY SCALE ========== */
+    /* Using clamp() for responsive sizing: min, preferred (vw), max */
+    --text-xs: clamp(0.6875rem, 0.65rem + 0.1vw, 0.75rem);      /* 11-12px */
+    --text-sm: clamp(0.8125rem, 0.775rem + 0.15vw, 0.875rem);   /* 13-14px */
+    --text-base: clamp(0.9375rem, 0.9rem + 0.2vw, 1rem);        /* 15-16px */
+    --text-md: clamp(1rem, 0.95rem + 0.25vw, 1.125rem);         /* 16-18px */
+    --text-lg: clamp(1.125rem, 1.05rem + 0.35vw, 1.25rem);      /* 18-20px */
+    --text-xl: clamp(1.25rem, 1.15rem + 0.5vw, 1.5rem);         /* 20-24px */
+    --text-2xl: clamp(1.5rem, 1.35rem + 0.75vw, 1.875rem);      /* 24-30px */
+    --text-3xl: clamp(1.875rem, 1.65rem + 1vw, 2.25rem);        /* 30-36px */
+    --text-4xl: clamp(2.25rem, 1.95rem + 1.5vw, 3rem);          /* 36-48px */
 
-    /* Spacing */
+    /* Line Heights */
+    --leading-tight: 1.25;
+    --leading-snug: 1.375;
+    --leading-normal: 1.5;
+    --leading-relaxed: 1.625;
+    --leading-loose: 1.75;
+
+    /* Font Weights */
+    --font-normal: 400;
+    --font-medium: 500;
+    --font-semibold: 600;
+    --font-bold: 700;
+
+    /* Font Families */
+    --font-sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Inter', Arial, sans-serif;
+    --font-mono: 'SF Mono', 'Fira Code', 'Consolas', monospace;
+
+    /* ========== SPACING SCALE ========== */
+    /* 4px base unit */
+    --space-0: 0;
+    --space-1: 0.25rem;   /* 4px */
+    --space-2: 0.5rem;    /* 8px */
+    --space-3: 0.75rem;   /* 12px */
+    --space-4: 1rem;      /* 16px */
+    --space-5: 1.25rem;   /* 20px */
+    --space-6: 1.5rem;    /* 24px */
+    --space-8: 2rem;      /* 32px */
+    --space-10: 2.5rem;   /* 40px */
+    --space-12: 3rem;     /* 48px */
+    --space-16: 4rem;     /* 64px */
+    --space-20: 5rem;     /* 80px */
+    --space-24: 6rem;     /* 96px */
+
+    /* ========== COMPONENT TOKENS ========== */
+
+    /* Layout */
     --sidebar-width: 280px;
     --header-height: 60px;
     --content-max-width: 1100px;
+    --content-max-width-reading: 720px;
 
-    /* Typography */
-    --font-sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Inter', Arial, sans-serif;
-    --font-mono: 'SF Mono', 'Fira Code', 'Consolas', monospace;
+    /* Border Radius */
+    --radius-sm: 4px;
+    --radius-md: 8px;
+    --radius-lg: 12px;
+    --radius-xl: 16px;
+    --radius-2xl: 24px;
+    --radius-full: 9999px;
 
     /* Transitions */
     --transition-fast: 150ms ease;
     --transition-normal: 250ms ease;
+    --transition-slow: 350ms ease;
+    --transition-bounce: 300ms cubic-bezier(0.34, 1.56, 0.64, 1);
 
     /* Shadows */
     --shadow-sm: 0 1px 2px rgba(0,0,0,0.05);
     --shadow-md: 0 4px 6px -1px rgba(0,0,0,0.1);
     --shadow-lg: 0 10px 15px -3px rgba(0,0,0,0.1);
     --shadow-xl: 0 20px 25px -5px rgba(0,0,0,0.1);
+    --shadow-inner: inset 0 2px 4px rgba(0,0,0,0.06);
+
+    /* Focus Ring - unified across all components */
+    --focus-ring: 0 0 0 2px var(--bg-primary), 0 0 0 4px var(--primary);
+    --focus-ring-offset: 2px;
+
+    /* ========== BUTTON TOKENS ========== */
+    --btn-height-sm: 32px;
+    --btn-height-md: 40px;
+    --btn-height-lg: 48px;
+    --btn-padding-x-sm: var(--space-3);
+    --btn-padding-x-md: var(--space-4);
+    --btn-padding-x-lg: var(--space-6);
+
+    /* ========== INPUT TOKENS ========== */
+    --input-height: 40px;
+    --input-padding-x: var(--space-3);
+    --input-border-width: 1px;
+
+    /* ========== Z-INDEX SCALE ========== */
+    --z-base: 0;
+    --z-dropdown: 100;
+    --z-sticky: 200;
+    --z-overlay: 300;
+    --z-modal: 400;
+    --z-popover: 500;
+    --z-tooltip: 600;
+    --z-toast: 700;
+    --z-max: 9999;
 }
 
 /* Dark Mode Variables */
@@ -71,11 +166,22 @@ body.dark-mode {
     --bg-card: #1e293b;
     --bg-primary: #1e293b;
     --bg-secondary: #0f172a;
+    --bg-tertiary: #334155;
+    --bg-hover: rgba(255, 255, 255, 0.08);
+    --bg-active: rgba(255, 255, 255, 0.12);
     --text-primary: #f1f5f9;
     --text-secondary: #cbd5e1;
     --text-muted: #94a3b8;
+    --text-light: #64748b;
     --border: #334155;
-    --border-light: #334155;
+    --border-light: #1e293b;
+    --success-light: rgba(16, 185, 129, 0.2);
+    --warning-light: rgba(245, 158, 11, 0.2);
+    --error-light: rgba(239, 68, 68, 0.2);
+    --info-light: rgba(2, 132, 199, 0.2);
+    --shadow-sm: 0 1px 2px rgba(0,0,0,0.3);
+    --shadow-md: 0 4px 6px -1px rgba(0,0,0,0.4);
+    --shadow-lg: 0 10px 15px -3px rgba(0,0,0,0.4);
 }
 
 html {
@@ -86,9 +192,10 @@ html {
 
 body {
     font-family: var(--font-sans);
+    font-size: var(--text-base);
     background: var(--bg-card); /* Same as container on mobile */
     color: var(--text-primary);
-    line-height: 1.7;
+    line-height: var(--leading-relaxed);
     min-height: 100vh;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
@@ -100,6 +207,161 @@ body {
         padding-left: var(--sidebar-width);
         background: var(--bg-main);
     }
+}
+
+/* ========== UNIFIED FOCUS RING ========== */
+/* Single consistent focus style across all interactive elements */
+.focus-ring:focus-visible,
+button:focus-visible,
+a:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible,
+[tabindex]:focus-visible,
+[role="button"]:focus-visible {
+    outline: none;
+    box-shadow: var(--focus-ring);
+}
+
+/* Remove default outline since we're using box-shadow */
+:focus:not(:focus-visible) {
+    outline: none;
+}
+
+/* ========== BASE BUTTON SYSTEM ========== */
+.btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--space-2);
+    height: var(--btn-height-md);
+    padding: 0 var(--btn-padding-x-md);
+    font-family: inherit;
+    font-size: var(--text-sm);
+    font-weight: var(--font-semibold);
+    line-height: 1;
+    text-decoration: none;
+    border: none;
+    border-radius: var(--radius-md);
+    cursor: pointer;
+    transition: all var(--transition-fast);
+    white-space: nowrap;
+    user-select: none;
+}
+
+.btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+/* Button Variants */
+.btn-primary {
+    background: var(--primary);
+    color: var(--text-inverse);
+}
+
+.btn-primary:hover:not(:disabled) {
+    background: var(--primary-dark);
+    transform: translateY(-1px);
+}
+
+.btn-primary:active:not(:disabled) {
+    transform: translateY(0);
+}
+
+.btn-secondary {
+    background: var(--bg-secondary);
+    color: var(--text-primary);
+    border: 1px solid var(--border);
+}
+
+.btn-secondary:hover:not(:disabled) {
+    background: var(--bg-hover);
+    border-color: var(--primary);
+}
+
+.btn-ghost {
+    background: transparent;
+    color: var(--text-secondary);
+}
+
+.btn-ghost:hover:not(:disabled) {
+    background: var(--bg-hover);
+    color: var(--text-primary);
+}
+
+/* Button Sizes */
+.btn-sm {
+    height: var(--btn-height-sm);
+    padding: 0 var(--btn-padding-x-sm);
+    font-size: var(--text-xs);
+}
+
+.btn-lg {
+    height: var(--btn-height-lg);
+    padding: 0 var(--btn-padding-x-lg);
+    font-size: var(--text-md);
+}
+
+/* Icon-only Button */
+.btn-icon {
+    width: var(--btn-height-md);
+    padding: 0;
+}
+
+.btn-icon.btn-sm {
+    width: var(--btn-height-sm);
+}
+
+.btn-icon.btn-lg {
+    width: var(--btn-height-lg);
+}
+
+/* ========== BASE INPUT SYSTEM ========== */
+.input {
+    display: block;
+    width: 100%;
+    height: var(--input-height);
+    padding: 0 var(--input-padding-x);
+    font-family: inherit;
+    font-size: var(--text-sm);
+    color: var(--text-primary);
+    background: var(--bg-primary);
+    border: var(--input-border-width) solid var(--border);
+    border-radius: var(--radius-md);
+    transition: all var(--transition-fast);
+}
+
+.input::placeholder {
+    color: var(--text-muted);
+}
+
+.input:hover:not(:disabled) {
+    border-color: var(--text-muted);
+}
+
+.input:focus {
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(113, 75, 103, 0.15);
+}
+
+.input:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    background: var(--bg-secondary);
+}
+
+/* Input States */
+.input-error {
+    border-color: var(--error);
+}
+
+.input-error:focus {
+    box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.15);
+}
+
+.input-success {
+    border-color: var(--success);
 }
 
 /* ==================== CUSTOM SCROLLBAR ==================== */
@@ -319,22 +581,27 @@ body {
     background: rgba(255, 255, 255, 0.08);
     border: 1px solid rgba(255, 255, 255, 0.12);
     color: rgba(255, 255, 255, 0.7);
-    padding: 10px 14px;
-    border-radius: 8px;
+    padding: 0;
+    width: var(--btn-height-md);
+    height: var(--btn-height-md);
+    border-radius: var(--radius-md);
     cursor: pointer;
-    font-size: 14px;
+    font-size: var(--text-sm);
     transition: all var(--transition-fast);
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 6px;
-    min-width: 44px; /* Touch-friendly */
 }
 
 .toolbar-btn:hover {
     background: rgba(255, 255, 255, 0.15);
     color: #fff;
     border-color: rgba(255, 255, 255, 0.25);
+    transform: translateY(-1px);
+}
+
+.toolbar-btn:active {
+    transform: translateY(0);
 }
 
 .toolbar-btn.active {
@@ -2137,25 +2404,7 @@ body.spidey-mode #spiderCanvas {
     }
 }
 
-/* ==================== ACCESSIBILITY - FOCUS STATES ==================== */
-/* Visible focus for keyboard navigation */
-a:focus-visible,
-button:focus-visible,
-input:focus-visible,
-.sidebar a:focus-visible,
-.toc a:focus-visible {
-    outline: 2px solid var(--primary);
-    outline-offset: 2px;
-    border-radius: 4px;
-}
-
-/* Remove default outline when not using keyboard */
-a:focus:not(:focus-visible),
-button:focus:not(:focus-visible),
-input:focus:not(:focus-visible) {
-    outline: none;
-}
-
+/* ==================== ACCESSIBILITY ==================== */
 /* Skip to content link for screen readers */
 .skip-link {
     position: absolute;
@@ -2453,13 +2702,6 @@ blockquote p {
 ::selection {
     background: rgba(113, 75, 103, 0.3);
     color: var(--text-primary);
-}
-
-/* Focus improvements for accessibility */
-*:focus-visible {
-    outline: 2px solid var(--primary);
-    outline-offset: 3px;
-    border-radius: 4px;
 }
 
 /* Print styles */
