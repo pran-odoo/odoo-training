@@ -2837,41 +2837,6 @@ body.dark-mode .true-focus-corner {
     100% { transform: perspective(500px) rotateX(60deg) translateY(50px); }
 }
 
-/* WebGL Prism Crystal */
-#prismCanvas {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    width: 450px;
-    height: 450px;
-    z-index: 2;
-    pointer-events: none;
-    opacity: 1;
-    mix-blend-mode: screen;
-    filter: contrast(1.1) saturate(1.2);
-}
-
-@media (max-width: 768px) {
-    #prismCanvas {
-        width: 320px;
-        height: 320px;
-    }
-}
-
-@media (max-width: 480px) {
-    #prismCanvas {
-        width: 240px;
-        height: 240px;
-    }
-}
-
-@media (prefers-reduced-motion: reduce) {
-    #prismCanvas {
-        display: none;
-    }
-}
-
 /* Footer content */
 .footer-content {
     position: relative;
