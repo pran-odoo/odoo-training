@@ -2102,9 +2102,20 @@ setTimeout(initGlossary, 500);
 const PERSONALIZATION_KEY = 'odoo_training_personalization';
 
 const DEFAULT_SETTINGS = {
+    // Appearance
     accentColor: 'purple',
+    codeTheme: 'dark',
+    highContrast: false,
+    // Typography
+    fontFamily: 'system',
+    lineHeight: 'normal',
+    linkStyle: 'hover',
+    // Layout
     density: 'default',
-    fontFamily: 'system'
+    sidebarWidth: 'default',
+    contentWidth: 'default',
+    // Motion
+    animations: 'normal'
 };
 
 const ACCENT_COLORS = {
@@ -2119,6 +2130,26 @@ const FONT_FAMILIES = {
     system: '-apple-system, BlinkMacSystemFont, "Segoe UI", "Inter", Arial, sans-serif',
     serif: 'Georgia, "Times New Roman", Times, serif',
     mono: '"SF Mono", "Fira Code", Consolas, monospace'
+};
+
+const LINE_HEIGHTS = {
+    tight: '1.4',
+    normal: '1.6',
+    relaxed: '1.8',
+    loose: '2.0'
+};
+
+const SIDEBAR_WIDTHS = {
+    narrow: '240px',
+    default: '280px',
+    wide: '320px'
+};
+
+const CONTENT_WIDTHS = {
+    narrow: '640px',
+    default: '720px',
+    wide: '800px',
+    full: '100%'
 };
 
 let currentSettings = { ...DEFAULT_SETTINGS };
@@ -2140,48 +2171,97 @@ function savePersonalization() {
 }
 
 function applyPersonalization() {
+    const root = document.documentElement;
+    const body = document.body;
+
+    // === APPEARANCE ===
     // Apply accent color
     const colors = ACCENT_COLORS[currentSettings.accentColor] || ACCENT_COLORS.purple;
-    document.documentElement.style.setProperty('--primary', colors.primary);
-    document.documentElement.style.setProperty('--primary-dark', colors.primaryDark);
-    document.documentElement.style.setProperty('--primary-light', colors.primaryLight);
-    document.documentElement.style.setProperty('--accent-color', colors.primary);
+    root.style.setProperty('--primary', colors.primary);
+    root.style.setProperty('--primary-dark', colors.primaryDark);
+    root.style.setProperty('--primary-light', colors.primaryLight);
+    root.style.setProperty('--accent-color', colors.primary);
 
-    // Apply density
-    document.body.classList.remove('density-compact', 'density-relaxed');
-    if (currentSettings.density !== 'default') {
-        document.body.classList.add('density-' + currentSettings.density);
-    }
+    // Apply code theme
+    body.classList.remove('code-theme-dark', 'code-theme-light', 'code-theme-high-contrast');
+    body.classList.add('code-theme-' + (currentSettings.codeTheme || 'dark'));
 
+    // Apply high contrast mode
+    body.classList.toggle('high-contrast', currentSettings.highContrast === true);
+
+    // === TYPOGRAPHY ===
     // Apply font family
     const font = FONT_FAMILIES[currentSettings.fontFamily] || FONT_FAMILIES.system;
-    document.documentElement.style.setProperty('--font-sans', font);
+    root.style.setProperty('--font-sans', font);
+
+    // Apply line height
+    const lineHeight = LINE_HEIGHTS[currentSettings.lineHeight] || LINE_HEIGHTS.normal;
+    root.style.setProperty('--line-height-content', lineHeight);
+
+    // Apply link style
+    body.classList.remove('links-always', 'links-hover', 'links-never');
+    body.classList.add('links-' + (currentSettings.linkStyle || 'hover'));
+
+    // === LAYOUT ===
+    // Apply density
+    body.classList.remove('density-compact', 'density-relaxed');
+    if (currentSettings.density !== 'default') {
+        body.classList.add('density-' + currentSettings.density);
+    }
+
+    // Apply sidebar width (desktop only)
+    const sidebarWidth = SIDEBAR_WIDTHS[currentSettings.sidebarWidth] || SIDEBAR_WIDTHS.default;
+    root.style.setProperty('--sidebar-width', sidebarWidth);
+
+    // Apply content width
+    const contentWidth = CONTENT_WIDTHS[currentSettings.contentWidth] || CONTENT_WIDTHS.default;
+    root.style.setProperty('--content-max-width', contentWidth);
+
+    // === MOTION ===
+    // Apply animation preferences
+    body.classList.remove('animations-normal', 'animations-reduced', 'animations-none');
+    body.classList.add('animations-' + (currentSettings.animations || 'normal'));
 
     // Update UI
     updateSettingsUI();
 }
 
 function updateSettingsUI() {
-    // Update color options
-    document.querySelectorAll('.color-option').forEach(btn => {
-        const isSelected = btn.dataset.color === currentSettings.accentColor;
-        btn.classList.toggle('selected', isSelected);
-        btn.setAttribute('aria-checked', isSelected ? 'true' : 'false');
-    });
+    // Helper to update radio-style options
+    function updateOptionGroup(selector, dataAttr, settingValue) {
+        document.querySelectorAll(selector).forEach(btn => {
+            const isSelected = btn.dataset[dataAttr] === settingValue;
+            btn.classList.toggle('selected', isSelected);
+            btn.setAttribute('aria-checked', isSelected ? 'true' : 'false');
+        });
+    }
 
-    // Update density options
-    document.querySelectorAll('.density-option').forEach(btn => {
-        const isSelected = btn.dataset.density === currentSettings.density;
-        btn.classList.toggle('selected', isSelected);
-        btn.setAttribute('aria-checked', isSelected ? 'true' : 'false');
-    });
+    // Helper to update toggle options
+    function updateToggle(selector, settingValue) {
+        const toggle = document.querySelector(selector);
+        if (toggle) {
+            toggle.classList.toggle('active', settingValue === true);
+            toggle.setAttribute('aria-pressed', settingValue ? 'true' : 'false');
+        }
+    }
 
-    // Update font options
-    document.querySelectorAll('.font-option').forEach(btn => {
-        const isSelected = btn.dataset.font === currentSettings.fontFamily;
-        btn.classList.toggle('selected', isSelected);
-        btn.setAttribute('aria-checked', isSelected ? 'true' : 'false');
-    });
+    // Appearance
+    updateOptionGroup('.color-option', 'color', currentSettings.accentColor);
+    updateOptionGroup('.code-theme-option', 'codetheme', currentSettings.codeTheme);
+    updateToggle('#highContrastToggle', currentSettings.highContrast);
+
+    // Typography
+    updateOptionGroup('.font-option', 'font', currentSettings.fontFamily);
+    updateOptionGroup('.line-height-option', 'lineheight', currentSettings.lineHeight);
+    updateOptionGroup('.link-style-option', 'linkstyle', currentSettings.linkStyle);
+
+    // Layout
+    updateOptionGroup('.density-option', 'density', currentSettings.density);
+    updateOptionGroup('.sidebar-width-option', 'sidebarwidth', currentSettings.sidebarWidth);
+    updateOptionGroup('.content-width-option', 'contentwidth', currentSettings.contentWidth);
+
+    // Motion
+    updateOptionGroup('.animation-option', 'animation', currentSettings.animations);
 }
 
 function initPersonalization() {
@@ -2239,32 +2319,43 @@ function initPersonalization() {
         });
     }
 
-    // Color options
-    document.querySelectorAll('.color-option').forEach(btn => {
-        btn.addEventListener('click', () => {
-            currentSettings.accentColor = btn.dataset.color;
-            savePersonalization();
-            applyPersonalization();
+    // Generic handler for option groups
+    function bindOptionGroup(selector, dataAttr, settingKey) {
+        document.querySelectorAll(selector).forEach(btn => {
+            btn.addEventListener('click', () => {
+                currentSettings[settingKey] = btn.dataset[dataAttr];
+                savePersonalization();
+                applyPersonalization();
+            });
         });
-    });
+    }
 
-    // Density options
-    document.querySelectorAll('.density-option').forEach(btn => {
-        btn.addEventListener('click', () => {
-            currentSettings.density = btn.dataset.density;
-            savePersonalization();
-            applyPersonalization();
-        });
-    });
+    // === APPEARANCE ===
+    bindOptionGroup('.color-option', 'color', 'accentColor');
+    bindOptionGroup('.code-theme-option', 'codetheme', 'codeTheme');
 
-    // Font options
-    document.querySelectorAll('.font-option').forEach(btn => {
-        btn.addEventListener('click', () => {
-            currentSettings.fontFamily = btn.dataset.font;
+    // High contrast toggle
+    const highContrastToggle = document.getElementById('highContrastToggle');
+    if (highContrastToggle) {
+        highContrastToggle.addEventListener('click', () => {
+            currentSettings.highContrast = !currentSettings.highContrast;
             savePersonalization();
             applyPersonalization();
         });
-    });
+    }
+
+    // === TYPOGRAPHY ===
+    bindOptionGroup('.font-option', 'font', 'fontFamily');
+    bindOptionGroup('.line-height-option', 'lineheight', 'lineHeight');
+    bindOptionGroup('.link-style-option', 'linkstyle', 'linkStyle');
+
+    // === LAYOUT ===
+    bindOptionGroup('.density-option', 'density', 'density');
+    bindOptionGroup('.sidebar-width-option', 'sidebarwidth', 'sidebarWidth');
+    bindOptionGroup('.content-width-option', 'contentwidth', 'contentWidth');
+
+    // === MOTION ===
+    bindOptionGroup('.animation-option', 'animation', 'animations');
 
     // Close on outside click
     document.addEventListener('click', (e) => {

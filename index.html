@@ -97,33 +97,115 @@
             <button class="settings-close" id="settingsClose" aria-label="Close settings">&times;</button>
         </div>
         <div class="settings-content">
-            <!-- Accent Color -->
-            <div class="settings-group">
-                <label class="settings-label">Accent Color</label>
-                <div class="color-options" role="radiogroup" aria-label="Accent color">
-                    <button class="color-option" data-color="purple" style="--option-color: #714B67" aria-label="Purple (default)" aria-checked="true" role="radio"></button>
-                    <button class="color-option" data-color="blue" style="--option-color: #3b82f6" aria-label="Blue" aria-checked="false" role="radio"></button>
-                    <button class="color-option" data-color="green" style="--option-color: #10b981" aria-label="Green" aria-checked="false" role="radio"></button>
-                    <button class="color-option" data-color="orange" style="--option-color: #f97316" aria-label="Orange" aria-checked="false" role="radio"></button>
-                    <button class="color-option" data-color="pink" style="--option-color: #ec4899" aria-label="Pink" aria-checked="false" role="radio"></button>
+            <!-- APPEARANCE SECTION -->
+            <div class="settings-section">
+                <div class="settings-section-title">Appearance</div>
+                <!-- Accent Color -->
+                <div class="settings-group">
+                    <label class="settings-label">Accent Color</label>
+                    <div class="color-options" role="radiogroup" aria-label="Accent color">
+                        <button class="color-option" data-color="purple" style="--option-color: #714B67" aria-label="Purple (default)" aria-checked="true" role="radio"></button>
+                        <button class="color-option" data-color="blue" style="--option-color: #3b82f6" aria-label="Blue" aria-checked="false" role="radio"></button>
+                        <button class="color-option" data-color="green" style="--option-color: #10b981" aria-label="Green" aria-checked="false" role="radio"></button>
+                        <button class="color-option" data-color="orange" style="--option-color: #f97316" aria-label="Orange" aria-checked="false" role="radio"></button>
+                        <button class="color-option" data-color="pink" style="--option-color: #ec4899" aria-label="Pink" aria-checked="false" role="radio"></button>
+                    </div>
+                </div>
+                <!-- Code Theme -->
+                <div class="settings-group">
+                    <label class="settings-label">Code Theme</label>
+                    <div class="code-theme-options" role="radiogroup" aria-label="Code theme">
+                        <button class="code-theme-option" data-codetheme="dark" aria-label="Dark code theme" aria-checked="true" role="radio">Dark</button>
+                        <button class="code-theme-option" data-codetheme="light" aria-label="Light code theme" aria-checked="false" role="radio">Light</button>
+                        <button class="code-theme-option" data-codetheme="high-contrast" aria-label="High contrast code theme" aria-checked="false" role="radio">Hi-Con</button>
+                    </div>
+                </div>
+                <!-- High Contrast Toggle -->
+                <div class="settings-group settings-group-inline">
+                    <label class="settings-label">High Contrast Mode</label>
+                    <button class="settings-toggle" id="highContrastToggle" aria-label="Toggle high contrast mode" aria-pressed="false" role="switch">
+                        <span class="toggle-track"><span class="toggle-thumb"></span></span>
+                    </button>
                 </div>
             </div>
-            <!-- Content Density -->
-            <div class="settings-group">
-                <label class="settings-label">Content Density</label>
-                <div class="density-options" role="radiogroup" aria-label="Content density">
-                    <button class="density-option" data-density="compact" aria-label="Compact" aria-checked="false" role="radio">Compact</button>
-                    <button class="density-option" data-density="default" aria-label="Default" aria-checked="true" role="radio">Default</button>
-                    <button class="density-option" data-density="relaxed" aria-label="Relaxed" aria-checked="false" role="radio">Relaxed</button>
+
+            <!-- TYPOGRAPHY SECTION -->
+            <div class="settings-section">
+                <div class="settings-section-title">Typography</div>
+                <!-- Font Family -->
+                <div class="settings-group">
+                    <label class="settings-label">Font Family</label>
+                    <div class="font-options" role="radiogroup" aria-label="Font family">
+                        <button class="font-option" data-font="system" aria-label="System font" aria-checked="true" role="radio">System</button>
+                        <button class="font-option" data-font="serif" aria-label="Serif font" aria-checked="false" role="radio">Serif</button>
+                        <button class="font-option" data-font="mono" aria-label="Monospace font" aria-checked="false" role="radio">Mono</button>
+                    </div>
+                </div>
+                <!-- Line Height -->
+                <div class="settings-group">
+                    <label class="settings-label">Line Height</label>
+                    <div class="line-height-options" role="radiogroup" aria-label="Line height">
+                        <button class="line-height-option" data-lineheight="tight" aria-label="Tight line height" aria-checked="false" role="radio">Tight</button>
+                        <button class="line-height-option" data-lineheight="normal" aria-label="Normal line height" aria-checked="true" role="radio">Normal</button>
+                        <button class="line-height-option" data-lineheight="relaxed" aria-label="Relaxed line height" aria-checked="false" role="radio">Relaxed</button>
+                        <button class="line-height-option" data-lineheight="loose" aria-label="Loose line height" aria-checked="false" role="radio">Loose</button>
+                    </div>
+                </div>
+                <!-- Link Style -->
+                <div class="settings-group">
+                    <label class="settings-label">Link Underlines</label>
+                    <div class="link-style-options" role="radiogroup" aria-label="Link underline style">
+                        <button class="link-style-option" data-linkstyle="always" aria-label="Always show underlines" aria-checked="false" role="radio">Always</button>
+                        <button class="link-style-option" data-linkstyle="hover" aria-label="Show underlines on hover" aria-checked="true" role="radio">Hover</button>
+                        <button class="link-style-option" data-linkstyle="never" aria-label="Never show underlines" aria-checked="false" role="radio">Never</button>
+                    </div>
                 </div>
             </div>
-            <!-- Font Family -->
-            <div class="settings-group">
-                <label class="settings-label">Font Family</label>
-                <div class="font-options" role="radiogroup" aria-label="Font family">
-                    <button class="font-option" data-font="system" aria-label="System font" aria-checked="true" role="radio">System</button>
-                    <button class="font-option" data-font="serif" aria-label="Serif font" aria-checked="false" role="radio">Serif</button>
-                    <button class="font-option" data-font="mono" aria-label="Monospace font" aria-checked="false" role="radio">Mono</button>
+
+            <!-- LAYOUT SECTION -->
+            <div class="settings-section">
+                <div class="settings-section-title">Layout</div>
+                <!-- Content Density -->
+                <div class="settings-group">
+                    <label class="settings-label">Content Density</label>
+                    <div class="density-options" role="radiogroup" aria-label="Content density">
+                        <button class="density-option" data-density="compact" aria-label="Compact" aria-checked="false" role="radio">Compact</button>
+                        <button class="density-option" data-density="default" aria-label="Default" aria-checked="true" role="radio">Default</button>
+                        <button class="density-option" data-density="relaxed" aria-label="Relaxed" aria-checked="false" role="radio">Relaxed</button>
+                    </div>
+                </div>
+                <!-- Sidebar Width -->
+                <div class="settings-group settings-desktop-only">
+                    <label class="settings-label">Sidebar Width</label>
+                    <div class="sidebar-width-options" role="radiogroup" aria-label="Sidebar width">
+                        <button class="sidebar-width-option" data-sidebarwidth="narrow" aria-label="Narrow sidebar" aria-checked="false" role="radio">Narrow</button>
+                        <button class="sidebar-width-option" data-sidebarwidth="default" aria-label="Default sidebar" aria-checked="true" role="radio">Default</button>
+                        <button class="sidebar-width-option" data-sidebarwidth="wide" aria-label="Wide sidebar" aria-checked="false" role="radio">Wide</button>
+                    </div>
+                </div>
+                <!-- Content Width -->
+                <div class="settings-group">
+                    <label class="settings-label">Content Width</label>
+                    <div class="content-width-options" role="radiogroup" aria-label="Content width">
+                        <button class="content-width-option" data-contentwidth="narrow" aria-label="Narrow content" aria-checked="false" role="radio">Narrow</button>
+                        <button class="content-width-option" data-contentwidth="default" aria-label="Default content" aria-checked="true" role="radio">Default</button>
+                        <button class="content-width-option" data-contentwidth="wide" aria-label="Wide content" aria-checked="false" role="radio">Wide</button>
+                        <button class="content-width-option" data-contentwidth="full" aria-label="Full width content" aria-checked="false" role="radio">Full</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- MOTION SECTION -->
+            <div class="settings-section">
+                <div class="settings-section-title">Motion</div>
+                <!-- Animation Speed -->
+                <div class="settings-group">
+                    <label class="settings-label">Animations</label>
+                    <div class="animation-options" role="radiogroup" aria-label="Animation preference">
+                        <button class="animation-option" data-animation="normal" aria-label="Normal animations" aria-checked="true" role="radio">Normal</button>
+                        <button class="animation-option" data-animation="reduced" aria-label="Reduced animations" aria-checked="false" role="radio">Reduced</button>
+                        <button class="animation-option" data-animation="none" aria-label="No animations" aria-checked="false" role="radio">None</button>
+                    </div>
                 </div>
             </div>
         </div>
