@@ -2045,10 +2045,40 @@ function initPersonalization() {
     if (!settingsBtn || !settingsPanel) return;
 
     // Toggle settings panel
-    settingsBtn.addEventListener('click', () => {
+    settingsBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
         const isOpen = settingsPanel.classList.toggle('open');
         settingsBtn.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
         settingsPanel.setAttribute('aria-hidden', isOpen ? 'false' : 'true');
+
+        // Position the panel near the button (only on desktop)
+        if (isOpen && window.innerWidth > 640) {
+            const btnRect = settingsBtn.getBoundingClientRect();
+            const panelHeight = 350; // Approximate panel height
+            const viewportHeight = window.innerHeight;
+
+            // Position below button if there's room, otherwise above
+            if (btnRect.bottom + panelHeight < viewportHeight) {
+                settingsPanel.style.top = (btnRect.bottom + 8) + 'px';
+                settingsPanel.style.bottom = 'auto';
+            } else {
+                settingsPanel.style.bottom = (viewportHeight - btnRect.top + 8) + 'px';
+                settingsPanel.style.top = 'auto';
+            }
+
+            // Position horizontally - align with button, but keep in viewport
+            let left = btnRect.left;
+            if (left + 280 > window.innerWidth - 16) {
+                left = window.innerWidth - 280 - 16;
+            }
+            if (left < 16) left = 16;
+            settingsPanel.style.left = left + 'px';
+        } else if (isOpen) {
+            // On mobile, reset inline styles to let CSS handle it
+            settingsPanel.style.top = '';
+            settingsPanel.style.bottom = '';
+            settingsPanel.style.left = '';
+        }
     });
 
     // Close settings
