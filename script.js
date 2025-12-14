@@ -2175,30 +2175,53 @@ function initPersonalization() {
         // Position the panel near the button (only on desktop)
         if (isOpen && window.innerWidth > 640) {
             const btnRect = settingsBtn.getBoundingClientRect();
-            const panelHeight = 350; // Approximate panel height
             const viewportHeight = window.innerHeight;
+            const viewportWidth = window.innerWidth;
+            const panelWidth = 280;
+            const margin = 16;
+
+            // Reset position first to measure natural height
+            settingsPanel.style.top = '0';
+            settingsPanel.style.bottom = 'auto';
+            settingsPanel.style.maxHeight = 'none';
+
+            // Get actual panel height
+            const panelHeight = settingsPanel.offsetHeight;
+
+            // Calculate available space above and below button
+            const spaceBelow = viewportHeight - btnRect.bottom - margin;
+            const spaceAbove = btnRect.top - margin;
 
             // Position below button if there's room, otherwise above
-            if (btnRect.bottom + panelHeight < viewportHeight) {
-                settingsPanel.style.top = (btnRect.bottom + 8) + 'px';
+            if (spaceBelow >= panelHeight || spaceBelow >= spaceAbove) {
+                // Position below
+                const top = btnRect.bottom + 8;
+                const maxHeight = viewportHeight - top - margin;
+                settingsPanel.style.top = top + 'px';
                 settingsPanel.style.bottom = 'auto';
+                settingsPanel.style.maxHeight = Math.min(maxHeight, 500) + 'px';
             } else {
-                settingsPanel.style.bottom = (viewportHeight - btnRect.top + 8) + 'px';
+                // Position above
+                const bottom = viewportHeight - btnRect.top + 8;
+                const maxHeight = btnRect.top - margin - 8;
+                settingsPanel.style.bottom = bottom + 'px';
                 settingsPanel.style.top = 'auto';
+                settingsPanel.style.maxHeight = Math.min(maxHeight, 500) + 'px';
             }
 
             // Position horizontally - align with button, but keep in viewport
             let left = btnRect.left;
-            if (left + 280 > window.innerWidth - 16) {
-                left = window.innerWidth - 280 - 16;
+            if (left + panelWidth > viewportWidth - margin) {
+                left = viewportWidth - panelWidth - margin;
             }
-            if (left < 16) left = 16;
+            if (left < margin) left = margin;
             settingsPanel.style.left = left + 'px';
         } else if (isOpen) {
             // On mobile, reset inline styles to let CSS handle it
             settingsPanel.style.top = '';
             settingsPanel.style.bottom = '';
             settingsPanel.style.left = '';
+            settingsPanel.style.maxHeight = '';
         }
     });
 
