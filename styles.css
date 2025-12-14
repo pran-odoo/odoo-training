@@ -3907,13 +3907,28 @@ body.dark-mode .glossary-popover.below::after {
 }
 
 /* ==================== PERSONALIZATION SETTINGS PANEL ==================== */
+.settings-panel-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.3);
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity var(--transition-normal), visibility var(--transition-normal);
+    z-index: 1099;
+}
+
+.settings-panel-overlay.open {
+    opacity: 1;
+    visibility: visible;
+}
+
 .settings-panel {
     position: fixed;
-    top: auto;
-    bottom: auto;
-    left: var(--space-4);
-    width: 280px;
-    max-height: 500px;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%) scale(0.95);
+    width: min(320px, 90vw);
+    max-height: min(500px, 80vh);
     overflow-y: auto;
     background: var(--bg-primary);
     border: 1px solid var(--border);
@@ -3921,7 +3936,6 @@ body.dark-mode .glossary-popover.below::after {
     box-shadow: var(--shadow-xl);
     opacity: 0;
     visibility: hidden;
-    transform: translateY(10px);
     transition: opacity var(--transition-normal), visibility var(--transition-normal), transform var(--transition-normal);
     z-index: 1100;
 }
@@ -3929,7 +3943,7 @@ body.dark-mode .glossary-popover.below::after {
 .settings-panel.open {
     opacity: 1;
     visibility: visible;
-    transform: translateY(0);
+    transform: translate(-50%, -50%) scale(1);
 }
 
 .settings-header {
@@ -4130,43 +4144,22 @@ body.dark-mode .font-option {
     border-color: var(--border-dark);
 }
 
-/* Mobile: position settings panel as full width at bottom */
+/* Mobile: settings panel as bottom sheet */
 @media (max-width: 640px) {
     .settings-panel {
-        position: fixed;
-        top: auto !important;
-        bottom: 0 !important;
-        left: 0 !important;
+        top: auto;
+        bottom: 0;
+        left: 0;
         right: 0;
         width: 100%;
         max-width: 100%;
-        max-height: 70vh;
+        max-height: 80vh;
         border-radius: var(--radius-xl) var(--radius-xl) 0 0;
-        transform: translateY(100%);
+        transform: translate(0, 100%);
     }
 
     .settings-panel.open {
-        transform: translateY(0);
-    }
-
-    /* Add dark overlay behind panel on mobile */
-    .settings-panel::before {
-        content: '';
-        position: fixed;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 100%;
-        background: rgba(0, 0, 0, 0.5);
-        opacity: 0;
-        pointer-events: none;
-        transition: opacity var(--transition-normal);
-    }
-
-    .settings-panel.open::before {
-        bottom: 0;
-        opacity: 1;
-        pointer-events: auto;
+        transform: translate(0, 0);
     }
 }
 
