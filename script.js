@@ -1303,9 +1303,13 @@ function openCommandPalette() {
     commandPalette.setAttribute('aria-hidden', 'false');
     commandPaletteOverlay.setAttribute('aria-hidden', 'false');
     commandPaletteInput.value = '';
-    commandPaletteInput.focus();
     renderCommandPaletteResults('');
     document.body.style.overflow = 'hidden';
+
+    // Focus after the element becomes visible (next frame ensures CSS visibility is applied)
+    requestAnimationFrame(() => {
+        commandPaletteInput.focus();
+    });
 }
 
 function closeCommandPalette() {
