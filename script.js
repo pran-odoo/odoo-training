@@ -242,25 +242,70 @@ function buildSearchIndex() {
 
     allH2s.forEach((h2, h2Index) => {
         const sectionTitle = h2.textContent.trim();
+        const nextH2 = allH2s[h2Index + 1];
+
+        // Get preview text from first paragraph after section heading
+        let sectionPreview = '';
+        let previewElement = h2.nextElementSibling;
+        while (previewElement && previewElement !== nextH2 && !sectionPreview) {
+            if (previewElement.tagName === 'P') {
+                sectionPreview = previewElement.textContent.trim().substring(0, 120);
+                if (previewElement.textContent.trim().length > 120) sectionPreview += '...';
+            }
+            previewElement = previewElement.nextElementSibling;
+        }
 
         searchIndex.push({
             title: sectionTitle,
             section: sectionTitle,
             element: h2,
-            type: 'section'
+            type: 'section',
+            preview: sectionPreview
         });
 
-        const nextH2 = allH2s[h2Index + 1];
         let current = h2.nextElementSibling;
 
         while (current && current !== nextH2) {
             if (current.tagName === 'H3' || current.tagName === 'H4') {
+                // Get preview from next sibling paragraph
+                let headingPreview = '';
+                let next = current.nextElementSibling;
+                while (next && next.tagName !== 'H2' && next.tagName !== 'H3' && next.tagName !== 'H4' && !headingPreview) {
+                    if (next.tagName === 'P') {
+                        headingPreview = next.textContent.trim().substring(0, 100);
+                        if (next.textContent.trim().length > 100) headingPreview += '...';
+                    }
+                    next = next.nextElementSibling;
+                }
+
                 searchIndex.push({
                     title: current.textContent.trim(),
                     section: sectionTitle.substring(0, 35),
                     element: current,
-                    type: 'heading'
+                    type: 'heading',
+                    preview: headingPreview
                 });
+            }
+
+            // Also index content boxes for searchable content
+            if (current.classList && (
+                current.classList.contains('critical-box') ||
+                current.classList.contains('technical-box') ||
+                current.classList.contains('info-box') ||
+                current.classList.contains('warning-box') ||
+                current.classList.contains('example-box')
+            )) {
+                const boxTitle = current.querySelector('h3, h4, strong');
+                if (boxTitle) {
+                    const boxContent = current.textContent.trim().substring(0, 100);
+                    searchIndex.push({
+                        title: boxTitle.textContent.trim(),
+                        section: sectionTitle.substring(0, 35),
+                        element: current,
+                        type: 'box',
+                        preview: boxContent.length > 100 ? boxContent + '...' : boxContent
+                    });
+                }
             }
 
             const innerHeadings = current.querySelectorAll ? current.querySelectorAll('h3, h4') : [];
@@ -271,7 +316,8 @@ function buildSearchIndex() {
                         title: title,
                         section: sectionTitle.substring(0, 35),
                         element: heading,
-                        type: 'box-title'
+                        type: 'box-title',
+                        preview: ''
                     });
                 }
             });
@@ -280,6 +326,14 @@ function buildSearchIndex() {
         }
     });
 }
+
+// Type icons for search results
+const SEARCH_TYPE_ICONS = {
+    section: '📑',
+    heading: '📝',
+    box: '💡',
+    'box-title': '📌'
+};
 
 function performSearch(query) {
     if (!query || query.length < 2) {
@@ -291,41 +345,60 @@ function performSearch(query) {
         return;
     }
 
-    const scored = searchIndex.map(item => ({
-        ...item,
-        score: fuzzyMatch(item.title, query)
-    })).filter(item => item.score > 0);
+    // Search both title and preview content
+    const scored = searchIndex.map(item => {
+        const titleScore = fuzzyMatch(item.title, query);
+        const previewScore = item.preview ? fuzzyMatch(item.preview, query) * 0.5 : 0;
+        return {
+            ...item,
+            score: Math.max(titleScore, previewScore)
+        };
+    }).filter(item => item.score > 0);
 
     // Sort by score descending
     scored.sort((a, b) => b.score - a.score);
 
-    const results = scored.slice(0, 12);
+    const results = scored.slice(0, 10);
 
     if (results.length === 0) {
         searchResults.innerHTML = '<div class="no-results" role="status">No results found for "' + escapeHtml(query) + '"</div>';
         searchInput.setAttribute('aria-expanded', 'false');
-        searchInput.removeAttribute('aria-activedescendant'); // Clear stale reference
+        searchInput.removeAttribute('aria-activedescendant');
         return;
     }
 
-    // Build results HTML with ARIA roles for accessibility
-    const html = results.map((item, index) => {
-        const highlighted = highlightMatch(item.title, query);
-        const resultId = 'search-result-' + index;
-        return `
-            <div class="search-result-item" data-index="${index}" id="${resultId}"
-                 role="option" tabindex="-1" aria-selected="false">
-                <div class="search-result-title">${highlighted}</div>
-                ${item.section && item.type !== 'section' ?
-                    `<div class="search-result-context">in ${escapeHtml(item.section)}...</div>` : ''}
-            </div>
-        `;
-    }).join('');
+    // Build results HTML with previews, icons, and ARIA roles
+    const html = `
+        <div class="search-results-header">
+            <span class="search-results-count">${results.length} result${results.length !== 1 ? 's' : ''}</span>
+            <span class="search-results-hint">↑↓ to navigate, Enter to select</span>
+        </div>
+        ${results.map((item, index) => {
+            const highlighted = highlightMatch(item.title, query);
+            const resultId = 'search-result-' + index;
+            const icon = SEARCH_TYPE_ICONS[item.type] || '📄';
+            const previewHighlighted = item.preview ? highlightMatch(item.preview, query) : '';
+
+            return `
+                <div class="search-result-item" data-index="${index}" id="${resultId}"
+                     role="option" tabindex="-1" aria-selected="false">
+                    <span class="search-result-icon">${icon}</span>
+                    <div class="search-result-content">
+                        <div class="search-result-title">${highlighted}</div>
+                        ${item.section && item.type !== 'section' ?
+                            `<div class="search-result-context">in ${escapeHtml(item.section)}...</div>` : ''}
+                        ${previewHighlighted ?
+                            `<div class="search-result-preview">${previewHighlighted}</div>` : ''}
+                    </div>
+                </div>
+            `;
+        }).join('')}
+    `;
 
     searchResults.innerHTML = html;
     searchResults._results = results;
     searchInput.setAttribute('aria-expanded', 'true');
-    searchInput.removeAttribute('aria-activedescendant'); // Reset on new results
+    searchInput.removeAttribute('aria-activedescendant');
 }
 
 function highlightMatch(text, query) {
