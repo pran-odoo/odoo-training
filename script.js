@@ -1003,5 +1003,52 @@ spideyToggleBtn.addEventListener('click', toggleSpidey);
 // Initialize spidey preference
 loadSpideyPreference();
 
+// ==================== INTERACTIVE QUIZ ====================
+function initQuiz() {
+    const quizCards = document.querySelectorAll('.quiz-card');
+
+    quizCards.forEach(card => {
+        const correctAnswer = card.dataset.correct;
+        const options = card.querySelectorAll('.quiz-option');
+        const answerSection = card.querySelector('.quiz-answer');
+        let answered = false;
+
+        options.forEach(option => {
+            option.addEventListener('click', function() {
+                if (answered) return; // Prevent re-answering
+                answered = true;
+
+                const selectedOption = this.dataset.option;
+                const isCorrect = selectedOption === correctAnswer;
+
+                // Mark all options
+                options.forEach(opt => {
+                    opt.classList.add('disabled');
+                    if (opt.dataset.option === correctAnswer) {
+                        opt.classList.add('correct');
+                    } else if (opt === this && !isCorrect) {
+                        opt.classList.add('incorrect');
+                    }
+                });
+
+                // Show the answer explanation
+                if (answerSection) {
+                    answerSection.classList.add('show');
+                }
+
+                // Add visual feedback
+                if (isCorrect) {
+                    card.classList.add('answered-correct');
+                } else {
+                    card.classList.add('answered-incorrect');
+                }
+            });
+        });
+    });
+}
+
+// Initialize quiz after DOM is ready
+initQuiz();
+
 init();
 });
