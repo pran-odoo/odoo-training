@@ -3213,3 +3213,130 @@ body.dark-mode .true-focus-corner {
         display: none;
     }
 }
+
+/* ==================== FOCUS/READING MODE ==================== */
+body.focus-mode {
+    --focus-content-width: min(75ch, 95vw);
+}
+
+/* Hide sidebar in focus mode */
+body.focus-mode .sidebar {
+    transform: translateX(-100%);
+    visibility: hidden;
+}
+
+body.focus-mode .sidebar-overlay {
+    display: none;
+}
+
+/* Adjust main content area */
+body.focus-mode .main-content {
+    margin-left: 0;
+}
+
+/* Hide progress bar in focus mode */
+body.focus-mode .progress-container {
+    left: 0;
+}
+
+/* Center and constrain content */
+body.focus-mode .container {
+    max-width: var(--focus-content-width);
+    margin: 0 auto;
+    padding: var(--space-8) var(--space-6);
+}
+
+@media (min-width: 1024px) {
+    body.focus-mode .container {
+        padding: var(--space-12) var(--space-8);
+        margin: var(--space-6) auto;
+        border-radius: var(--radius-xl);
+    }
+}
+
+/* Increase line-height for easier reading */
+body.focus-mode p,
+body.focus-mode li {
+    line-height: var(--leading-loose);
+}
+
+/* Larger, more comfortable text */
+body.focus-mode p {
+    font-size: var(--text-md);
+}
+
+/* Hide non-essential UI elements */
+body.focus-mode .mobile-header {
+    display: none;
+}
+
+body.focus-mode .search-box {
+    display: none;
+}
+
+body.focus-mode .toolbar-btn:not(#focusModeBtn):not(#darkModeBtn) {
+    display: none;
+}
+
+/* Simplify toolbar in focus mode */
+body.focus-mode .toolbar {
+    top: auto;
+    bottom: var(--space-6);
+    right: var(--space-6);
+    flex-direction: row;
+    gap: var(--space-2);
+    background: var(--bg-primary);
+    padding: var(--space-2);
+    border-radius: var(--radius-full);
+    box-shadow: var(--shadow-lg);
+}
+
+/* Focus mode button indicator */
+body.focus-mode #focusModeBtn {
+    background: var(--primary);
+    color: white;
+}
+
+/* Show a subtle focus mode indicator */
+body.focus-mode::before {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, var(--primary), #ec4899, var(--primary));
+    background-size: 200% 100%;
+    animation: focusGradient 3s ease infinite;
+    z-index: var(--z-sticky);
+}
+
+@keyframes focusGradient {
+    0%, 100% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+}
+
+/* Reduce animation in focus mode for reduced-motion users */
+@media (prefers-reduced-motion: reduce) {
+    body.focus-mode::before {
+        animation: none;
+        background: var(--primary);
+    }
+}
+
+/* Hide back-to-top in focus mode (toolbar has it) */
+body.focus-mode .back-to-top {
+    display: none;
+}
+
+/* Mobile adjustments for focus mode */
+@media (max-width: 1023px) {
+    body.focus-mode .container {
+        padding: var(--space-6) var(--space-4);
+    }
+
+    body.focus-mode .toolbar {
+        bottom: var(--space-4);
+        right: var(--space-4);
+    }
+}
