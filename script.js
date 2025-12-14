@@ -1480,29 +1480,156 @@ function initFocusMode() {
 
 initFocusMode();
 
-// ==================== INTERACTIVE QUIZ ====================
-function initQuiz() {
-    const quizCards = document.querySelectorAll('.quiz-card');
+// ==================== INTERACTIVE QUIZ WITH PROGRESS ====================
+const QUIZ_STORAGE_KEY = 'odoo_training_quiz_progress';
 
-    quizCards.forEach(card => {
+// Quiz progress state
+let quizProgress = {
+    answered: {},  // quizId -> { selected: 'a', correct: true/false }
+    correctCount: 0,
+    totalAnswered: 0
+};
+
+function loadQuizProgress() {
+    const saved = safeGetItem(QUIZ_STORAGE_KEY);
+    if (saved) {
+        try {
+            quizProgress = JSON.parse(saved);
+        } catch (e) {
+            quizProgress = { answered: {}, correctCount: 0, totalAnswered: 0 };
+        }
+    }
+}
+
+function saveQuizProgress() {
+    safeSetItem(QUIZ_STORAGE_KEY, JSON.stringify(quizProgress));
+}
+
+function resetQuizProgress() {
+    quizProgress = { answered: {}, correctCount: 0, totalAnswered: 0 };
+    saveQuizProgress();
+    // Reload page to reset quiz UI
+    location.reload();
+}
+
+function updateQuizProgressUI(totalQuizzes) {
+    const progressContainer = document.getElementById('quizProgress');
+    if (!progressContainer) return;
+
+    const { correctCount, totalAnswered } = quizProgress;
+    const percentage = totalQuizzes > 0 ? Math.round((totalAnswered / totalQuizzes) * 100) : 0;
+    const scorePercentage = totalAnswered > 0 ? Math.round((correctCount / totalAnswered) * 100) : 0;
+
+    // Determine badge
+    let badge = '';
+    let badgeClass = '';
+    if (totalAnswered === totalQuizzes && totalQuizzes > 0) {
+        if (scorePercentage === 100) {
+            badge = 'Perfect Score!';
+            badgeClass = 'quiz-badge-gold';
+        } else if (scorePercentage >= 75) {
+            badge = 'Well Done!';
+            badgeClass = 'quiz-badge-silver';
+        } else {
+            badge = 'Completed';
+            badgeClass = 'quiz-badge-bronze';
+        }
+    }
+
+    progressContainer.innerHTML = `
+        <div class="quiz-progress-header">
+            <span class="quiz-progress-title">Quiz Progress</span>
+            ${totalAnswered > 0 ? `<button class="quiz-reset-btn" id="quizResetBtn" title="Reset all quizzes">Reset</button>` : ''}
+        </div>
+        <div class="quiz-progress-bar-container">
+            <div class="quiz-progress-bar" style="width: ${percentage}%"></div>
+        </div>
+        <div class="quiz-progress-stats">
+            <span class="quiz-progress-count">${totalAnswered} / ${totalQuizzes} completed</span>
+            <span class="quiz-progress-score">${correctCount} correct (${totalAnswered > 0 ? scorePercentage : 0}%)</span>
+        </div>
+        ${badge ? `<div class="quiz-badge ${badgeClass}">${badge}</div>` : ''}
+    `;
+
+    // Add reset button handler
+    const resetBtn = document.getElementById('quizResetBtn');
+    if (resetBtn) {
+        resetBtn.addEventListener('click', function() {
+            if (confirm('Reset all quiz progress? This cannot be undone.')) {
+                resetQuizProgress();
+            }
+        });
+    }
+}
+
+function initQuiz() {
+    loadQuizProgress();
+
+    const quizCards = document.querySelectorAll('.quiz-card');
+    const totalQuizzes = quizCards.length;
+
+    // Create progress UI if quiz container exists
+    const quizContainer = document.querySelector('.quiz-container');
+    if (quizContainer && !document.getElementById('quizProgress')) {
+        const progressDiv = document.createElement('div');
+        progressDiv.id = 'quizProgress';
+        progressDiv.className = 'quiz-progress';
+        quizContainer.insertBefore(progressDiv, quizContainer.firstChild);
+    }
+
+    quizCards.forEach((card, index) => {
+        const quizId = card.dataset.quizId || `quiz-${index}`;
+        card.dataset.quizId = quizId;  // Ensure ID is set
+
         const correctAnswer = card.dataset.correct;
         const options = card.querySelectorAll('.quiz-option');
         const answerSection = card.querySelector('.quiz-answer');
-        let answered = false;
+
+        // Check if already answered (from saved progress)
+        const savedAnswer = quizProgress.answered[quizId];
+        let answered = !!savedAnswer;
+
+        // Restore UI state for previously answered quizzes
+        if (savedAnswer) {
+            options.forEach(opt => {
+                opt.classList.add('disabled');
+                opt.setAttribute('tabindex', '-1');
+                opt.setAttribute('aria-disabled', 'true');
+                if (opt.dataset.option === correctAnswer) {
+                    opt.classList.add('correct');
+                    opt.setAttribute('aria-pressed', 'true');
+                } else if (opt.dataset.option === savedAnswer.selected && !savedAnswer.correct) {
+                    opt.classList.add('incorrect');
+                    opt.setAttribute('aria-pressed', 'true');
+                }
+            });
+            if (answerSection) {
+                answerSection.classList.add('show');
+            }
+            card.classList.add(savedAnswer.correct ? 'answered-correct' : 'answered-incorrect');
+        }
 
         // Add accessibility attributes
-        options.forEach((option, index) => {
-            option.setAttribute('role', 'button');
-            option.setAttribute('tabindex', '0');
-            option.setAttribute('aria-pressed', 'false');
+        options.forEach((option) => {
+            if (!answered) {
+                option.setAttribute('role', 'button');
+                option.setAttribute('tabindex', '0');
+                option.setAttribute('aria-pressed', 'false');
+            }
         });
 
         function selectOption(option) {
-            if (answered) return; // Prevent re-answering
+            if (answered) return;
             answered = true;
 
             const selectedOption = option.dataset.option;
             const isCorrect = selectedOption === correctAnswer;
+
+            // Save progress
+            quizProgress.answered[quizId] = { selected: selectedOption, correct: isCorrect };
+            quizProgress.totalAnswered++;
+            if (isCorrect) quizProgress.correctCount++;
+            saveQuizProgress();
 
             // Mark all options
             options.forEach(opt => {
@@ -1529,6 +1656,9 @@ function initQuiz() {
             } else {
                 card.classList.add('answered-incorrect');
             }
+
+            // Update progress UI
+            updateQuizProgressUI(totalQuizzes);
         }
 
         options.forEach(option => {
@@ -1546,6 +1676,9 @@ function initQuiz() {
             });
         });
     });
+
+    // Initial progress update
+    updateQuizProgressUI(totalQuizzes);
 }
 
 // Initialize quiz after DOM is ready

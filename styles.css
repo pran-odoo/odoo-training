@@ -2002,6 +2002,117 @@ body.dark-mode .mistake-text code {
     margin: 24px 0;
 }
 
+/* Quiz Progress Tracking */
+.quiz-progress {
+    background: var(--bg-secondary);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 16px 20px;
+    margin-bottom: 24px;
+}
+
+.quiz-progress-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+}
+
+.quiz-progress-title {
+    font-weight: 600;
+    font-size: 14px;
+    color: var(--text-primary);
+}
+
+.quiz-reset-btn {
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--text-muted);
+    font-size: 12px;
+    padding: 4px 10px;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all var(--transition-fast);
+}
+
+.quiz-reset-btn:hover {
+    background: var(--bg-hover);
+    border-color: var(--error);
+    color: var(--error);
+}
+
+.quiz-progress-bar-container {
+    height: 8px;
+    background: var(--bg-tertiary);
+    border-radius: 4px;
+    overflow: hidden;
+    margin-bottom: 10px;
+}
+
+.quiz-progress-bar {
+    height: 100%;
+    background: linear-gradient(90deg, var(--primary), #ec4899);
+    border-radius: 4px;
+    transition: width 0.5s ease;
+}
+
+.quiz-progress-stats {
+    display: flex;
+    justify-content: space-between;
+    font-size: 12px;
+    color: var(--text-muted);
+}
+
+.quiz-progress-score {
+    color: var(--success);
+    font-weight: 500;
+}
+
+/* Quiz Badges */
+.quiz-badge {
+    text-align: center;
+    margin-top: 12px;
+    padding: 8px 16px;
+    border-radius: 20px;
+    font-size: 13px;
+    font-weight: 600;
+    animation: badgePop 0.4s ease;
+}
+
+@keyframes badgePop {
+    0% { transform: scale(0.8); opacity: 0; }
+    50% { transform: scale(1.05); }
+    100% { transform: scale(1); opacity: 1; }
+}
+
+.quiz-badge-gold {
+    background: linear-gradient(135deg, #ffd700, #ffb347);
+    color: #5d4014;
+    box-shadow: 0 2px 8px rgba(255, 215, 0, 0.4);
+}
+
+.quiz-badge-silver {
+    background: linear-gradient(135deg, #c0c0c0, #e8e8e8);
+    color: #4a4a4a;
+    box-shadow: 0 2px 8px rgba(192, 192, 192, 0.4);
+}
+
+.quiz-badge-bronze {
+    background: linear-gradient(135deg, #cd7f32, #daa06d);
+    color: #4a2c14;
+    box-shadow: 0 2px 8px rgba(205, 127, 50, 0.4);
+}
+
+/* Reduce motion */
+@media (prefers-reduced-motion: reduce) {
+    .quiz-badge {
+        animation: none;
+    }
+    .quiz-progress-bar {
+        transition: none;
+    }
+}
+
 .quiz-card {
     background: var(--bg-secondary);
     border-radius: 16px;
