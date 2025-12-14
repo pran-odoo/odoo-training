@@ -87,6 +87,49 @@
         </div>
     </div>
 
+    <!-- Settings Panel (outside sidebar to avoid overflow:hidden clipping) -->
+    <div class="settings-panel-overlay" id="settingsPanelOverlay" aria-hidden="true"></div>
+    <div class="settings-panel" id="settingsPanel" role="dialog" aria-label="Personalization settings" aria-hidden="true">
+        <div class="settings-header">
+            <h3>Personalization</h3>
+            <button class="settings-close" id="settingsClose" aria-label="Close settings">&times;</button>
+        </div>
+        <div class="settings-content">
+            <!-- Accent Color -->
+            <div class="settings-group">
+                <label class="settings-label">Accent Color</label>
+                <div class="color-options" role="radiogroup" aria-label="Accent color">
+                    <button class="color-option" data-color="purple" style="--option-color: #714B67" aria-label="Purple (default)" aria-checked="true" role="radio"></button>
+                    <button class="color-option" data-color="blue" style="--option-color: #3b82f6" aria-label="Blue" aria-checked="false" role="radio"></button>
+                    <button class="color-option" data-color="green" style="--option-color: #10b981" aria-label="Green" aria-checked="false" role="radio"></button>
+                    <button class="color-option" data-color="orange" style="--option-color: #f97316" aria-label="Orange" aria-checked="false" role="radio"></button>
+                    <button class="color-option" data-color="pink" style="--option-color: #ec4899" aria-label="Pink" aria-checked="false" role="radio"></button>
+                </div>
+            </div>
+            <!-- Content Density -->
+            <div class="settings-group">
+                <label class="settings-label">Content Density</label>
+                <div class="density-options" role="radiogroup" aria-label="Content density">
+                    <button class="density-option" data-density="compact" aria-label="Compact" aria-checked="false" role="radio">Compact</button>
+                    <button class="density-option" data-density="default" aria-label="Default" aria-checked="true" role="radio">Default</button>
+                    <button class="density-option" data-density="relaxed" aria-label="Relaxed" aria-checked="false" role="radio">Relaxed</button>
+                </div>
+            </div>
+            <!-- Font Family -->
+            <div class="settings-group">
+                <label class="settings-label">Font Family</label>
+                <div class="font-options" role="radiogroup" aria-label="Font family">
+                    <button class="font-option" data-font="system" aria-label="System font" aria-checked="true" role="radio">System</button>
+                    <button class="font-option" data-font="serif" aria-label="Serif font" aria-checked="false" role="radio">Serif</button>
+                    <button class="font-option" data-font="mono" aria-label="Monospace font" aria-checked="false" role="radio">Mono</button>
+                </div>
+            </div>
+        </div>
+        <div class="settings-footer">
+            <button class="settings-reset" id="settingsReset">Reset to Defaults</button>
+        </div>
+    </div>
+
     <!-- Sidebar Navigation -->
     <aside class="sidebar" id="sidebar">
         <div class="sidebar-header">
@@ -122,48 +165,6 @@
             <button class="toolbar-btn" id="settingsBtn" title="Personalization settings" aria-label="Open settings" aria-expanded="false">⚙️</button>
             <button class="toolbar-btn" id="spideyToggleBtn" title="Toggle spider cursor (Esc to disable)" aria-label="Toggle spider cursor" aria-pressed="false">🕷️</button>
             <button class="toolbar-btn" id="helpBtn" title="Keyboard shortcuts (?)" aria-label="Show keyboard shortcuts" aria-pressed="false">⌨️</button>
-        </div>
-
-        <!-- Settings Panel -->
-        <div class="settings-panel" id="settingsPanel" role="dialog" aria-label="Personalization settings" aria-hidden="true">
-            <div class="settings-header">
-                <h3>Personalization</h3>
-                <button class="settings-close" id="settingsClose" aria-label="Close settings">&times;</button>
-            </div>
-            <div class="settings-content">
-                <!-- Accent Color -->
-                <div class="settings-group">
-                    <label class="settings-label">Accent Color</label>
-                    <div class="color-options" role="radiogroup" aria-label="Accent color">
-                        <button class="color-option" data-color="purple" style="--option-color: #714B67" aria-label="Purple (default)" aria-checked="true" role="radio"></button>
-                        <button class="color-option" data-color="blue" style="--option-color: #3b82f6" aria-label="Blue" aria-checked="false" role="radio"></button>
-                        <button class="color-option" data-color="green" style="--option-color: #10b981" aria-label="Green" aria-checked="false" role="radio"></button>
-                        <button class="color-option" data-color="orange" style="--option-color: #f97316" aria-label="Orange" aria-checked="false" role="radio"></button>
-                        <button class="color-option" data-color="pink" style="--option-color: #ec4899" aria-label="Pink" aria-checked="false" role="radio"></button>
-                    </div>
-                </div>
-                <!-- Content Density -->
-                <div class="settings-group">
-                    <label class="settings-label">Content Density</label>
-                    <div class="density-options" role="radiogroup" aria-label="Content density">
-                        <button class="density-option" data-density="compact" aria-label="Compact" aria-checked="false" role="radio">Compact</button>
-                        <button class="density-option" data-density="default" aria-label="Default" aria-checked="true" role="radio">Default</button>
-                        <button class="density-option" data-density="relaxed" aria-label="Relaxed" aria-checked="false" role="radio">Relaxed</button>
-                    </div>
-                </div>
-                <!-- Font Family -->
-                <div class="settings-group">
-                    <label class="settings-label">Font Family</label>
-                    <div class="font-options" role="radiogroup" aria-label="Font family">
-                        <button class="font-option" data-font="system" aria-label="System font" aria-checked="true" role="radio">System</button>
-                        <button class="font-option" data-font="serif" aria-label="Serif font" aria-checked="false" role="radio">Serif</button>
-                        <button class="font-option" data-font="mono" aria-label="Monospace font" aria-checked="false" role="radio">Mono</button>
-                    </div>
-                </div>
-            </div>
-            <div class="settings-footer">
-                <button class="settings-reset" id="settingsReset">Reset to Defaults</button>
-            </div>
         </div>
 
         <nav>

@@ -2160,95 +2160,47 @@ function updateSettingsUI() {
 function initPersonalization() {
     const settingsBtn = document.getElementById('settingsBtn');
     const settingsPanel = document.getElementById('settingsPanel');
+    const settingsOverlay = document.getElementById('settingsPanelOverlay');
     const settingsClose = document.getElementById('settingsClose');
     const settingsReset = document.getElementById('settingsReset');
 
     if (!settingsBtn || !settingsPanel) return;
 
+    function openSettings() {
+        settingsPanel.classList.add('open');
+        if (settingsOverlay) settingsOverlay.classList.add('open');
+        settingsBtn.setAttribute('aria-expanded', 'true');
+        settingsPanel.setAttribute('aria-hidden', 'false');
+        if (settingsOverlay) settingsOverlay.setAttribute('aria-hidden', 'false');
+    }
+
+    function closeSettings() {
+        settingsPanel.classList.remove('open');
+        if (settingsOverlay) settingsOverlay.classList.remove('open');
+        settingsBtn.setAttribute('aria-expanded', 'false');
+        settingsPanel.setAttribute('aria-hidden', 'true');
+        if (settingsOverlay) settingsOverlay.setAttribute('aria-hidden', 'true');
+    }
+
     // Toggle settings panel
     settingsBtn.addEventListener('click', (e) => {
         e.stopPropagation();
-        const willOpen = !settingsPanel.classList.contains('open');
-
-        if (willOpen && window.innerWidth > 640) {
-            // Position BEFORE opening (while still hidden) on desktop
-            const btnRect = settingsBtn.getBoundingClientRect();
-            const viewportHeight = window.innerHeight;
-            const viewportWidth = window.innerWidth;
-            const panelWidth = 280;
-            const margin = 16;
-
-            // Temporarily make visible to measure, but off-screen
-            settingsPanel.style.visibility = 'hidden';
-            settingsPanel.style.display = 'block';
-            settingsPanel.style.top = '0';
-            settingsPanel.style.left = '-9999px';
-            settingsPanel.style.maxHeight = 'none';
-
-            // Get actual panel height
-            const panelHeight = settingsPanel.offsetHeight || 400;
-
-            // Calculate available space above and below button
-            const spaceBelow = viewportHeight - btnRect.bottom - margin;
-            const spaceAbove = btnRect.top - margin;
-
-            // Position below button if there's room, otherwise above
-            if (spaceBelow >= panelHeight || spaceBelow >= spaceAbove) {
-                // Position below
-                const top = btnRect.bottom + 8;
-                const maxHeight = viewportHeight - top - margin;
-                settingsPanel.style.top = top + 'px';
-                settingsPanel.style.bottom = 'auto';
-                settingsPanel.style.maxHeight = Math.min(maxHeight, 500) + 'px';
-            } else {
-                // Position above
-                const bottom = viewportHeight - btnRect.top + 8;
-                const maxHeight = btnRect.top - margin - 8;
-                settingsPanel.style.bottom = bottom + 'px';
-                settingsPanel.style.top = 'auto';
-                settingsPanel.style.maxHeight = Math.min(maxHeight, 500) + 'px';
-            }
-
-            // Position horizontally - align with button, but keep in viewport
-            let left = btnRect.left;
-            if (left + panelWidth > viewportWidth - margin) {
-                left = viewportWidth - panelWidth - margin;
-            }
-            if (left < margin) left = margin;
-            settingsPanel.style.left = left + 'px';
-
-            // Reset visibility - CSS will handle it via .open class
-            settingsPanel.style.visibility = '';
-            settingsPanel.style.display = '';
-
-            // Now open
-            settingsPanel.classList.add('open');
-            settingsBtn.setAttribute('aria-expanded', 'true');
-            settingsPanel.setAttribute('aria-hidden', 'false');
-        } else if (willOpen) {
-            // Mobile - just open, CSS handles positioning
-            settingsPanel.style.top = '';
-            settingsPanel.style.bottom = '';
-            settingsPanel.style.left = '';
-            settingsPanel.style.maxHeight = '';
-            settingsPanel.classList.add('open');
-            settingsBtn.setAttribute('aria-expanded', 'true');
-            settingsPanel.setAttribute('aria-hidden', 'false');
+        const isOpen = settingsPanel.classList.contains('open');
+        if (isOpen) {
+            closeSettings();
         } else {
-            // Close
-            settingsPanel.classList.remove('open');
-            settingsBtn.setAttribute('aria-expanded', 'false');
-            settingsPanel.setAttribute('aria-hidden', 'true');
+            openSettings();
         }
     });
 
-    // Close settings
+    // Close on overlay click
+    if (settingsOverlay) {
+        settingsOverlay.addEventListener('click', closeSettings);
+    }
+
+    // Close settings button
     if (settingsClose) {
-        settingsClose.addEventListener('click', () => {
-            settingsPanel.classList.remove('open');
-            settingsBtn.setAttribute('aria-expanded', 'false');
-            settingsPanel.setAttribute('aria-hidden', 'true');
-        });
+        settingsClose.addEventListener('click', closeSettings);
     }
 
     // Reset to defaults
