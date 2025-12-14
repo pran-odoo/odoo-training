@@ -3622,3 +3622,134 @@ body.dark-mode .section-nav-btn:hover {
         display: none;
     }
 }
+
+/* ==================== GLOSSARY POPOVERS ==================== */
+.glossary-term {
+    text-decoration: underline;
+    text-decoration-style: dotted;
+    text-decoration-color: var(--primary);
+    text-underline-offset: 3px;
+    cursor: help;
+    transition: all var(--transition-fast);
+}
+
+.glossary-term:hover,
+.glossary-term:focus {
+    color: var(--primary);
+    text-decoration-style: solid;
+    outline: none;
+}
+
+.glossary-term:focus-visible {
+    box-shadow: var(--focus-ring);
+    border-radius: 2px;
+}
+
+.glossary-popover {
+    position: absolute;
+    z-index: var(--z-tooltip);
+    max-width: 320px;
+    padding: var(--space-4);
+    background: var(--bg-primary);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-xl);
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(4px);
+    transition: all var(--transition-fast);
+    pointer-events: none;
+}
+
+.glossary-popover.visible {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+    pointer-events: auto;
+}
+
+.glossary-popover::before {
+    content: '';
+    position: absolute;
+    bottom: -8px;
+    left: 50%;
+    transform: translateX(-50%);
+    border: 8px solid transparent;
+    border-top-color: var(--bg-primary);
+    border-bottom: none;
+}
+
+.glossary-popover::after {
+    content: '';
+    position: absolute;
+    bottom: -9px;
+    left: 50%;
+    transform: translateX(-50%);
+    border: 8px solid transparent;
+    border-top-color: var(--border);
+    border-bottom: none;
+    z-index: -1;
+}
+
+.glossary-popover.below::before {
+    bottom: auto;
+    top: -8px;
+    border-top: none;
+    border-bottom-color: var(--bg-primary);
+}
+
+.glossary-popover.below::after {
+    bottom: auto;
+    top: -9px;
+    border-top: none;
+    border-bottom-color: var(--border);
+}
+
+.glossary-popover-term {
+    font-weight: var(--font-bold);
+    font-size: var(--text-sm);
+    color: var(--primary);
+    margin-bottom: var(--space-2);
+    padding-bottom: var(--space-2);
+    border-bottom: 1px solid var(--border-light);
+}
+
+.glossary-popover-definition {
+    font-size: var(--text-sm);
+    line-height: var(--leading-relaxed);
+    color: var(--text-secondary);
+}
+
+/* Dark mode */
+body.dark-mode .glossary-popover {
+    background: var(--bg-secondary);
+    border-color: var(--border-dark);
+}
+
+body.dark-mode .glossary-popover::before {
+    border-top-color: var(--bg-secondary);
+}
+
+body.dark-mode .glossary-popover::after {
+    border-top-color: var(--border-dark);
+}
+
+body.dark-mode .glossary-popover.below::before {
+    border-top-color: transparent;
+    border-bottom-color: var(--bg-secondary);
+}
+
+body.dark-mode .glossary-popover.below::after {
+    border-top-color: transparent;
+    border-bottom-color: var(--border-dark);
+}
+
+/* Hide glossary styling in print */
+@media print {
+    .glossary-term {
+        text-decoration: none;
+    }
+    .glossary-popover {
+        display: none;
+    }
+}
