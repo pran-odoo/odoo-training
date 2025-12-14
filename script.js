@@ -139,15 +139,24 @@ function updateActiveSection() {
 
 // ==================== MOBILE MENU ====================
 function toggleMobileMenu() {
-    sidebar.classList.toggle('open');
-    sidebarOverlay.classList.toggle('active');
-    mobileMenuToggle.classList.toggle('active');
+    const isOpen = sidebar.classList.toggle('open');
+    sidebarOverlay.classList.toggle('active', isOpen);
+    mobileMenuToggle.classList.toggle('active', isOpen);
+    mobileMenuToggle.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+
+    // Focus management for accessibility
+    if (isOpen) {
+        // Focus first focusable element in sidebar
+        const firstFocusable = sidebar.querySelector('a, button, input');
+        if (firstFocusable) firstFocusable.focus();
+    }
 }
 
 function closeMobileMenu() {
     sidebar.classList.remove('open');
     sidebarOverlay.classList.remove('active');
     mobileMenuToggle.classList.remove('active');
+    mobileMenuToggle.setAttribute('aria-expanded', 'false');
 }
 
 mobileMenuToggle.addEventListener('click', toggleMobileMenu);
@@ -696,22 +705,25 @@ function loadReadingProgress() {
 }
 
 // Resume banner click - go to saved section
-resumeBanner.addEventListener('click', function(e) {
-    if (e.target === resumeClose) return;
-    const lastSection = safeGetItem(STORAGE_KEYS.lastSection);
-    if (lastSection) {
-        const target = document.getElementById(lastSection);
-        if (target) {
-            target.scrollIntoView({ behavior: getScrollBehavior(), block: 'start' });
+const resumeAction = document.getElementById('resumeAction');
+if (resumeAction) {
+    resumeAction.addEventListener('click', function() {
+        const lastSection = safeGetItem(STORAGE_KEYS.lastSection);
+        if (lastSection) {
+            const target = document.getElementById(lastSection);
+            if (target) {
+                target.scrollIntoView({ behavior: getScrollBehavior(), block: 'start' });
+            }
         }
-    }
-    resumeBanner.style.display = 'none';
-});
+        resumeBanner.style.display = 'none';
+    });
+}
 
-resumeClose.addEventListener('click', function(e) {
-    e.stopPropagation();
-    resumeBanner.style.display = 'none';
-});
+if (resumeClose) {
+    resumeClose.addEventListener('click', function() {
+        resumeBanner.style.display = 'none';
+    });
+}
 
 // ==================== SMOOTH SCROLL FOR SIDEBAR LINKS ====================
 sidebarLinks.forEach(link => {
@@ -1917,9 +1929,10 @@ const GLOSSARY = {
 };
 
 function initGlossary() {
-    // Create popover element
+    // Create popover element with ID for aria-describedby
     const popover = document.createElement('div');
     popover.className = 'glossary-popover';
+    popover.id = 'glossary-popover';
     popover.setAttribute('role', 'tooltip');
     popover.setAttribute('aria-hidden', 'true');
     document.body.appendChild(popover);
@@ -1930,25 +1943,39 @@ function initGlossary() {
     const container = document.querySelector('.container');
     if (!container) return;
 
-    // Process text nodes to find and wrap glossary terms
-    const termRegex = new RegExp('\\b(' + Object.keys(GLOSSARY).join('|') + ')\\b', 'g');
+    // Escape special regex characters in glossary keys
+    const escapedTerms = Object.keys(GLOSSARY).map(term =>
+        term.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+    );
 
-    // Only process certain elements to avoid breaking code blocks
-    const processableElements = container.querySelectorAll('p, li, td, .info-box, .critical-box, .technical-box, .warning-box');
+    // Process text nodes to find and wrap glossary terms
+    const termRegex = new RegExp('\\b(' + escapedTerms.join('|') + ')\\b', 'g');
+
+    // Only process leaf text containers - avoid processing parent containers that contain child processable elements
+    const processableElements = container.querySelectorAll('p, li, td');
+    const processedParents = new Set();
 
     processableElements.forEach(element => {
         // Skip if already processed or is inside a code block
         if (element.dataset.glossaryProcessed) return;
         if (element.closest('pre, code, .quiz-option')) return;
 
+        // Skip if any ancestor was already processed (prevents double-processing)
+        let parent = element.parentElement;
+        while (parent && parent !== container) {
+            if (processedParents.has(parent)) return;
+            parent = parent.parentElement;
+        }
+
         element.dataset.glossaryProcessed = 'true';
+        processedParents.add(element);
 
         const walker = document.createTreeWalker(element, NodeFilter.SHOW_TEXT, null, false);
         const textNodes = [];
 
         while (walker.nextNode()) {
-            // Skip text inside code elements
-            if (!walker.currentNode.parentElement.closest('code, pre, a')) {
+            // Skip text inside code elements or already processed glossary terms
+            if (!walker.currentNode.parentElement.closest('code, pre, a, .glossary-term')) {
                 textNodes.push(walker.currentNode);
             }
         }
@@ -2281,20 +2308,18 @@ function initShareability() {
         section.appendChild(shareWrapper);
     });
 
-    // Add share menu for mobile/touch
-    createShareMenu();
 }
 
 function copyToClipboard(text, triggerElement) {
-    navigator.clipboard.writeText(text).then(() => {
+    function onSuccess() {
         showToast('Link copied to clipboard!');
-        // Visual feedback on button
         if (triggerElement) {
             triggerElement.classList.add('copied');
             setTimeout(() => triggerElement.classList.remove('copied'), 1500);
         }
-    }).catch(() => {
-        // Fallback for older browsers
+    }
+
+    function fallbackCopy() {
         const textarea = document.createElement('textarea');
         textarea.value = text;
         textarea.style.position = 'fixed';
@@ -2303,12 +2328,19 @@ function copyToClipboard(text, triggerElement) {
         textarea.select();
         try {
             document.execCommand('copy');
-            showToast('Link copied to clipboard!');
+            onSuccess();
         } catch (e) {
             showToast('Failed to copy link');
         }
         document.body.removeChild(textarea);
-    });
+    }
+
+    // Guard: clipboard API may not exist in non-secure contexts
+    if (navigator.clipboard && typeof navigator.clipboard.writeText === 'function') {
+        navigator.clipboard.writeText(text).then(onSuccess).catch(fallbackCopy);
+    } else {
+        fallbackCopy();
+    }
 }
 
 function showToast(message) {
@@ -2332,101 +2364,6 @@ function showToast(message) {
         toast.classList.remove('visible');
         setTimeout(() => toast.remove(), 300);
     }, 2500);
-}
-
-function createShareMenu() {
-    const shareMenu = document.createElement('div');
-    shareMenu.className = 'share-menu';
-    shareMenu.id = 'shareMenu';
-    shareMenu.setAttribute('role', 'menu');
-    shareMenu.setAttribute('aria-hidden', 'true');
-    shareMenu.innerHTML = `
-        <button class="share-menu-item" data-action="copy-link">
-            <span class="share-icon">🔗</span>
-            <span>Copy link</span>
-        </button>
-        <button class="share-menu-item" data-action="copy-snippet">
-            <span class="share-icon">📋</span>
-            <span>Copy as text</span>
-        </button>
-        <button class="share-menu-item" data-action="print">
-            <span class="share-icon">🖨️</span>
-            <span>Print page</span>
-        </button>
-        ${navigator.share ? `
-        <button class="share-menu-item" data-action="native-share">
-            <span class="share-icon">📤</span>
-            <span>Share...</span>
-        </button>
-        ` : ''}
-    `;
-    document.body.appendChild(shareMenu);
-
-    // Handle share menu actions
-    shareMenu.querySelectorAll('.share-menu-item').forEach(item => {
-        item.addEventListener('click', () => {
-            const action = item.dataset.action;
-            handleShareAction(action);
-            closeShareMenu();
-        });
-    });
-
-    // Close on outside click
-    document.addEventListener('click', (e) => {
-        if (!shareMenu.contains(e.target) && !e.target.classList.contains('section-share-btn')) {
-            closeShareMenu();
-        }
-    });
-}
-
-function handleShareAction(action) {
-    const currentUrl = window.location.href;
-    const title = document.title;
-
-    switch (action) {
-        case 'copy-link':
-            copyToClipboard(currentUrl);
-            break;
-
-        case 'copy-snippet':
-            // Copy visible section as text
-            const activeSection = document.querySelector('h2.active') ||
-                                 document.querySelector('h2[id]');
-            if (activeSection) {
-                let content = activeSection.textContent + '\n\n';
-                let next = activeSection.nextElementSibling;
-                while (next && next.tagName !== 'H2') {
-                    if (next.tagName === 'P' || next.tagName === 'LI') {
-                        content += next.textContent.trim() + '\n';
-                    }
-                    next = next.nextElementSibling;
-                }
-                content += '\n— ' + currentUrl;
-                copyToClipboard(content.trim());
-            }
-            break;
-
-        case 'print':
-            window.print();
-            break;
-
-        case 'native-share':
-            if (navigator.share) {
-                navigator.share({
-                    title: title,
-                    url: currentUrl
-                }).catch(() => {}); // Ignore cancel
-            }
-            break;
-    }
-}
-
-function closeShareMenu() {
-    const shareMenu = document.getElementById('shareMenu');
-    if (shareMenu) {
-        shareMenu.classList.remove('visible');
-        shareMenu.setAttribute('aria-hidden', 'true');
-    }
 }
 
 // Add share command to command palette
