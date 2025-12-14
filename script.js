@@ -1958,6 +1958,169 @@ function initGlossary() {
 // Initialize glossary after a short delay to not block initial render
 setTimeout(initGlossary, 500);
 
+// ==================== PERSONALIZATION SETTINGS ====================
+const PERSONALIZATION_KEY = 'odoo_training_personalization';
+
+const DEFAULT_SETTINGS = {
+    accentColor: 'purple',
+    density: 'default',
+    fontFamily: 'system'
+};
+
+const ACCENT_COLORS = {
+    purple: { primary: '#714B67', primaryDark: '#5a3d53', primaryLight: '#9f7aea' },
+    blue: { primary: '#3b82f6', primaryDark: '#2563eb', primaryLight: '#60a5fa' },
+    green: { primary: '#10b981', primaryDark: '#059669', primaryLight: '#34d399' },
+    orange: { primary: '#f97316', primaryDark: '#ea580c', primaryLight: '#fb923c' },
+    pink: { primary: '#ec4899', primaryDark: '#db2777', primaryLight: '#f472b6' }
+};
+
+const FONT_FAMILIES = {
+    system: '-apple-system, BlinkMacSystemFont, "Segoe UI", "Inter", Arial, sans-serif',
+    serif: 'Georgia, "Times New Roman", Times, serif',
+    mono: '"SF Mono", "Fira Code", Consolas, monospace'
+};
+
+let currentSettings = { ...DEFAULT_SETTINGS };
+
+function loadPersonalization() {
+    const saved = safeGetItem(PERSONALIZATION_KEY);
+    if (saved) {
+        try {
+            currentSettings = { ...DEFAULT_SETTINGS, ...JSON.parse(saved) };
+        } catch (e) {
+            currentSettings = { ...DEFAULT_SETTINGS };
+        }
+    }
+    applyPersonalization();
+}
+
+function savePersonalization() {
+    safeSetItem(PERSONALIZATION_KEY, JSON.stringify(currentSettings));
+}
+
+function applyPersonalization() {
+    // Apply accent color
+    const colors = ACCENT_COLORS[currentSettings.accentColor] || ACCENT_COLORS.purple;
+    document.documentElement.style.setProperty('--primary', colors.primary);
+    document.documentElement.style.setProperty('--primary-dark', colors.primaryDark);
+    document.documentElement.style.setProperty('--primary-light', colors.primaryLight);
+    document.documentElement.style.setProperty('--accent-color', colors.primary);
+
+    // Apply density
+    document.body.classList.remove('density-compact', 'density-relaxed');
+    if (currentSettings.density !== 'default') {
+        document.body.classList.add('density-' + currentSettings.density);
+    }
+
+    // Apply font family
+    const font = FONT_FAMILIES[currentSettings.fontFamily] || FONT_FAMILIES.system;
+    document.documentElement.style.setProperty('--font-sans', font);
+
+    // Update UI
+    updateSettingsUI();
+}
+
+function updateSettingsUI() {
+    // Update color options
+    document.querySelectorAll('.color-option').forEach(btn => {
+        const isSelected = btn.dataset.color === currentSettings.accentColor;
+        btn.classList.toggle('selected', isSelected);
+        btn.setAttribute('aria-checked', isSelected ? 'true' : 'false');
+    });
+
+    // Update density options
+    document.querySelectorAll('.density-option').forEach(btn => {
+        const isSelected = btn.dataset.density === currentSettings.density;
+        btn.classList.toggle('selected', isSelected);
+        btn.setAttribute('aria-checked', isSelected ? 'true' : 'false');
+    });
+
+    // Update font options
+    document.querySelectorAll('.font-option').forEach(btn => {
+        const isSelected = btn.dataset.font === currentSettings.fontFamily;
+        btn.classList.toggle('selected', isSelected);
+        btn.setAttribute('aria-checked', isSelected ? 'true' : 'false');
+    });
+}
+
+function initPersonalization() {
+    const settingsBtn = document.getElementById('settingsBtn');
+    const settingsPanel = document.getElementById('settingsPanel');
+    const settingsClose = document.getElementById('settingsClose');
+    const settingsReset = document.getElementById('settingsReset');
+
+    if (!settingsBtn || !settingsPanel) return;
+
+    // Toggle settings panel
+    settingsBtn.addEventListener('click', () => {
+        const isOpen = settingsPanel.classList.toggle('open');
+        settingsBtn.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+        settingsPanel.setAttribute('aria-hidden', isOpen ? 'false' : 'true');
+    });
+
+    // Close settings
+    if (settingsClose) {
+        settingsClose.addEventListener('click', () => {
+            settingsPanel.classList.remove('open');
+            settingsBtn.setAttribute('aria-expanded', 'false');
+            settingsPanel.setAttribute('aria-hidden', 'true');
+        });
+    }
+
+    // Reset to defaults
+    if (settingsReset) {
+        settingsReset.addEventListener('click', () => {
+            currentSettings = { ...DEFAULT_SETTINGS };
+            savePersonalization();
+            applyPersonalization();
+        });
+    }
+
+    // Color options
+    document.querySelectorAll('.color-option').forEach(btn => {
+        btn.addEventListener('click', () => {
+            currentSettings.accentColor = btn.dataset.color;
+            savePersonalization();
+            applyPersonalization();
+        });
+    });
+
+    // Density options
+    document.querySelectorAll('.density-option').forEach(btn => {
+        btn.addEventListener('click', () => {
+            currentSettings.density = btn.dataset.density;
+            savePersonalization();
+            applyPersonalization();
+        });
+    });
+
+    // Font options
+    document.querySelectorAll('.font-option').forEach(btn => {
+        btn.addEventListener('click', () => {
+            currentSettings.fontFamily = btn.dataset.font;
+            savePersonalization();
+            applyPersonalization();
+        });
+    });
+
+    // Close on outside click
+    document.addEventListener('click', (e) => {
+        if (settingsPanel.classList.contains('open') &&
+            !settingsPanel.contains(e.target) &&
+            !settingsBtn.contains(e.target)) {
+            settingsPanel.classList.remove('open');
+            settingsBtn.setAttribute('aria-expanded', 'false');
+            settingsPanel.setAttribute('aria-hidden', 'true');
+        }
+    });
+
+    // Load and apply saved settings
+    loadPersonalization();
+}
+
+initPersonalization();
+
 // ==================== SERVICE WORKER REGISTRATION ====================
 if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
