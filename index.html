@@ -35,11 +35,11 @@
     <div class="sidebar-overlay" id="sidebarOverlay"></div>
 
     <!-- Resume Reading Banner -->
-    <div class="resume-banner" id="resumeBanner">
+    <button class="resume-banner" id="resumeBanner" type="button" aria-label="Continue reading from saved position">
         <span>📖 Continue reading?</span>
         <span id="resumeSection"></span>
-        <button class="resume-banner-close" id="resumeClose" aria-label="Close">&times;</button>
-    </div>
+        <span class="resume-banner-close" id="resumeClose" aria-label="Close">&times;</span>
+    </button>
 
     <!-- Keyboard Shortcuts Hint -->
     <div class="keyboard-hint" id="keyboardHint">
@@ -77,12 +77,12 @@
         </div>
 
         <!-- Toolbar -->
-        <div class="toolbar">
-            <button class="toolbar-btn" id="darkModeBtn" title="Toggle dark mode (D)">🌙</button>
-            <button class="toolbar-btn" id="fontSmallBtn" title="Smaller text">A-</button>
-            <button class="toolbar-btn" id="fontLargeBtn" title="Larger text">A+</button>
-            <button class="toolbar-btn" id="spideyToggleBtn" title="Toggle spider cursor (Esc to disable)">🕷️</button>
-            <button class="toolbar-btn" id="helpBtn" title="Keyboard shortcuts (?)">⌨️</button>
+        <div class="toolbar" role="toolbar" aria-label="Settings">
+            <button class="toolbar-btn" id="darkModeBtn" title="Toggle dark mode (D)" aria-label="Toggle dark mode" aria-pressed="false">🌙</button>
+            <button class="toolbar-btn" id="fontSmallBtn" title="Smaller text" aria-label="Decrease font size">A-</button>
+            <button class="toolbar-btn" id="fontLargeBtn" title="Larger text" aria-label="Increase font size">A+</button>
+            <button class="toolbar-btn" id="spideyToggleBtn" title="Toggle spider cursor (Esc to disable)" aria-label="Toggle spider cursor" aria-pressed="false">🕷️</button>
+            <button class="toolbar-btn" id="helpBtn" title="Keyboard shortcuts (?)" aria-label="Show keyboard shortcuts" aria-pressed="false">⌨️</button>
         </div>
 
         <nav>
@@ -116,11 +116,12 @@
             <a href="#performance">17. Performance</a>
             <a href="#decision">18. Decision Matrix</a>
             <a href="#practical">19. Examples</a>
-            <a href="#odoosh">20. Odoo.sh</a>
-            <a href="#chatter">21. Chatter & Activities</a>
-            <a href="#emails">22. Email</a>
-            <a href="#context">23. Context</a>
-            <a href="#constraints">24. Constraints</a>
+            <a href="#mistakes">20. Common Mistakes</a>
+            <a href="#odoosh">21. Odoo.sh</a>
+            <a href="#chatter">22. Chatter & Activities</a>
+            <a href="#emails">23. Email</a>
+            <a href="#context">24. Context</a>
+            <a href="#constraints">25. Constraints</a>
         </nav>
     </aside>
 
@@ -143,6 +144,7 @@
 
         <div class="toc">
             <h2 style="margin-top: 0; border: none; column-span: all; page-break-before: avoid;">Table of Contents</h2>
+            <a href="#what-is-odoo">What is Odoo?</a>
             <a href="#intro">Introduction & Teaching Philosophy</a>
             <a href="#models">1. Understanding Models - The Foundation</a>
             <a href="#field-types">2. Complete Field Types Guide</a>
@@ -163,11 +165,12 @@
             <a href="#performance">17. Performance Considerations</a>
             <a href="#decision">18. Decision Matrix - When to Use What</a>
             <a href="#practical">19. Real-World Business Examples</a>
-            <a href="#odoosh">20. Odoo.sh - The Cloud Platform</a>
-            <a href="#chatter">21. Chatter, Followers & Activities</a>
-            <a href="#emails">22. Email in Odoo</a>
-            <a href="#context">23. Context - The Hidden Parameter</a>
-            <a href="#constraints">24. Constraints - Data Validation Rules</a>
+            <a href="#mistakes">20. Common Mistakes & How to Avoid Them</a>
+            <a href="#odoosh">21. Odoo.sh - The Cloud Platform</a>
+            <a href="#chatter">22. Chatter, Followers & Activities</a>
+            <a href="#emails">23. Email in Odoo</a>
+            <a href="#context">24. Context - The Hidden Parameter</a>
+            <a href="#constraints">25. Constraints - Data Validation Rules</a>
         </div>
 
         <!-- ==================== SECTION 0: WHAT IS ODOO ==================== -->
@@ -5021,7 +5024,7 @@ Content-Type: text/xml
         </table>
 
         <!-- ==================== SECTION 20: ODOO.SH ==================== -->
-        <h2 id="odoosh">20. Odoo.sh - The Cloud Platform</h2>
+        <h2 id="odoosh">21. Odoo.sh - The Cloud Platform</h2>
 
         <div class="info-box">
             <h4>What is Odoo.sh?</h4>
@@ -5329,7 +5332,7 @@ Content-Type: text/xml
         </div>
 
         <!-- ==================== SECTION 21: CHATTER & ACTIVITIES ==================== -->
-        <h2 id="chatter">21. Chatter, Followers & Activities</h2>
+        <h2 id="chatter">22. Chatter, Followers & Activities</h2>
 
         <div class="info-box">
             <h4>What is the Chatter?</h4>
@@ -5502,7 +5505,7 @@ Content-Type: text/xml
         </div>
 
         <!-- ==================== SECTION 22: EMAIL CONFIGURATION ==================== -->
-        <h2 id="emails">22. Email in Odoo</h2>
+        <h2 id="emails">23. Email in Odoo</h2>
 
         <div class="info-box">
             <h4>How Email Works in Odoo</h4>
@@ -5622,7 +5625,7 @@ Content-Type: text/xml
         </div>
 
         <!-- ==================== SECTION 23: CONTEXT ==================== -->
-        <h2 id="context">23. Context - The Hidden Parameter</h2>
+        <h2 id="context">24. Context - The Hidden Parameter</h2>
 
         <div class="info-box">
             <h4>What is Context?</h4>
@@ -5720,7 +5723,7 @@ Content-Type: text/xml
         </div>
 
         <!-- ==================== SECTION 24: CONSTRAINTS ==================== -->
-        <h2 id="constraints">24. Constraints - Data Validation Rules</h2>
+        <h2 id="constraints">25. Constraints - Data Validation Rules</h2>
 
         <div class="info-box">
             <h4>What Are Constraints?</h4>
