@@ -1153,7 +1153,7 @@ function initQuiz() {
 initQuiz();
 
 // ==================== WEBGL PRISM CRYSTAL ====================
-// A beautiful ray-marched 3D prism effect inspired by react-bits/Prism
+// High-quality ray-marched 3D prism - matching react-bits/Prism quality
 // Pure WebGL implementation without external dependencies
 
 function initPrismEffect() {
@@ -1169,8 +1169,9 @@ function initPrismEffect() {
     // Get WebGL context
     const gl = canvas.getContext('webgl', {
         alpha: true,
-        antialias: false,
-        premultipliedAlpha: false
+        antialias: true,
+        premultipliedAlpha: false,
+        preserveDrawingBuffer: false
     });
 
     if (!gl) {
@@ -1179,7 +1180,7 @@ function initPrismEffect() {
         return;
     }
 
-    // Vertex shader - simple fullscreen quad
+    // Vertex shader
     const vertexShaderSource = `
         attribute vec2 position;
         void main() {
@@ -1187,118 +1188,125 @@ function initPrismEffect() {
         }
     `;
 
-    // Fragment shader - ray-marched prism with rainbow refraction
+    // Fragment shader - high quality prism with volumetric glow
     const fragmentShaderSource = `
         precision highp float;
 
         uniform vec2 iResolution;
         uniform float iTime;
-        uniform float uHueShift;
 
-        // Hyperbolic tangent for smooth color clamping
+        #define PI 3.14159265359
+        #define GLOW 1.2
+        #define BLOOM 1.5
+        #define COLOR_FREQ 1.2
+        #define STEPS 100
+
         vec4 tanh4(vec4 x) {
             vec4 e2x = exp(2.0 * x);
             return (e2x - 1.0) / (e2x + 1.0);
         }
 
-        // Random function for noise
         float rand(vec2 co) {
             return fract(sin(dot(co, vec2(12.9898, 78.233))) * 43758.5453123);
         }
 
-        // Signed distance function for octahedron (diamond shape)
-        float sdOctahedron(vec3 p, float s) {
-            p = abs(p);
-            float m = p.x + p.y + p.z - s;
-            vec3 q;
-            if (3.0 * p.x < m) q = p.xyz;
-            else if (3.0 * p.y < m) q = p.yzx;
-            else if (3.0 * p.z < m) q = p.zxy;
-            else return m * 0.57735027;
-            float k = clamp(0.5 * (q.z - q.y + s), 0.0, s);
-            return length(vec3(q.x, q.y - s + k, q.z - k));
+        // Pyramid/prism SDF - taller and more dramatic
+        float sdPyramid(vec3 p, float h, float base) {
+            float m2 = h * h + 0.25 * base * base;
+            p.xz = abs(p.xz);
+            p.xz = (p.z > p.x) ? p.zx : p.xz;
+            p.xz -= 0.5 * base;
+
+            vec3 q = vec3(p.z, h * p.y - 0.5 * base * p.x, h * p.x + 0.5 * base * p.y);
+
+            float s = max(-q.x, 0.0);
+            float t = clamp((q.y - 0.5 * base * q.x) / (m2 + 0.25 * base * base), 0.0, 1.0);
+
+            float a = m2 * (q.x + s) * (q.x + s) + q.y * q.y;
+            float b = m2 * (q.x + 0.5 * base * t) * (q.x + 0.5 * base * t) + (q.y - m2 * t) * (q.y - m2 * t);
+
+            float d2 = min(q.y, -q.x * m2 - q.y * 0.5 * base) > 0.0 ? 0.0 : min(a, b);
+
+            return sqrt((d2 + q.z * q.z) / m2) * sign(max(q.z, -p.y));
         }
 
-        // Rotation matrix around Y axis
+        // Double pyramid (octahedron-like but elongated)
+        float sdDoublePyramid(vec3 p) {
+            float d1 = sdPyramid(p, 1.8, 1.4);
+            float d2 = sdPyramid(vec3(p.x, -p.y, p.z), 1.8, 1.4);
+            return min(d1, d2);
+        }
+
         mat3 rotateY(float a) {
             float c = cos(a), s = sin(a);
-            return mat3(c, 0, s, 0, 1, 0, -s, 0, c);
+            return mat3(c, 0.0, s, 0.0, 1.0, 0.0, -s, 0.0, c);
         }
 
-        // Rotation matrix around X axis
         mat3 rotateX(float a) {
             float c = cos(a), s = sin(a);
-            return mat3(1, 0, 0, 0, c, -s, 0, s, c);
+            return mat3(1.0, 0.0, 0.0, 0.0, c, -s, 0.0, s, c);
         }
 
-        // Hue rotation matrix
-        mat3 hueRotation(float a) {
+        mat3 rotateZ(float a) {
             float c = cos(a), s = sin(a);
-            float oneminusc = 1.0 - c;
-            return mat3(
-                0.213 + 0.787*c - 0.213*s,
-                0.213 - 0.213*c + 0.143*s,
-                0.213 - 0.213*c - 0.787*s,
-                0.715 - 0.715*c - 0.715*s,
-                0.715 + 0.285*c + 0.140*s,
-                0.715 - 0.715*c + 0.715*s,
-                0.072 - 0.072*c + 0.928*s,
-                0.072 - 0.072*c - 0.283*s,
-                0.072 + 0.928*c + 0.072*s
-            );
+            return mat3(c, -s, 0.0, s, c, 0.0, 0.0, 0.0, 1.0);
         }
 
         void main() {
             vec2 uv = (gl_FragCoord.xy - 0.5 * iResolution.xy) / min(iResolution.x, iResolution.y);
 
-            // Camera setup
-            vec3 ro = vec3(0.0, 0.0, 3.0); // Ray origin
-            vec3 rd = normalize(vec3(uv, -1.0)); // Ray direction
+            // Animated rotation - smooth and continuous
+            float t = iTime * 0.5;
+            mat3 rot = rotateY(t) * rotateX(sin(t * 0.7) * 0.4) * rotateZ(cos(t * 0.3) * 0.2);
 
-            // Animate rotation
-            float t = iTime * 0.3;
-            mat3 rot = rotateY(t) * rotateX(sin(t * 0.7) * 0.3);
+            // Wobble effect like the React version
+            float wobbleT = iTime * 0.5;
+            mat2 wobble = mat2(cos(wobbleT), cos(wobbleT + 33.0), cos(wobbleT + 11.0), cos(wobbleT));
 
-            // Ray marching
             vec4 col = vec4(0.0);
             float z = 5.0;
 
-            for (int i = 0; i < 80; i++) {
-                vec3 p = ro + rd * z;
+            // Ray marching with volumetric accumulation
+            for (int i = 0; i < STEPS; i++) {
+                vec3 p = vec3(uv * z * 0.15, z - 3.0);
+
+                // Apply wobble to xz plane
+                p.xz = wobble * p.xz;
+
+                // Apply rotation
                 p = rot * p;
 
-                float d = sdOctahedron(p, 1.0);
+                // Shift center for better framing
+                p.y += 0.3;
 
-                if (d < 0.001) break;
+                float d = 0.1 + 0.2 * abs(sdDoublePyramid(p));
 
-                // Accumulate color based on distance and position
-                float intensity = 0.1 + 0.15 * abs(d);
-                vec4 rainbow = (sin(p.y * 3.0 + z * 0.5 + vec4(0, 1, 2, 3) + iTime) + 1.0) / intensity;
-                col += rainbow * 0.015;
+                z -= d;
 
-                z -= d * 0.5;
+                // Accumulate rainbow colors based on position
+                float colorPhase = p.y * COLOR_FREQ + z * 0.3 + iTime * 0.8;
+                vec4 rainbow = sin(colorPhase + vec4(0.0, 1.0, 2.0, 3.0)) + 1.0;
+                col += rainbow / d;
 
                 if (z < 0.0) break;
             }
 
-            // Apply color processing
-            col = tanh4(col * col * 0.0002);
+            // Apply glow and bloom
+            col = tanh4(col * col * GLOW * BLOOM / 1e5);
 
             // Add subtle noise for texture
-            float n = rand(gl_FragCoord.xy + vec2(iTime));
-            col.rgb += (n - 0.5) * 0.1;
+            float n = rand(gl_FragCoord.xy + vec2(iTime * 0.1));
+            col.rgb += (n - 0.5) * 0.08;
 
-            // Apply hue shift animation
-            float hue = uHueShift + iTime * 0.1;
-            col.rgb = hueRotation(hue) * col.rgb;
-
-            // Boost saturation
+            // Boost saturation significantly
             float luma = dot(col.rgb, vec3(0.2126, 0.7152, 0.0722));
-            col.rgb = mix(vec3(luma), col.rgb, 1.5);
+            col.rgb = mix(vec3(luma), col.rgb, 1.8);
 
-            // Clamp and set alpha
+            // Clamp colors
             col.rgb = clamp(col.rgb, 0.0, 1.0);
-            col.a = (col.r + col.g + col.b) / 3.0;
+
+            // Alpha based on brightness for proper blending
+            col.a = clamp((col.r + col.g + col.b) * 0.8, 0.0, 1.0);
 
             gl_FragColor = col;
         }
@@ -1357,7 +1365,6 @@ function initPrismEffect() {
     // Get uniform locations
     const iResolutionLoc = gl.getUniformLocation(program, 'iResolution');
     const iTimeLoc = gl.getUniformLocation(program, 'iTime');
-    const uHueShiftLoc = gl.getUniformLocation(program, 'uHueShift');
 
     // Setup WebGL state
     gl.disable(gl.DEPTH_TEST);
@@ -1365,12 +1372,12 @@ function initPrismEffect() {
     gl.enable(gl.BLEND);
     gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
 
-    // Resize handler
+    // Resize handler - higher quality rendering
     function resize() {
         const dpr = Math.min(2, window.devicePixelRatio || 1);
         const rect = canvas.getBoundingClientRect();
-        canvas.width = rect.width * dpr;
-        canvas.height = rect.height * dpr;
+        canvas.width = Math.floor(rect.width * dpr);
+        canvas.height = Math.floor(rect.height * dpr);
         gl.viewport(0, 0, canvas.width, canvas.height);
     }
 
@@ -1383,13 +1390,12 @@ function initPrismEffect() {
     let isVisible = false;
     const startTime = performance.now();
 
-    // Render function
+    // Render function - smooth 60fps
     function render(time) {
         const t = (time - startTime) * 0.001;
 
         gl.uniform2f(iResolutionLoc, canvas.width, canvas.height);
         gl.uniform1f(iTimeLoc, t);
-        gl.uniform1f(uHueShiftLoc, 0);
 
         gl.clearColor(0, 0, 0, 0);
         gl.clear(gl.COLOR_BUFFER_BIT);
