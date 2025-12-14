@@ -12,7 +12,7 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="Odoo Training">
     <link rel="manifest" href="manifest.json">
-    <link rel="apple-touch-icon" href="icons/icon-192.png">
+    <link rel="apple-touch-icon" href="icons/icon.svg">
     <title>Odoo Conceptual Training</title>
     <link rel="icon" type="image/svg+xml" href="favicon.svg">
     <link rel="preload" href="styles.css" as="style">
@@ -32,7 +32,7 @@
     </div>
 
     <!-- Mobile Menu Toggle -->
-    <button class="mobile-menu-toggle" id="mobileMenuToggle" aria-label="Toggle menu">
+    <button class="mobile-menu-toggle" id="mobileMenuToggle" aria-label="Toggle navigation menu" aria-expanded="false" aria-controls="sidebar">
         <span></span>
         <span></span>
         <span></span>
@@ -42,11 +42,13 @@
     <div class="sidebar-overlay" id="sidebarOverlay"></div>
 
     <!-- Resume Reading Banner -->
-    <button class="resume-banner" id="resumeBanner" type="button" aria-label="Continue reading from saved position">
-        <span>📖 Continue reading?</span>
-        <span id="resumeSection"></span>
-        <span class="resume-banner-close" id="resumeClose" aria-label="Close">&times;</span>
-    </button>
+    <div class="resume-banner" id="resumeBanner" role="region" aria-label="Continue reading">
+        <button class="resume-banner-action" id="resumeAction" type="button">
+            <span>📖 Continue reading?</span>
+            <span id="resumeSection"></span>
+        </button>
+        <button class="resume-banner-close" id="resumeClose" type="button" aria-label="Dismiss">&times;</button>
+    </div>
 
     <!-- Keyboard Shortcuts Hint -->
     <div class="keyboard-hint" id="keyboardHint">

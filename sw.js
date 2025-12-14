@@ -1,5 +1,5 @@
 // Service Worker for Odoo Training PWA
-const CACHE_NAME = 'odoo-training-v3';
+const CACHE_NAME = 'odoo-training-v4';
 const ASSETS_TO_CACHE = [
     './',
     './index.html',

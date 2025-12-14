@@ -153,7 +153,7 @@
     --z-dropdown: 100;
     --z-sticky: 200;
     --z-overlay: 300;
-    --z-modal: 400;
+    --z-modal: 1100;
     --z-popover: 500;
     --z-tooltip: 600;
     --z-toast: 700;
@@ -814,8 +814,7 @@ body.font-xlarge h4 { font-size: 1.5rem; }
     left: 70px; /* Leave space for hamburger menu */
     background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
     color: white;
-    padding: 10px 16px;
-    border: none;
+    padding: 6px 6px 6px 6px;
     border-radius: 12px;
     font-size: 13px;
     font-family: inherit;
@@ -823,9 +822,26 @@ body.font-xlarge h4 { font-size: 1.5rem; }
     box-shadow: var(--shadow-md);
     display: none;
     align-items: center;
+    gap: 4px;
+    transition: all var(--transition-normal);
+}
+
+.resume-banner-action {
+    background: transparent;
+    border: none;
+    color: inherit;
+    font: inherit;
+    padding: 6px 12px;
+    display: flex;
+    align-items: center;
     gap: 8px;
     cursor: pointer;
-    transition: all var(--transition-normal);
+    flex: 1;
+}
+
+.resume-banner-action:hover {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
 }
 
 @media (min-width: 768px) {
@@ -852,6 +868,17 @@ body.font-xlarge h4 { font-size: 1.5rem; }
 
 .resume-banner:hover {
     box-shadow: var(--shadow-lg);
+}
+
+.resume-banner-close:focus-visible {
+    outline: 2px solid white;
+    outline-offset: 2px;
+}
+
+.resume-banner-action:focus-visible {
+    outline: 2px solid white;
+    outline-offset: 2px;
+    border-radius: 8px;
 }
 
 @media (min-width: 768px) {
@@ -3430,6 +3457,7 @@ body.dark-mode .true-focus-corner {
 /* Focus mode: full-screen immersive reading experience */
 body.focus-mode {
     overflow-x: hidden;
+    padding-left: 0 !important; /* Remove sidebar space reservation */
 }
 
 /* Hide sidebar in focus mode */
@@ -3533,7 +3561,7 @@ body.focus-mode::before {
     background: linear-gradient(90deg, var(--primary), #ec4899, var(--primary));
     background-size: 200% 100%;
     animation: focusGradient 3s ease infinite;
-    z-index: var(--z-sticky);
+    z-index: 1000; /* Above progress bar (999) */
 }
 
 @keyframes focusGradient {
@@ -4180,6 +4208,13 @@ body.dark-mode .font-option {
     font-size: var(--text-sm);
     cursor: pointer;
     transition: all var(--transition-fast);
+}
+
+/* Show share button on touch devices (no hover capability) */
+@media (hover: none) {
+    .section-share-btn {
+        opacity: 0.7;
+    }
 }
 
 h2:hover .section-share-btn,
