@@ -1152,5 +1152,278 @@ function initQuiz() {
 // Initialize quiz after DOM is ready
 initQuiz();
 
+// ==================== WEBGL PRISM CRYSTAL ====================
+// A beautiful ray-marched 3D prism effect inspired by react-bits/Prism
+// Pure WebGL implementation without external dependencies
+
+function initPrismEffect() {
+    const canvas = document.getElementById('prismCanvas');
+    if (!canvas) return;
+
+    // Check for reduced motion preference
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+        canvas.style.display = 'none';
+        return;
+    }
+
+    // Get WebGL context
+    const gl = canvas.getContext('webgl', {
+        alpha: true,
+        antialias: false,
+        premultipliedAlpha: false
+    });
+
+    if (!gl) {
+        console.warn('WebGL not supported, prism effect disabled');
+        canvas.style.display = 'none';
+        return;
+    }
+
+    // Vertex shader - simple fullscreen quad
+    const vertexShaderSource = `
+        attribute vec2 position;
+        void main() {
+            gl_Position = vec4(position, 0.0, 1.0);
+        }
+    `;
+
+    // Fragment shader - ray-marched prism with rainbow refraction
+    const fragmentShaderSource = `
+        precision highp float;
+
+        uniform vec2 iResolution;
+        uniform float iTime;
+        uniform float uHueShift;
+
+        // Hyperbolic tangent for smooth color clamping
+        vec4 tanh4(vec4 x) {
+            vec4 e2x = exp(2.0 * x);
+            return (e2x - 1.0) / (e2x + 1.0);
+        }
+
+        // Random function for noise
+        float rand(vec2 co) {
+            return fract(sin(dot(co, vec2(12.9898, 78.233))) * 43758.5453123);
+        }
+
+        // Signed distance function for octahedron (diamond shape)
+        float sdOctahedron(vec3 p, float s) {
+            p = abs(p);
+            float m = p.x + p.y + p.z - s;
+            vec3 q;
+            if (3.0 * p.x < m) q = p.xyz;
+            else if (3.0 * p.y < m) q = p.yzx;
+            else if (3.0 * p.z < m) q = p.zxy;
+            else return m * 0.57735027;
+            float k = clamp(0.5 * (q.z - q.y + s), 0.0, s);
+            return length(vec3(q.x, q.y - s + k, q.z - k));
+        }
+
+        // Rotation matrix around Y axis
+        mat3 rotateY(float a) {
+            float c = cos(a), s = sin(a);
+            return mat3(c, 0, s, 0, 1, 0, -s, 0, c);
+        }
+
+        // Rotation matrix around X axis
+        mat3 rotateX(float a) {
+            float c = cos(a), s = sin(a);
+            return mat3(1, 0, 0, 0, c, -s, 0, s, c);
+        }
+
+        // Hue rotation matrix
+        mat3 hueRotation(float a) {
+            float c = cos(a), s = sin(a);
+            float oneminusc = 1.0 - c;
+            return mat3(
+                0.213 + 0.787*c - 0.213*s,
+                0.213 - 0.213*c + 0.143*s,
+                0.213 - 0.213*c - 0.787*s,
+                0.715 - 0.715*c - 0.715*s,
+                0.715 + 0.285*c + 0.140*s,
+                0.715 - 0.715*c + 0.715*s,
+                0.072 - 0.072*c + 0.928*s,
+                0.072 - 0.072*c - 0.283*s,
+                0.072 + 0.928*c + 0.072*s
+            );
+        }
+
+        void main() {
+            vec2 uv = (gl_FragCoord.xy - 0.5 * iResolution.xy) / min(iResolution.x, iResolution.y);
+
+            // Camera setup
+            vec3 ro = vec3(0.0, 0.0, 3.0); // Ray origin
+            vec3 rd = normalize(vec3(uv, -1.0)); // Ray direction
+
+            // Animate rotation
+            float t = iTime * 0.3;
+            mat3 rot = rotateY(t) * rotateX(sin(t * 0.7) * 0.3);
+
+            // Ray marching
+            vec4 col = vec4(0.0);
+            float z = 5.0;
+
+            for (int i = 0; i < 80; i++) {
+                vec3 p = ro + rd * z;
+                p = rot * p;
+
+                float d = sdOctahedron(p, 1.0);
+
+                if (d < 0.001) break;
+
+                // Accumulate color based on distance and position
+                float intensity = 0.1 + 0.15 * abs(d);
+                vec4 rainbow = (sin(p.y * 3.0 + z * 0.5 + vec4(0, 1, 2, 3) + iTime) + 1.0) / intensity;
+                col += rainbow * 0.015;
+
+                z -= d * 0.5;
+
+                if (z < 0.0) break;
+            }
+
+            // Apply color processing
+            col = tanh4(col * col * 0.0002);
+
+            // Add subtle noise for texture
+            float n = rand(gl_FragCoord.xy + vec2(iTime));
+            col.rgb += (n - 0.5) * 0.1;
+
+            // Apply hue shift animation
+            float hue = uHueShift + iTime * 0.1;
+            col.rgb = hueRotation(hue) * col.rgb;
+
+            // Boost saturation
+            float luma = dot(col.rgb, vec3(0.2126, 0.7152, 0.0722));
+            col.rgb = mix(vec3(luma), col.rgb, 1.5);
+
+            // Clamp and set alpha
+            col.rgb = clamp(col.rgb, 0.0, 1.0);
+            col.a = (col.r + col.g + col.b) / 3.0;
+
+            gl_FragColor = col;
+        }
+    `;
+
+    // Compile shader
+    function compileShader(source, type) {
+        const shader = gl.createShader(type);
+        gl.shaderSource(shader, source);
+        gl.compileShader(shader);
+        if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
+            console.error('Shader compile error:', gl.getShaderInfoLog(shader));
+            gl.deleteShader(shader);
+            return null;
+        }
+        return shader;
+    }
+
+    const vertexShader = compileShader(vertexShaderSource, gl.VERTEX_SHADER);
+    const fragmentShader = compileShader(fragmentShaderSource, gl.FRAGMENT_SHADER);
+
+    if (!vertexShader || !fragmentShader) {
+        canvas.style.display = 'none';
+        return;
+    }
+
+    // Create program
+    const program = gl.createProgram();
+    gl.attachShader(program, vertexShader);
+    gl.attachShader(program, fragmentShader);
+    gl.linkProgram(program);
+
+    if (!gl.getProgramParameter(program, gl.LINK_STATUS)) {
+        console.error('Program link error:', gl.getProgramInfoLog(program));
+        canvas.style.display = 'none';
+        return;
+    }
+
+    gl.useProgram(program);
+
+    // Create fullscreen triangle (more efficient than quad)
+    const positions = new Float32Array([
+        -1, -1,
+        3, -1,
+        -1, 3
+    ]);
+
+    const buffer = gl.createBuffer();
+    gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
+    gl.bufferData(gl.ARRAY_BUFFER, positions, gl.STATIC_DRAW);
+
+    const positionLoc = gl.getAttribLocation(program, 'position');
+    gl.enableVertexAttribArray(positionLoc);
+    gl.vertexAttribPointer(positionLoc, 2, gl.FLOAT, false, 0, 0);
+
+    // Get uniform locations
+    const iResolutionLoc = gl.getUniformLocation(program, 'iResolution');
+    const iTimeLoc = gl.getUniformLocation(program, 'iTime');
+    const uHueShiftLoc = gl.getUniformLocation(program, 'uHueShift');
+
+    // Setup WebGL state
+    gl.disable(gl.DEPTH_TEST);
+    gl.disable(gl.CULL_FACE);
+    gl.enable(gl.BLEND);
+    gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
+
+    // Resize handler
+    function resize() {
+        const dpr = Math.min(2, window.devicePixelRatio || 1);
+        const rect = canvas.getBoundingClientRect();
+        canvas.width = rect.width * dpr;
+        canvas.height = rect.height * dpr;
+        gl.viewport(0, 0, canvas.width, canvas.height);
+    }
+
+    const resizeObserver = new ResizeObserver(resize);
+    resizeObserver.observe(canvas);
+    resize();
+
+    // Animation state
+    let animationId = null;
+    let isVisible = false;
+    const startTime = performance.now();
+
+    // Render function
+    function render(time) {
+        const t = (time - startTime) * 0.001;
+
+        gl.uniform2f(iResolutionLoc, canvas.width, canvas.height);
+        gl.uniform1f(iTimeLoc, t);
+        gl.uniform1f(uHueShiftLoc, 0);
+
+        gl.clearColor(0, 0, 0, 0);
+        gl.clear(gl.COLOR_BUFFER_BIT);
+        gl.drawArrays(gl.TRIANGLES, 0, 3);
+
+        if (isVisible) {
+            animationId = requestAnimationFrame(render);
+        }
+    }
+
+    // Intersection observer for performance (only render when visible)
+    const intersectionObserver = new IntersectionObserver((entries) => {
+        const entry = entries[0];
+        isVisible = entry.isIntersecting;
+
+        if (isVisible && !animationId) {
+            animationId = requestAnimationFrame(render);
+        } else if (!isVisible && animationId) {
+            cancelAnimationFrame(animationId);
+            animationId = null;
+        }
+    }, { threshold: 0.1 });
+
+    intersectionObserver.observe(canvas);
+
+    // Start if already visible
+    if (canvas.getBoundingClientRect().top < window.innerHeight) {
+        isVisible = true;
+        animationId = requestAnimationFrame(render);
+    }
+}
+
+// Initialize prism effect
+initPrismEffect();
+
 init();
 });
