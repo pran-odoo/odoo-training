@@ -28,13 +28,17 @@ const commandPaletteOverlay = document.getElementById('commandPaletteOverlay');
 const commandPaletteInput = document.getElementById('commandPaletteInput');
 const commandPaletteResults = document.getElementById('commandPaletteResults');
 
+// Focus mode element
+const focusModeBtn = document.getElementById('focusModeBtn');
+
 // ==================== LOCAL STORAGE KEYS ====================
 const STORAGE_KEYS = {
     darkMode: 'odoo_training_dark_mode',
     fontSize: 'odoo_training_font_size',
     lastSection: 'odoo_training_last_section',
     lastScrollPos: 'odoo_training_scroll_pos',
-    spideyCursor: 'odoo_training_spidey_cursor'
+    spideyCursor: 'odoo_training_spidey_cursor',
+    focusMode: 'odoo_training_focus_mode'
 };
 
 // Safe localStorage wrappers (handles Safari private mode, quota exceeded, etc.)
@@ -1150,6 +1154,7 @@ const commands = [
 
     // Actions
     { type: 'action', icon: '🌙', title: 'Toggle Dark Mode', action: toggleDarkMode, shortcut: 'D', keywords: ['dark', 'light', 'theme', 'mode'] },
+    { type: 'action', icon: '📖', title: 'Toggle Focus Mode', action: () => { closeCommandPalette(); setTimeout(() => { if (focusModeBtn) focusModeBtn.click(); }, 100); }, shortcut: 'F', keywords: ['focus', 'reading', 'distraction', 'zen'] },
     { type: 'action', icon: '🔍', title: 'Focus Search', action: () => { closeCommandPalette(); searchInput.focus(); }, shortcut: '/', keywords: ['search', 'find'] },
     { type: 'action', icon: '⬆️', title: 'Back to Top', action: () => { closeCommandPalette(); window.scrollTo({ top: 0, behavior: getScrollBehavior() }); }, keywords: ['top', 'scroll', 'beginning'] },
     { type: 'action', icon: '📏', title: 'Increase Font Size', action: () => { if (currentFontSizeIndex < FONT_SIZES.length - 1) { currentFontSizeIndex++; setFontSize(FONT_SIZES[currentFontSizeIndex]); } }, keywords: ['font', 'larger', 'bigger', 'text'] },
@@ -1342,6 +1347,65 @@ document.addEventListener('keydown', function(e) {
         }
     }
 });
+
+// ==================== FOCUS/READING MODE ====================
+let focusModeActive = false;
+
+function toggleFocusMode() {
+    focusModeActive = !focusModeActive;
+    document.body.classList.toggle('focus-mode', focusModeActive);
+
+    // Update button state
+    if (focusModeBtn) {
+        focusModeBtn.setAttribute('aria-pressed', focusModeActive ? 'true' : 'false');
+        focusModeBtn.title = focusModeActive ? 'Exit focus mode (F)' : 'Toggle focus mode (F)';
+    }
+
+    // Save preference
+    safeSetItem(STORAGE_KEYS.focusMode, focusModeActive ? 'true' : 'false');
+
+    // Close mobile sidebar if open when entering focus mode
+    if (focusModeActive && sidebar.classList.contains('active')) {
+        sidebar.classList.remove('active');
+        sidebarOverlay.classList.remove('active');
+    }
+}
+
+// Focus mode button click handler
+if (focusModeBtn) {
+    focusModeBtn.addEventListener('click', toggleFocusMode);
+}
+
+// Keyboard shortcut for focus mode (F key)
+document.addEventListener('keydown', function(e) {
+    // Don't trigger if typing in an input or textarea
+    if (e.target.matches('input, textarea, [contenteditable]')) return;
+    // Don't trigger if command palette is open
+    if (commandPalette && commandPalette.classList.contains('active')) return;
+
+    if (e.key === 'f' || e.key === 'F') {
+        // Only lowercase 'f' without modifiers
+        if (!e.metaKey && !e.ctrlKey && !e.altKey && e.key === 'f') {
+            e.preventDefault();
+            toggleFocusMode();
+        }
+    }
+});
+
+// Restore focus mode preference on load
+function initFocusMode() {
+    const savedFocusMode = safeGetItem(STORAGE_KEYS.focusMode);
+    if (savedFocusMode === 'true') {
+        focusModeActive = true;
+        document.body.classList.add('focus-mode');
+        if (focusModeBtn) {
+            focusModeBtn.setAttribute('aria-pressed', 'true');
+            focusModeBtn.title = 'Exit focus mode (F)';
+        }
+    }
+}
+
+initFocusMode();
 
 // ==================== INTERACTIVE QUIZ ====================
 function initQuiz() {
