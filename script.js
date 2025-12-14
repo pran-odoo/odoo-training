@@ -1216,34 +1216,78 @@ loadSpideyPreference();
 // ==================== COMMAND PALETTE ====================
 let commandPaletteSelectedIndex = 0;
 let commandPaletteItems = [];
+let recentCommands = JSON.parse(localStorage.getItem('odooTraining_recentCommands') || '[]');
 
-// Define available commands
-const commands = [
-    // Navigation
-    { type: 'nav', icon: '📖', title: 'Go to: What is Odoo?', action: () => navigateTo('what-is-odoo'), keywords: ['intro', 'start', 'beginning'] },
-    { type: 'nav', icon: '📖', title: 'Go to: Models', action: () => navigateTo('models'), keywords: ['model', 'database', 'table'] },
-    { type: 'nav', icon: '📖', title: 'Go to: Field Types', action: () => navigateTo('field-types'), keywords: ['fields', 'char', 'integer', 'boolean'] },
-    { type: 'nav', icon: '📖', title: 'Go to: Relationships', action: () => navigateTo('relationships'), keywords: ['many2one', 'one2many', 'many2many', 'relation'] },
-    { type: 'nav', icon: '📖', title: 'Go to: Computed Fields', action: () => navigateTo('computed'), keywords: ['compute', 'calculate', 'depends'] },
-    { type: 'nav', icon: '📖', title: 'Go to: Views', action: () => navigateTo('views'), keywords: ['form', 'list', 'kanban', 'tree'] },
-    { type: 'nav', icon: '📖', title: 'Go to: Domains', action: () => navigateTo('domains'), keywords: ['filter', 'domain', 'search'] },
-    { type: 'nav', icon: '📖', title: 'Go to: Access Rights', action: () => navigateTo('access'), keywords: ['security', 'permissions', 'groups'] },
-    { type: 'nav', icon: '📖', title: 'Go to: Actions', action: () => navigateTo('actions'), keywords: ['automation', 'server action', 'scheduled'] },
-    { type: 'nav', icon: '📖', title: 'Go to: Odoo Studio', action: () => navigateTo('studio'), keywords: ['studio', 'customize', 'no-code'] },
-    { type: 'nav', icon: '📖', title: 'Go to: Chatter', action: () => navigateTo('chatter'), keywords: ['messages', 'followers', 'activities'] },
-    { type: 'nav', icon: '📖', title: 'Go to: Email', action: () => navigateTo('emails'), keywords: ['email', 'smtp', 'mail'] },
-    { type: 'nav', icon: '📖', title: 'Go to: Context', action: () => navigateTo('context'), keywords: ['context', 'default', 'parameter'] },
+// Track command usage
+function trackCommandUsage(commandId) {
+    recentCommands = recentCommands.filter(id => id !== commandId);
+    recentCommands.unshift(commandId);
+    recentCommands = recentCommands.slice(0, 5); // Keep last 5
+    localStorage.setItem('odooTraining_recentCommands', JSON.stringify(recentCommands));
+}
 
-    // Actions
-    { type: 'action', icon: '🌙', title: 'Toggle Dark Mode', action: toggleDarkMode, shortcut: 'D', keywords: ['dark', 'light', 'theme', 'mode'] },
-    { type: 'action', icon: '📖', title: 'Toggle Focus Mode', action: () => { closeCommandPalette(); setTimeout(() => { if (focusModeBtn) focusModeBtn.click(); }, 100); }, shortcut: 'F', keywords: ['focus', 'reading', 'distraction', 'zen'] },
-    { type: 'action', icon: '🔍', title: 'Focus Search', action: () => { closeCommandPalette(); searchInput.focus(); }, shortcut: '/', keywords: ['search', 'find'] },
-    { type: 'action', icon: '⬆️', title: 'Back to Top', action: () => { closeCommandPalette(); window.scrollTo({ top: 0, behavior: getScrollBehavior() }); }, keywords: ['top', 'scroll', 'beginning'] },
-    { type: 'action', icon: '📏', title: 'Increase Font Size', action: () => { if (currentFontSizeIndex < FONT_SIZES.length - 1) { currentFontSizeIndex++; setFontSize(FONT_SIZES[currentFontSizeIndex]); } }, keywords: ['font', 'larger', 'bigger', 'text'] },
-    { type: 'action', icon: '📏', title: 'Decrease Font Size', action: () => { if (currentFontSizeIndex > 0) { currentFontSizeIndex--; setFontSize(FONT_SIZES[currentFontSizeIndex]); } }, keywords: ['font', 'smaller', 'text'] },
-    { type: 'action', icon: '🖨️', title: 'Print Page', action: () => { closeCommandPalette(); window.print(); }, keywords: ['print', 'pdf', 'export'] },
-    { type: 'action', icon: '⌨️', title: 'Show Keyboard Shortcuts', action: () => { closeCommandPalette(); toggleKeyboardHint(); }, shortcut: '?', keywords: ['keyboard', 'shortcuts', 'help'] },
-];
+// Fuzzy match for command palette (reuse scoring logic)
+function commandFuzzyMatch(text, query) {
+    if (!query) return 1000;
+    text = text.toLowerCase();
+    query = query.toLowerCase();
+
+    if (text === query) return 1000;
+    if (text.startsWith(query)) return 800;
+    if (text.includes(query)) return 600;
+
+    // Word matching
+    const queryWords = query.split(/\s+/).filter(w => w.length > 0);
+    let matchedWords = 0;
+    for (const qWord of queryWords) {
+        if (text.includes(qWord)) matchedWords++;
+    }
+    if (matchedWords === queryWords.length) return 400;
+    if (matchedWords > 0) return 200 * (matchedWords / queryWords.length);
+
+    // Subsequence matching
+    let qi = 0;
+    for (let ti = 0; ti < text.length && qi < query.length; ti++) {
+        if (text[ti] === query[qi]) qi++;
+    }
+    if (qi === query.length) return 100;
+
+    return 0;
+}
+
+// Define available commands - dynamic getters for state
+function getCommands() {
+    const isDark = document.body.classList.contains('dark-mode');
+    const isFocusMode = document.body.classList.contains('focus-mode');
+
+    return [
+        // Actions (most commonly used)
+        { id: 'dark-mode', type: 'action', icon: isDark ? '☀️' : '🌙', title: isDark ? 'Switch to Light Mode' : 'Switch to Dark Mode', action: toggleDarkMode, shortcut: 'D', keywords: ['dark', 'light', 'theme', 'mode', 'night'] },
+        { id: 'focus-mode', type: 'action', icon: isFocusMode ? '📄' : '📖', title: isFocusMode ? 'Exit Focus Mode' : 'Enter Focus Mode', action: () => { closeCommandPalette(); setTimeout(() => { if (focusModeBtn) focusModeBtn.click(); }, 100); }, shortcut: 'F', keywords: ['focus', 'reading', 'distraction', 'zen', 'clean'] },
+        { id: 'search', type: 'action', icon: '🔍', title: 'Focus Search', action: () => { closeCommandPalette(); searchInput.focus(); }, shortcut: '/', keywords: ['search', 'find', 'lookup'] },
+        { id: 'top', type: 'action', icon: '⬆️', title: 'Back to Top', action: () => { closeCommandPalette(); window.scrollTo({ top: 0, behavior: getScrollBehavior() }); }, keywords: ['top', 'scroll', 'beginning', 'start'] },
+        { id: 'font-up', type: 'action', icon: '🔠', title: 'Increase Font Size', action: () => { if (currentFontSizeIndex < FONT_SIZES.length - 1) { currentFontSizeIndex++; setFontSize(FONT_SIZES[currentFontSizeIndex]); } }, keywords: ['font', 'larger', 'bigger', 'text', 'zoom'] },
+        { id: 'font-down', type: 'action', icon: '🔡', title: 'Decrease Font Size', action: () => { if (currentFontSizeIndex > 0) { currentFontSizeIndex--; setFontSize(FONT_SIZES[currentFontSizeIndex]); } }, keywords: ['font', 'smaller', 'text', 'zoom'] },
+        { id: 'print', type: 'action', icon: '🖨️', title: 'Print Page', action: () => { closeCommandPalette(); window.print(); }, keywords: ['print', 'pdf', 'export', 'save'] },
+        { id: 'keyboard', type: 'action', icon: '⌨️', title: 'Show Keyboard Shortcuts', action: () => { closeCommandPalette(); toggleKeyboardHint(); }, shortcut: '?', keywords: ['keyboard', 'shortcuts', 'help', 'keys'] },
+        { id: 'toc', type: 'action', icon: '📋', title: 'Toggle Table of Contents', action: () => { closeCommandPalette(); toggleSidebar(); }, shortcut: 'T', keywords: ['sidebar', 'menu', 'navigation', 'toc', 'contents'] },
+
+        // Navigation
+        { id: 'nav-what-is-odoo', type: 'nav', icon: '📖', title: 'Go to: What is Odoo?', action: () => navigateTo('what-is-odoo'), keywords: ['intro', 'start', 'beginning', 'overview'] },
+        { id: 'nav-models', type: 'nav', icon: '📖', title: 'Go to: Models', action: () => navigateTo('models'), keywords: ['model', 'database', 'table', 'record'] },
+        { id: 'nav-fields', type: 'nav', icon: '📖', title: 'Go to: Field Types', action: () => navigateTo('field-types'), keywords: ['fields', 'char', 'integer', 'boolean', 'selection'] },
+        { id: 'nav-relations', type: 'nav', icon: '📖', title: 'Go to: Relationships', action: () => navigateTo('relationships'), keywords: ['many2one', 'one2many', 'many2many', 'relation', 'link'] },
+        { id: 'nav-computed', type: 'nav', icon: '📖', title: 'Go to: Computed Fields', action: () => navigateTo('computed'), keywords: ['compute', 'calculate', 'depends', 'dynamic'] },
+        { id: 'nav-views', type: 'nav', icon: '📖', title: 'Go to: Views', action: () => navigateTo('views'), keywords: ['form', 'list', 'kanban', 'tree', 'calendar'] },
+        { id: 'nav-domains', type: 'nav', icon: '📖', title: 'Go to: Domains', action: () => navigateTo('domains'), keywords: ['filter', 'domain', 'search', 'condition'] },
+        { id: 'nav-access', type: 'nav', icon: '📖', title: 'Go to: Access Rights', action: () => navigateTo('access'), keywords: ['security', 'permissions', 'groups', 'acl'] },
+        { id: 'nav-actions', type: 'nav', icon: '📖', title: 'Go to: Actions', action: () => navigateTo('actions'), keywords: ['automation', 'server action', 'scheduled', 'cron'] },
+        { id: 'nav-studio', type: 'nav', icon: '📖', title: 'Go to: Odoo Studio', action: () => navigateTo('studio'), keywords: ['studio', 'customize', 'no-code', 'drag'] },
+        { id: 'nav-chatter', type: 'nav', icon: '📖', title: 'Go to: Chatter', action: () => navigateTo('chatter'), keywords: ['messages', 'followers', 'activities', 'discuss'] },
+        { id: 'nav-email', type: 'nav', icon: '📖', title: 'Go to: Email', action: () => navigateTo('emails'), keywords: ['email', 'smtp', 'mail', 'template'] },
+        { id: 'nav-context', type: 'nav', icon: '📖', title: 'Go to: Context', action: () => navigateTo('context'), keywords: ['context', 'default', 'parameter', 'active_id'] },
+    ];
+}
 
 function navigateTo(sectionId) {
     closeCommandPalette();
@@ -1275,22 +1319,30 @@ function closeCommandPalette() {
 
 function renderCommandPaletteResults(query) {
     const lowerQuery = query.toLowerCase().trim();
+    const commands = getCommands();
 
-    // Filter commands
-    let filteredCommands = commands;
-    if (lowerQuery) {
-        filteredCommands = commands.filter(cmd => {
-            const titleMatch = cmd.title.toLowerCase().includes(lowerQuery);
-            const keywordMatch = cmd.keywords && cmd.keywords.some(k => k.includes(lowerQuery));
-            return titleMatch || keywordMatch;
-        });
-    }
+    // Score and filter commands with fuzzy matching
+    let scoredCommands = commands.map(cmd => {
+        const titleScore = commandFuzzyMatch(cmd.title, lowerQuery);
+        const keywordScore = cmd.keywords
+            ? Math.max(...cmd.keywords.map(k => commandFuzzyMatch(k, lowerQuery)))
+            : 0;
+        return { ...cmd, score: Math.max(titleScore, keywordScore * 0.8) };
+    }).filter(cmd => cmd.score > 0);
 
-    // Also search through sections from the search index
+    // Sort by score
+    scoredCommands.sort((a, b) => b.score - a.score);
+
+    // Also search through sections from the search index with fuzzy matching
     let sectionResults = [];
     if (lowerQuery && searchIndex.length > 0) {
         sectionResults = searchIndex
-            .filter(item => item.title.toLowerCase().includes(lowerQuery))
+            .map(item => ({
+                ...item,
+                score: commandFuzzyMatch(item.title, lowerQuery)
+            }))
+            .filter(item => item.score > 0)
+            .sort((a, b) => b.score - a.score)
             .slice(0, 5)
             .map(item => ({
                 type: 'search',
@@ -1304,30 +1356,43 @@ function renderCommandPaletteResults(query) {
             }));
     }
 
-    // Group results
-    const navCommands = filteredCommands.filter(c => c.type === 'nav').slice(0, 6);
-    const actionCommands = filteredCommands.filter(c => c.type === 'action');
-
-    commandPaletteItems = [...actionCommands, ...navCommands, ...sectionResults];
-    commandPaletteSelectedIndex = 0;
-
-    if (commandPaletteItems.length === 0) {
-        commandPaletteResults.innerHTML = `
-            <div class="command-palette-empty">
-                <div class="command-palette-empty-icon">🔍</div>
-                <div>No results found for "${escapeHtml(query)}"</div>
-            </div>
-        `;
-        return;
+    // Get recent commands if no query
+    let recentItems = [];
+    if (!lowerQuery && recentCommands.length > 0) {
+        recentItems = recentCommands
+            .map(id => commands.find(cmd => cmd.id === id))
+            .filter(Boolean)
+            .slice(0, 3);
     }
 
+    // Group results
+    const actionCommands = scoredCommands.filter(c => c.type === 'action').slice(0, 8);
+    const navCommands = scoredCommands.filter(c => c.type === 'nav').slice(0, lowerQuery ? 8 : 4);
+
+    commandPaletteItems = [];
     let html = '';
+
+    // Recent commands (only when no query)
+    if (recentItems.length > 0 && !lowerQuery) {
+        html += `<div class="command-palette-group">
+            <div class="command-palette-group-title">Recent</div>
+            ${recentItems.map((cmd, i) => {
+                commandPaletteItems.push(cmd);
+                return renderCommandItem(cmd, commandPaletteItems.length - 1, lowerQuery);
+            }).join('')}
+        </div>`;
+    }
 
     // Actions group
     if (actionCommands.length > 0) {
         html += `<div class="command-palette-group">
             <div class="command-palette-group-title">Actions</div>
-            ${actionCommands.map((cmd, i) => renderCommandItem(cmd, i)).join('')}
+            ${actionCommands.map((cmd) => {
+                // Skip if already in recent
+                if (recentItems.some(r => r.id === cmd.id)) return '';
+                commandPaletteItems.push(cmd);
+                return renderCommandItem(cmd, commandPaletteItems.length - 1, lowerQuery);
+            }).join('')}
         </div>`;
     }
 
@@ -1335,28 +1400,69 @@ function renderCommandPaletteResults(query) {
     if (navCommands.length > 0) {
         html += `<div class="command-palette-group">
             <div class="command-palette-group-title">Navigation</div>
-            ${navCommands.map((cmd, i) => renderCommandItem(cmd, actionCommands.length + i)).join('')}
+            ${navCommands.map((cmd) => {
+                if (recentItems.some(r => r.id === cmd.id)) return '';
+                commandPaletteItems.push(cmd);
+                return renderCommandItem(cmd, commandPaletteItems.length - 1, lowerQuery);
+            }).join('')}
         </div>`;
     }
 
     // Search results group
     if (sectionResults.length > 0) {
         html += `<div class="command-palette-group">
-            <div class="command-palette-group-title">Search Results</div>
-            ${sectionResults.map((cmd, i) => renderCommandItem(cmd, actionCommands.length + navCommands.length + i)).join('')}
+            <div class="command-palette-group-title">Content Search</div>
+            ${sectionResults.map((cmd) => {
+                commandPaletteItems.push(cmd);
+                return renderCommandItem(cmd, commandPaletteItems.length - 1, lowerQuery);
+            }).join('')}
         </div>`;
+    }
+
+    commandPaletteSelectedIndex = 0;
+
+    if (commandPaletteItems.length === 0) {
+        commandPaletteResults.innerHTML = `
+            <div class="command-palette-empty">
+                <div class="command-palette-empty-icon">🔍</div>
+                <div>No results found for "${escapeHtml(query)}"</div>
+                <div class="command-palette-empty-hint">Try a different search term</div>
+            </div>
+        `;
+        return;
     }
 
     commandPaletteResults.innerHTML = html;
     updateSelectedItem();
 }
 
-function renderCommandItem(cmd, index) {
+function renderCommandItem(cmd, index, query) {
+    // Highlight matching text
+    let titleHtml = escapeHtml(cmd.title);
+    if (query) {
+        const lowerTitle = cmd.title.toLowerCase();
+        const lowerQuery = query.toLowerCase();
+        const idx = lowerTitle.indexOf(lowerQuery);
+        if (idx !== -1) {
+            const before = escapeHtml(cmd.title.substring(0, idx));
+            const match = escapeHtml(cmd.title.substring(idx, idx + query.length));
+            const after = escapeHtml(cmd.title.substring(idx + query.length));
+            titleHtml = before + '<mark>' + match + '</mark>' + after;
+        } else {
+            // Highlight individual words
+            const words = query.split(/\s+/).filter(w => w.length >= 2);
+            for (const word of words) {
+                const regex = new RegExp('(' + escapeRegex(word) + ')', 'gi');
+                titleHtml = titleHtml.replace(regex, '<mark>$1</mark>');
+            }
+        }
+    }
+
     return `
         <div class="command-palette-item" data-index="${index}" role="option">
             <div class="command-palette-item-icon">${cmd.icon}</div>
             <div class="command-palette-item-content">
-                <div class="command-palette-item-title">${escapeHtml(cmd.title)}</div>
+                <div class="command-palette-item-title">${titleHtml}</div>
                 ${cmd.description ? `<div class="command-palette-item-description">${escapeHtml(cmd.description)}</div>` : ''}
             </div>
             ${cmd.shortcut ? `<div class="command-palette-item-shortcut"><kbd>${cmd.shortcut}</kbd></div>` : ''}
@@ -1379,13 +1485,24 @@ function updateSelectedItem() {
 }
 
 function executeSelectedCommand() {
-    if (commandPaletteItems[commandPaletteSelectedIndex]) {
-        commandPaletteItems[commandPaletteSelectedIndex].action();
+    const cmd = commandPaletteItems[commandPaletteSelectedIndex];
+    if (cmd) {
+        // Track usage for recent commands
+        if (cmd.id) {
+            trackCommandUsage(cmd.id);
+        }
+        cmd.action();
     }
 }
 
 // Event listeners for command palette
 commandPaletteOverlay.addEventListener('click', closeCommandPalette);
+
+// Close button for mobile
+const commandPaletteClose = document.getElementById('commandPaletteClose');
+if (commandPaletteClose) {
+    commandPaletteClose.addEventListener('click', closeCommandPalette);
+}
 
 commandPaletteInput.addEventListener('input', function() {
     renderCommandPaletteResults(this.value);
@@ -1394,11 +1511,11 @@ commandPaletteInput.addEventListener('input', function() {
 commandPaletteInput.addEventListener('keydown', function(e) {
     if (e.key === 'Escape') {
         closeCommandPalette();
-    } else if (e.key === 'ArrowDown') {
+    } else if (e.key === 'ArrowDown' || (e.key === 'Tab' && !e.shiftKey)) {
         e.preventDefault();
         commandPaletteSelectedIndex = Math.min(commandPaletteSelectedIndex + 1, commandPaletteItems.length - 1);
         updateSelectedItem();
-    } else if (e.key === 'ArrowUp') {
+    } else if (e.key === 'ArrowUp' || (e.key === 'Tab' && e.shiftKey)) {
         e.preventDefault();
         commandPaletteSelectedIndex = Math.max(commandPaletteSelectedIndex - 1, 0);
         updateSelectedItem();

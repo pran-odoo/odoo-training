@@ -2955,6 +2955,36 @@ blockquote p {
     font-family: inherit;
 }
 
+/* Close button - visible on mobile, hidden on desktop */
+.command-palette-close {
+    display: none;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    background: transparent;
+    border: none;
+    color: var(--text-muted);
+    cursor: pointer;
+    border-radius: var(--radius-md);
+    flex-shrink: 0;
+    transition: all var(--transition-fast);
+}
+
+.command-palette-close:hover {
+    background: var(--bg-hover);
+    color: var(--text-primary);
+}
+
+@media (max-width: 640px) {
+    .command-palette-close {
+        display: flex;
+    }
+    .command-palette-esc {
+        display: none;
+    }
+}
+
 .command-palette-results {
     flex: 1;
     overflow-y: auto;
@@ -2985,13 +3015,19 @@ blockquote p {
     transition: all var(--transition-fast);
 }
 
-.command-palette-item:hover,
-.command-palette-item.selected {
+.command-palette-item:hover {
     background: var(--bg-hover);
 }
 
 .command-palette-item.selected {
     background: var(--bg-active);
+    outline: 2px solid var(--primary);
+    outline-offset: -2px;
+}
+
+.command-palette-item.selected .command-palette-item-icon {
+    background: var(--primary);
+    color: white;
 }
 
 .command-palette-item-icon {
@@ -3018,6 +3054,18 @@ blockquote p {
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+}
+
+.command-palette-item-title mark {
+    background: rgba(113, 75, 103, 0.2);
+    color: var(--primary);
+    padding: 0 2px;
+    border-radius: 2px;
+}
+
+body.dark-mode .command-palette-item-title mark {
+    background: rgba(159, 122, 234, 0.25);
+    color: var(--primary-light);
 }
 
 .command-palette-item-description {
@@ -3082,6 +3130,12 @@ blockquote p {
     font-size: 48px;
     margin-bottom: var(--space-4);
     opacity: 0.5;
+}
+
+.command-palette-empty-hint {
+    font-size: var(--text-xs);
+    color: var(--text-light);
+    margin-top: var(--space-2);
 }
 
 /* Dark mode adjustments */

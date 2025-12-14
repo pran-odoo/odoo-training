@@ -69,6 +69,11 @@
                     <path d="M21 21l-4.35-4.35"></path>
                 </svg>
                 <input type="text" class="command-palette-input" id="commandPaletteInput" placeholder="Type a command or search..." autocomplete="off" aria-autocomplete="list" aria-controls="commandPaletteResults">
+                <button type="button" class="command-palette-close" id="commandPaletteClose" aria-label="Close command palette">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M18 6L6 18M6 6l12 12"></path>
+                    </svg>
+                </button>
                 <kbd class="command-palette-esc">Esc</kbd>
             </div>
         </div>
@@ -76,7 +81,7 @@
             <!-- Results populated by JS -->
         </div>
         <div class="command-palette-footer">
-            <span><kbd>↑</kbd><kbd>↓</kbd> Navigate</span>
+            <span><kbd>↑</kbd><kbd>↓</kbd> or <kbd>Tab</kbd> Navigate</span>
             <span><kbd>↵</kbd> Select</span>
             <span><kbd>Esc</kbd> Close</span>
         </div>
