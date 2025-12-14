@@ -3913,7 +3913,7 @@ body.dark-mode .glossary-popover.below::after {
     bottom: auto;
     left: var(--space-4);
     width: 280px;
-    max-height: calc(100vh - 200px);
+    max-height: 500px;
     overflow-y: auto;
     background: var(--bg-primary);
     border: 1px solid var(--border);
@@ -3922,7 +3922,7 @@ body.dark-mode .glossary-popover.below::after {
     opacity: 0;
     visibility: hidden;
     transform: translateY(10px);
-    transition: all var(--transition-normal);
+    transition: opacity var(--transition-normal), visibility var(--transition-normal), transform var(--transition-normal);
     z-index: 1100;
 }
 
