@@ -2168,3 +2168,269 @@ input:focus:not(:focus-visible) {
         padding-top: 72px;
     }
 }
+
+/* ==================== PROFESSIONAL ENHANCEMENTS ==================== */
+
+/* Smooth page load animation */
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.container {
+    animation: fadeInUp 0.5s ease-out;
+}
+
+/* Improved heading animations */
+h2 {
+    position: relative;
+    transition: color 0.2s ease;
+}
+
+h2::after {
+    content: '';
+    position: absolute;
+    bottom: -2px;
+    left: 0;
+    width: 0;
+    height: 2px;
+    background: linear-gradient(90deg, var(--primary), #ec4899);
+    transition: width 0.3s ease;
+}
+
+h2:hover::after {
+    width: 100%;
+}
+
+/* Better info box hover effects */
+.critical-box, .technical-box, .foundation-box, .success-box,
+.mechanism-box, .analogy-box, .warning-box, .info-box, .odoo-box, .example-box {
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.critical-box:hover, .technical-box:hover, .foundation-box:hover, .success-box:hover,
+.mechanism-box:hover, .analogy-box:hover, .warning-box:hover, .info-box:hover,
+.odoo-box:hover, .example-box:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px -5px rgba(0, 0, 0, 0.1);
+}
+
+/* Code block enhancements */
+.code-block, pre {
+    position: relative;
+    transition: box-shadow 0.2s ease;
+}
+
+.code-block:hover, pre:hover {
+    box-shadow: 0 8px 30px -10px rgba(0, 0, 0, 0.3);
+}
+
+/* Table row hover improvements */
+tr {
+    transition: background 0.15s ease;
+}
+
+tr:hover td {
+    background: rgba(113, 75, 103, 0.08);
+}
+
+/* Better link styling */
+.container a:not(.toc a):not([class]) {
+    color: var(--primary);
+    text-decoration: none;
+    border-bottom: 1px solid rgba(113, 75, 103, 0.3);
+    transition: border-color 0.2s ease, color 0.2s ease;
+}
+
+.container a:not(.toc a):not([class]):hover {
+    border-bottom-color: var(--primary);
+    color: #ec4899;
+}
+
+/* Improved list styling */
+ul li::marker {
+    color: var(--primary);
+}
+
+ol li::marker {
+    color: var(--primary);
+    font-weight: 600;
+}
+
+/* Better blockquote styling */
+blockquote {
+    border-left: 4px solid var(--primary);
+    padding: 16px 24px;
+    margin: 24px 0;
+    background: linear-gradient(135deg, rgba(113, 75, 103, 0.05) 0%, rgba(113, 75, 103, 0.02) 100%);
+    border-radius: 0 12px 12px 0;
+    font-style: italic;
+    color: var(--text-secondary);
+}
+
+blockquote p {
+    margin-bottom: 0;
+}
+
+/* Comparison card enhancements */
+.comparison-card {
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.comparison-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 12px 30px -10px rgba(0, 0, 0, 0.15);
+}
+
+/* Badge hover effects */
+.badge {
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.badge:hover {
+    transform: scale(1.05);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+/* Diagram improvements */
+.diagram {
+    transition: box-shadow 0.2s ease;
+}
+
+.diagram:hover {
+    box-shadow: 0 8px 30px -10px rgba(113, 75, 103, 0.3);
+}
+
+.diagram-box {
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.diagram-box:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px -5px rgba(0, 0, 0, 0.3);
+}
+
+/* Sidebar link polish */
+.sidebar a {
+    position: relative;
+    overflow: hidden;
+}
+
+.sidebar a::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+    transition: left 0.5s ease;
+}
+
+.sidebar a:hover::before {
+    left: 100%;
+}
+
+/* Section completion indicator (prepare for JS) */
+.sidebar a[data-completed="true"]::after {
+    content: '✓';
+    position: absolute;
+    right: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #4ade80;
+    font-size: 14px;
+    font-weight: bold;
+}
+
+/* Smooth scroll indicator */
+.scroll-indicator {
+    position: fixed;
+    bottom: 100px;
+    right: 24px;
+    width: 40px;
+    height: 40px;
+    background: var(--bg-card);
+    border: 2px solid var(--primary);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    color: var(--primary);
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.3s ease;
+    z-index: 997;
+    box-shadow: var(--shadow-md);
+}
+
+.scroll-indicator.visible {
+    opacity: 1;
+    visibility: visible;
+}
+
+/* Reading time estimate badge */
+.reading-time {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 12px;
+    background: rgba(113, 75, 103, 0.1);
+    border-radius: 20px;
+    font-size: 13px;
+    color: var(--text-muted);
+    margin-bottom: 24px;
+}
+
+.reading-time::before {
+    content: '⏱️';
+}
+
+/* Subtle text selection */
+::selection {
+    background: rgba(113, 75, 103, 0.3);
+    color: var(--text-primary);
+}
+
+/* Focus improvements for accessibility */
+*:focus-visible {
+    outline: 2px solid var(--primary);
+    outline-offset: 3px;
+    border-radius: 4px;
+}
+
+/* Print styles */
+@media print {
+    .sidebar, .mobile-menu-toggle, .back-to-top, .progress-container,
+    .resume-banner, .keyboard-hint, .toolbar {
+        display: none !important;
+    }
+
+    body {
+        padding-left: 0 !important;
+        background: white !important;
+    }
+
+    .container {
+        max-width: 100% !important;
+        margin: 0 !important;
+        padding: 20px !important;
+        box-shadow: none !important;
+    }
+
+    h2 {
+        page-break-after: avoid;
+    }
+
+    .critical-box, .technical-box, .foundation-box, .success-box,
+    .mechanism-box, .analogy-box, .warning-box, .info-box {
+        page-break-inside: avoid;
+    }
+}
