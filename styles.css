@@ -48,7 +48,7 @@
     /* Spacing */
     --sidebar-width: 280px;
     --header-height: 60px;
-    --content-max-width: 900px;
+    --content-max-width: 1100px;
 
     /* Typography */
     --font-sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Inter', Arial, sans-serif;
@@ -1539,7 +1539,7 @@ body.dark-mode .use-case-scenario {
     padding: 2px 6px;
     border-radius: 4px;
     font-size: 0.85em;
-    white-space: nowrap;
+    word-break: keep-all;
 }
 
 body.dark-mode .use-case-solution code,
@@ -1662,7 +1662,7 @@ body.dark-mode .mistake-solution .mistake-label {
     padding: 2px 6px;
     border-radius: 4px;
     font-size: 0.85em;
-    white-space: nowrap;
+    word-break: keep-all;
 }
 
 body.dark-mode .mistake-text code {
@@ -1877,7 +1877,7 @@ body.dark-mode .quiz-explanation {
     padding: 2px 6px;
     border-radius: 4px;
     font-size: 0.85em;
-    white-space: nowrap;
+    word-break: keep-all;
 }
 
 body.dark-mode .quiz-option-text code,
