@@ -2843,25 +2843,26 @@ body.dark-mode .true-focus-corner {
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
-    width: 300px;
-    height: 300px;
+    width: 450px;
+    height: 450px;
     z-index: 2;
     pointer-events: none;
-    opacity: 0.85;
+    opacity: 1;
     mix-blend-mode: screen;
+    filter: contrast(1.1) saturate(1.2);
 }
 
 @media (max-width: 768px) {
     #prismCanvas {
-        width: 200px;
-        height: 200px;
+        width: 320px;
+        height: 320px;
     }
 }
 
 @media (max-width: 480px) {
     #prismCanvas {
-        width: 150px;
-        height: 150px;
+        width: 240px;
+        height: 240px;
     }
 }
 
