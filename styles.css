@@ -2434,3 +2434,102 @@ blockquote p {
         page-break-inside: avoid;
     }
 }
+
+/* ==================== TRUE FOCUS ANIMATION ==================== */
+.true-focus-container {
+    position: relative;
+    display: flex;
+    gap: 0.4em;
+    justify-content: center;
+    align-items: center;
+    flex-wrap: wrap;
+    user-select: none;
+    padding: 10px 0;
+}
+
+.true-focus-word {
+    position: relative;
+    font-size: inherit;
+    font-weight: inherit;
+    cursor: default;
+    transition: filter 0.5s ease, opacity 0.5s ease;
+    filter: blur(5px);
+    opacity: 0.5;
+}
+
+.true-focus-word.active {
+    filter: blur(0);
+    opacity: 1;
+}
+
+.true-focus-word.manual-mode {
+    cursor: pointer;
+}
+
+.true-focus-frame {
+    position: absolute;
+    pointer-events: none;
+    box-sizing: content-box;
+    transition: all 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    opacity: 0;
+}
+
+.true-focus-frame.visible {
+    opacity: 1;
+}
+
+.true-focus-corner {
+    position: absolute;
+    width: 12px;
+    height: 12px;
+    border: 3px solid var(--primary);
+    filter: drop-shadow(0 0 6px var(--primary));
+    border-radius: 2px;
+    transition: border-color 0.3s ease, filter 0.3s ease;
+}
+
+.true-focus-corner.top-left {
+    top: -8px;
+    left: -8px;
+    border-right: none;
+    border-bottom: none;
+}
+
+.true-focus-corner.top-right {
+    top: -8px;
+    right: -8px;
+    border-left: none;
+    border-bottom: none;
+}
+
+.true-focus-corner.bottom-left {
+    bottom: -8px;
+    left: -8px;
+    border-right: none;
+    border-top: none;
+}
+
+.true-focus-corner.bottom-right {
+    bottom: -8px;
+    right: -8px;
+    border-left: none;
+    border-top: none;
+}
+
+/* Dark mode adjustments */
+body.dark-mode .true-focus-corner {
+    border-color: #ec4899;
+    filter: drop-shadow(0 0 8px rgba(236, 72, 153, 0.6));
+}
+
+/* Reduce motion preference */
+@media (prefers-reduced-motion: reduce) {
+    .true-focus-word {
+        filter: none !important;
+        opacity: 1 !important;
+        transition: none;
+    }
+    .true-focus-frame {
+        display: none;
+    }
+}
