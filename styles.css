@@ -3373,42 +3373,55 @@ body.dark-mode .true-focus-corner {
 }
 
 /* ==================== FOCUS/READING MODE ==================== */
+/* Focus mode: full-screen immersive reading experience */
 body.focus-mode {
-    --focus-content-width: min(75ch, 95vw);
+    overflow-x: hidden;
 }
 
 /* Hide sidebar in focus mode */
 body.focus-mode .sidebar {
     transform: translateX(-100%);
     visibility: hidden;
+    pointer-events: none;
 }
 
 body.focus-mode .sidebar-overlay {
     display: none;
 }
 
-/* Adjust main content area */
+/* Main content takes full screen */
 body.focus-mode .main-content {
     margin-left: 0;
+    width: 100vw;
+    max-width: 100vw;
 }
 
-/* Hide progress bar in focus mode */
+/* Progress bar spans full width */
 body.focus-mode .progress-container {
     left: 0;
+    width: 100%;
 }
 
-/* Center and constrain content */
+/* Container fills available width with comfortable padding */
 body.focus-mode .container {
-    max-width: var(--focus-content-width);
-    margin: 0 auto;
-    padding: var(--space-8) var(--space-6);
+    max-width: 100%;
+    width: 100%;
+    margin: 0;
+    padding: var(--space-6) var(--space-8);
+    box-sizing: border-box;
 }
 
+/* Desktop: larger padding but still full width */
 @media (min-width: 1024px) {
     body.focus-mode .container {
-        padding: var(--space-12) var(--space-8);
-        margin: var(--space-6) auto;
-        border-radius: var(--radius-xl);
+        padding: var(--space-8) var(--space-16);
+    }
+}
+
+/* Extra large screens: even more padding for readability */
+@media (min-width: 1440px) {
+    body.focus-mode .container {
+        padding: var(--space-8) calc(10vw);
     }
 }
 
@@ -3487,15 +3500,27 @@ body.focus-mode .back-to-top {
     display: none;
 }
 
-/* Mobile adjustments for focus mode */
+/* Tablet adjustments for focus mode */
 @media (max-width: 1023px) {
     body.focus-mode .container {
-        padding: var(--space-6) var(--space-4);
+        padding: var(--space-6) var(--space-6);
     }
 
     body.focus-mode .toolbar {
         bottom: var(--space-4);
         right: var(--space-4);
+    }
+}
+
+/* Mobile adjustments for focus mode */
+@media (max-width: 640px) {
+    body.focus-mode .container {
+        padding: var(--space-4) var(--space-4);
+    }
+
+    body.focus-mode .toolbar {
+        bottom: var(--space-3);
+        right: var(--space-3);
     }
 }
 

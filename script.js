@@ -608,21 +608,30 @@ function navigateSection(direction) {
 }
 
 document.addEventListener('keydown', function(e) {
-    // Ignore if typing in search
-    if (document.activeElement === searchInput) {
+    // Ignore if typing in an input
+    if (e.target.matches('input, textarea, [contenteditable]')) {
         return;
     }
 
     // Press '/' to focus search
-    if (e.key === '/' && !e.ctrlKey && !e.metaKey) {
+    if (e.key === '/' && !e.ctrlKey && !e.metaKey && !e.shiftKey) {
         e.preventDefault();
         searchInput.focus();
         return;
     }
 
     // Press 'D' for dark mode
-    if ((e.key === 'd' || e.key === 'D') && !e.ctrlKey && !e.metaKey) {
+    if (e.key === 'd' && !e.ctrlKey && !e.metaKey && !e.altKey) {
         toggleDarkMode();
+        return;
+    }
+
+    // Press 'F' for focus mode (only lowercase f without modifiers)
+    if (e.key === 'f' && !e.ctrlKey && !e.metaKey && !e.altKey) {
+        // Don't trigger if command palette is open
+        if (commandPalette && commandPalette.classList.contains('active')) return;
+        e.preventDefault();
+        toggleFocusMode();
         return;
     }
 
@@ -1438,9 +1447,8 @@ function toggleFocusMode() {
     safeSetItem(STORAGE_KEYS.focusMode, focusModeActive ? 'true' : 'false');
 
     // Close mobile sidebar if open when entering focus mode
-    if (focusModeActive && sidebar.classList.contains('active')) {
-        sidebar.classList.remove('active');
-        sidebarOverlay.classList.remove('active');
+    if (focusModeActive && sidebar.classList.contains('open')) {
+        closeMobileMenu();
     }
 }
 
@@ -1448,22 +1456,6 @@ function toggleFocusMode() {
 if (focusModeBtn) {
     focusModeBtn.addEventListener('click', toggleFocusMode);
 }
-
-// Keyboard shortcut for focus mode (F key)
-document.addEventListener('keydown', function(e) {
-    // Don't trigger if typing in an input or textarea
-    if (e.target.matches('input, textarea, [contenteditable]')) return;
-    // Don't trigger if command palette is open
-    if (commandPalette && commandPalette.classList.contains('active')) return;
-
-    if (e.key === 'f' || e.key === 'F') {
-        // Only lowercase 'f' without modifiers
-        if (!e.metaKey && !e.ctrlKey && !e.altKey && e.key === 'f') {
-            e.preventDefault();
-            toggleFocusMode();
-        }
-    }
-});
 
 // Restore focus mode preference on load
 function initFocusMode() {
@@ -2310,7 +2302,8 @@ addShareCommand();
 // ==================== SERVICE WORKER REGISTRATION ====================
 if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
-        navigator.serviceWorker.register('/sw.js')
+        // Use relative path for flexibility when not hosted at domain root
+        navigator.serviceWorker.register('./sw.js')
             .then(registration => {
                 console.log('[PWA] Service Worker registered:', registration.scope);
 
