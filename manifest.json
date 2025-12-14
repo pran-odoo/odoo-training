@@ -2,7 +2,7 @@
   "name": "Odoo Functional Training",
   "short_name": "Odoo Training",
   "description": "Comprehensive Odoo training guide for functional consultants",
-  "start_url": "/",
+  "start_url": "./",
   "display": "standalone",
   "background_color": "#0f172a",
   "theme_color": "#714B67",

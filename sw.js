@@ -1,11 +1,11 @@
 // Service Worker for Odoo Training PWA
-const CACHE_NAME = 'odoo-training-v1';
+const CACHE_NAME = 'odoo-training-v2';
 const ASSETS_TO_CACHE = [
-    '/',
-    '/index.html',
-    '/styles.css',
-    '/script.js',
-    '/manifest.json'
+    './',
+    './index.html',
+    './styles.css',
+    './script.js',
+    './manifest.json'
 ];
 
 // Install event - cache essential assets
@@ -77,7 +77,7 @@ self.addEventListener('fetch', event => {
                         // Network failed and not in cache
                         // Return offline page for navigation requests
                         if (event.request.mode === 'navigate') {
-                            return caches.match('/index.html');
+                            return caches.match('./index.html');
                         }
                         return new Response('Offline', { status: 503, statusText: 'Service Unavailable' });
                     });
