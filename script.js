@@ -1684,5 +1684,93 @@ function initQuiz() {
 // Initialize quiz after DOM is ready
 initQuiz();
 
+// ==================== SECTION NAVIGATION (Prev/Next) ====================
+function initSectionNavigation() {
+    const container = document.querySelector('.container');
+    if (!container) return;
+
+    const allH2s = Array.from(container.querySelectorAll('h2[id]'));
+    if (allH2s.length < 2) return;
+
+    allH2s.forEach((h2, index) => {
+        const prevSection = index > 0 ? allH2s[index - 1] : null;
+        const nextSection = index < allH2s.length - 1 ? allH2s[index + 1] : null;
+
+        // Find the end of this section (before next h2 or end of container)
+        const nextH2 = allH2s[index + 1];
+        let insertPoint = null;
+
+        // Find the last element before the next section
+        if (nextH2) {
+            insertPoint = nextH2.previousElementSibling;
+            // Make sure we're not inserting before an h2
+            while (insertPoint && insertPoint.tagName === 'H2') {
+                insertPoint = insertPoint.previousElementSibling;
+            }
+        } else {
+            // Last section - find footer or end
+            const footer = container.querySelector('.site-footer');
+            insertPoint = footer ? footer.previousElementSibling : container.lastElementChild;
+        }
+
+        if (!insertPoint || insertPoint.classList.contains('section-nav')) return;
+
+        // Create navigation element
+        const nav = document.createElement('nav');
+        nav.className = 'section-nav';
+        nav.setAttribute('aria-label', 'Section navigation');
+
+        const prevTitle = prevSection ? prevSection.textContent.trim() : '';
+        const nextTitle = nextSection ? nextSection.textContent.trim() : '';
+
+        // Truncate long titles
+        const truncate = (str, max = 40) => str.length > max ? str.substring(0, max) + '...' : str;
+
+        nav.innerHTML = `
+            ${prevSection ? `
+                <a href="#${prevSection.id}" class="section-nav-btn section-nav-prev" title="${escapeHtml(prevTitle)}">
+                    <span class="section-nav-arrow">←</span>
+                    <span class="section-nav-content">
+                        <span class="section-nav-label">Previous</span>
+                        <span class="section-nav-title">${escapeHtml(truncate(prevTitle))}</span>
+                    </span>
+                </a>
+            ` : '<span class="section-nav-spacer"></span>'}
+            ${nextSection ? `
+                <a href="#${nextSection.id}" class="section-nav-btn section-nav-next" title="${escapeHtml(nextTitle)}">
+                    <span class="section-nav-content">
+                        <span class="section-nav-label">Next</span>
+                        <span class="section-nav-title">${escapeHtml(truncate(nextTitle))}</span>
+                    </span>
+                    <span class="section-nav-arrow">→</span>
+                </a>
+            ` : '<span class="section-nav-spacer"></span>'}
+        `;
+
+        // Add click handlers for smooth scroll
+        nav.querySelectorAll('a').forEach(link => {
+            link.addEventListener('click', function(e) {
+                e.preventDefault();
+                const targetId = this.getAttribute('href').substring(1);
+                const target = document.getElementById(targetId);
+                if (target) {
+                    target.scrollIntoView({ behavior: getScrollBehavior(), block: 'start' });
+                    // Update URL without adding history entry
+                    try {
+                        history.replaceState(null, '', '#' + targetId);
+                    } catch (e) {}
+                }
+            });
+        });
+
+        // Insert after the last element of this section
+        if (insertPoint && insertPoint.parentNode) {
+            insertPoint.parentNode.insertBefore(nav, insertPoint.nextSibling);
+        }
+    });
+}
+
+initSectionNavigation();
+
 init();
 });

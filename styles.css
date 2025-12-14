@@ -3498,3 +3498,127 @@ body.focus-mode .back-to-top {
         right: var(--space-4);
     }
 }
+
+/* ==================== SECTION NAVIGATION (Prev/Next) ==================== */
+.section-nav {
+    display: flex;
+    justify-content: space-between;
+    gap: var(--space-4);
+    margin: var(--space-12) 0 var(--space-8) 0;
+    padding-top: var(--space-6);
+    border-top: 1px solid var(--border);
+}
+
+.section-nav-btn {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+    padding: var(--space-4);
+    background: var(--bg-secondary);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    text-decoration: none;
+    color: var(--text-primary);
+    transition: all var(--transition-normal);
+    max-width: 48%;
+    min-width: 0;
+}
+
+.section-nav-btn:hover {
+    background: var(--bg-hover);
+    border-color: var(--primary);
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
+}
+
+.section-nav-prev {
+    text-align: left;
+}
+
+.section-nav-next {
+    text-align: right;
+    margin-left: auto;
+}
+
+.section-nav-arrow {
+    font-size: var(--text-xl);
+    color: var(--primary);
+    flex-shrink: 0;
+    transition: transform var(--transition-fast);
+}
+
+.section-nav-btn:hover .section-nav-arrow {
+    transform: translateX(-3px);
+}
+
+.section-nav-next:hover .section-nav-arrow {
+    transform: translateX(3px);
+}
+
+.section-nav-content {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 0;
+}
+
+.section-nav-label {
+    font-size: var(--text-xs);
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    font-weight: var(--font-medium);
+}
+
+.section-nav-title {
+    font-size: var(--text-sm);
+    font-weight: var(--font-semibold);
+    color: var(--text-primary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.section-nav-spacer {
+    flex: 1;
+}
+
+/* Mobile: Stack vertically */
+@media (max-width: 640px) {
+    .section-nav {
+        flex-direction: column;
+        gap: var(--space-3);
+    }
+
+    .section-nav-btn {
+        max-width: 100%;
+    }
+
+    .section-nav-next {
+        margin-left: 0;
+    }
+
+    .section-nav-title {
+        white-space: normal;
+        -webkit-line-clamp: 2;
+        display: -webkit-box;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+    }
+}
+
+/* Dark mode adjustments */
+body.dark-mode .section-nav-btn {
+    background: var(--bg-tertiary);
+}
+
+body.dark-mode .section-nav-btn:hover {
+    background: var(--bg-hover);
+}
+
+/* Hide in print */
+@media print {
+    .section-nav {
+        display: none;
+    }
+}
