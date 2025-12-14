@@ -685,7 +685,7 @@ body.font-xlarge h4 { font-size: 1.5rem; }
 @media (min-width: 768px) {
     .container {
         padding: 40px 32px;
-        max-width: var(--content-max-width);
+        max-width: 100%;
         margin: 0 auto;
     }
 }
@@ -693,10 +693,19 @@ body.font-xlarge h4 { font-size: 1.5rem; }
 @media (min-width: 1024px) {
     .container {
         padding: 48px 56px;
-        margin: 24px auto;
+        margin: 24px;
         border-radius: 16px;
         min-height: auto;
         box-shadow: var(--shadow-lg);
+        max-width: calc(100% - 48px);
+    }
+}
+
+@media (min-width: 1400px) {
+    .container {
+        padding: 48px 72px;
+        margin: 24px 40px;
+        max-width: calc(100% - 80px);
     }
 }
 
