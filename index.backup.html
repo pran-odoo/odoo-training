@@ -3,22 +3,1104 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; style-src 'self' 'unsafe-inline'; script-src 'self'; img-src 'self' data:;">
-    <meta name="description" content="Odoo Conceptual Training - Learn Odoo models, fields, views, domains, and more">
-    <meta name="theme-color" content="#714B67">
-    <title>Odoo Conceptual Training</title>
-    <link rel="icon" type="image/svg+xml" href="favicon.svg">
-    <link rel="preload" href="styles.css" as="style">
-    <link rel="preload" href="script.js" as="script">
-    <link rel="stylesheet" href="styles.css">
+    <title>Complete Odoo Framework Training - For Functional Consultants</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        /* Smooth scrolling */
+        html {
+            scroll-behavior: smooth;
+            scroll-padding-top: 80px;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background-attachment: fixed;
+            padding: 20px;
+            padding-left: 280px;
+            line-height: 1.7;
+            min-height: 100vh;
+        }
+
+        /* ==================== SIDEBAR NAVIGATION ==================== */
+        .sidebar {
+            position: fixed;
+            left: 0;
+            top: 0;
+            width: 260px;
+            height: 100vh;
+            background: linear-gradient(180deg, #1e293b 0%, #0f172a 100%);
+            padding: 20px 0;
+            overflow-y: auto;
+            z-index: 1000;
+            box-shadow: 4px 0 20px rgba(0,0,0,0.3);
+        }
+
+        .sidebar-header {
+            padding: 15px 20px 20px 20px;
+            border-bottom: 1px solid #334155;
+            margin-bottom: 10px;
+        }
+
+        /* ==================== SEARCH BAR ==================== */
+        .search-container {
+            padding: 0 15px 15px 15px;
+            border-bottom: 1px solid #334155;
+            margin-bottom: 10px;
+        }
+
+        .search-input {
+            width: 100%;
+            padding: 10px 15px;
+            padding-left: 38px;
+            border: none;
+            border-radius: 8px;
+            background: #334155;
+            color: white;
+            font-size: 14px;
+            outline: none;
+            transition: all 0.2s ease;
+        }
+
+        .search-input::placeholder {
+            color: #64748b;
+        }
+
+        .search-input:focus {
+            background: #475569;
+            box-shadow: 0 0 0 2px rgba(113, 75, 103, 0.5);
+        }
+
+        .search-wrapper {
+            position: relative;
+        }
+
+        .search-icon {
+            position: absolute;
+            left: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #64748b;
+            font-size: 14px;
+            pointer-events: none;
+        }
+
+        .search-results {
+            max-height: 300px;
+            overflow-y: auto;
+            margin-top: 10px;
+        }
+
+        .search-results:empty {
+            display: none;
+        }
+
+        .search-result-item {
+            padding: 10px 12px;
+            background: #334155;
+            margin: 5px 0;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .search-result-item:hover,
+        .search-result-item.selected {
+            background: #475569;
+        }
+
+        .search-result-item.selected {
+            outline: 2px solid #714B67;
+        }
+
+        .search-result-title {
+            color: #f0abfc;
+            font-size: 13px;
+            font-weight: 600;
+        }
+
+        .search-result-context {
+            color: #94a3b8;
+            font-size: 12px;
+            margin-top: 3px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .search-highlight {
+            background: rgba(251, 191, 36, 0.3);
+            color: #fbbf24;
+            padding: 0 2px;
+            border-radius: 2px;
+        }
+
+        .no-results {
+            color: #64748b;
+            font-size: 13px;
+            text-align: center;
+            padding: 15px;
+        }
+
+        /* ==================== TOOLBAR (Dark Mode, Font Size) ==================== */
+        .toolbar {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            padding: 10px 15px;
+            border-bottom: 1px solid #334155;
+            margin-bottom: 10px;
+        }
+
+        .toolbar-btn {
+            background: #334155;
+            border: none;
+            color: #94a3b8;
+            padding: 8px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .toolbar-btn:hover {
+            background: #475569;
+            color: white;
+        }
+
+        .toolbar-btn.active {
+            background: #714B67;
+            color: white;
+        }
+
+        /* ==================== DARK MODE ==================== */
+        body.dark-mode {
+            background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+        }
+
+        body.dark-mode .container {
+            background: #1e293b;
+            color: #e2e8f0;
+        }
+
+        body.dark-mode h1,
+        body.dark-mode h2,
+        body.dark-mode h3,
+        body.dark-mode h4,
+        body.dark-mode strong {
+            color: #f1f5f9;
+        }
+
+        body.dark-mode h2 {
+            border-bottom-color: #714B67;
+        }
+
+        body.dark-mode h3 {
+            background: #334155;
+            color: #f1f5f9;
+        }
+
+        body.dark-mode p,
+        body.dark-mode li,
+        body.dark-mode td {
+            color: #cbd5e1;
+        }
+
+        body.dark-mode table {
+            box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+        }
+
+        body.dark-mode td {
+            border-color: #334155;
+        }
+
+        body.dark-mode tr:nth-child(even) {
+            background: #293548;
+        }
+
+        body.dark-mode tr:hover {
+            background: #334155;
+        }
+
+        body.dark-mode .toc {
+            background: #334155;
+        }
+
+        body.dark-mode .toc a {
+            color: #f0abfc;
+        }
+
+        body.dark-mode code {
+            background: #334155;
+            color: #f0abfc;
+        }
+
+        body.dark-mode .critical-box,
+        body.dark-mode .technical-box,
+        body.dark-mode .foundation-box,
+        body.dark-mode .success-box,
+        body.dark-mode .mechanism-box,
+        body.dark-mode .analogy-box,
+        body.dark-mode .warning-box,
+        body.dark-mode .info-box,
+        body.dark-mode .odoo-box {
+            background: #293548;
+        }
+
+        body.dark-mode .diagram {
+            background: #293548;
+            border-color: #714B67;
+        }
+
+        body.dark-mode .comparison-card.good {
+            background: #1e3a2f;
+            border-color: #10b981;
+        }
+
+        body.dark-mode .comparison-card.bad {
+            background: #3b1f1f;
+            border-color: #ef4444;
+        }
+
+        /* ==================== FONT SIZE CONTROLS ==================== */
+        body.font-small .container { font-size: 14px; }
+        body.font-small h1 { font-size: 36px; }
+        body.font-small h2 { font-size: 28px; }
+        body.font-small h3 { font-size: 20px; }
+        body.font-small h4 { font-size: 17px; }
+        body.font-small p, body.font-small li, body.font-small td { font-size: 14px; }
+
+        body.font-large .container { font-size: 20px; }
+        body.font-large h1 { font-size: 48px; }
+        body.font-large h2 { font-size: 38px; }
+        body.font-large h3 { font-size: 28px; }
+        body.font-large h4 { font-size: 24px; }
+        body.font-large p, body.font-large li, body.font-large td { font-size: 20px; }
+
+        /* ==================== KEYBOARD SHORTCUT HINT ==================== */
+        .keyboard-hint {
+            position: fixed;
+            bottom: 90px;
+            right: 30px;
+            background: rgba(30, 41, 59, 0.95);
+            color: #94a3b8;
+            padding: 15px 20px;
+            border-radius: 12px;
+            font-size: 13px;
+            z-index: 996;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+        }
+
+        .keyboard-hint.visible {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .keyboard-hint kbd {
+            background: #475569;
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-family: monospace;
+            color: #f0abfc;
+            margin: 0 3px;
+        }
+
+        .keyboard-hint-row {
+            margin: 5px 0;
+        }
+
+        /* ==================== RESUME READING BANNER ==================== */
+        .resume-banner {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%) translateX(130px);
+            background: linear-gradient(135deg, #714B67 0%, #9f7aea 100%);
+            color: white;
+            padding: 12px 25px;
+            border-radius: 30px;
+            font-size: 14px;
+            z-index: 1001;
+            box-shadow: 0 4px 20px rgba(113, 75, 103, 0.4);
+            display: none;
+            align-items: center;
+            gap: 15px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .resume-banner:hover {
+            transform: translateX(-50%) translateX(130px) scale(1.02);
+            box-shadow: 0 6px 25px rgba(113, 75, 103, 0.5);
+        }
+
+        .resume-banner-close {
+            background: rgba(255,255,255,0.2);
+            border: none;
+            color: white;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .resume-banner-close:hover {
+            background: rgba(255,255,255,0.3);
+        }
+
+        .sidebar-logo {
+            color: #714B67;
+            font-size: 24px;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .sidebar-logo-icon {
+            width: 40px;
+            height: 40px;
+            background: #714B67;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 20px;
+        }
+
+        .sidebar-subtitle {
+            color: #64748b;
+            font-size: 12px;
+            margin-top: 5px;
+        }
+
+        .sidebar nav {
+            padding: 0 10px;
+        }
+
+        .sidebar a {
+            display: block;
+            color: #94a3b8;
+            text-decoration: none;
+            padding: 12px 15px;
+            margin: 3px 0;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: all 0.2s ease;
+            border-left: 3px solid transparent;
+        }
+
+        .sidebar a:hover {
+            background: #334155;
+            color: white;
+            border-left-color: #714B67;
+        }
+
+        .sidebar a.active {
+            background: linear-gradient(90deg, rgba(113, 75, 103, 0.3) 0%, transparent 100%);
+            color: #f0abfc;
+            border-left-color: #714B67;
+            font-weight: 600;
+        }
+
+        .sidebar-section-title {
+            color: #475569;
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            padding: 20px 15px 8px 15px;
+            font-weight: 600;
+        }
+
+        /* ==================== PROGRESS BAR ==================== */
+        .progress-container {
+            position: fixed;
+            top: 0;
+            left: 260px;
+            right: 0;
+            height: 4px;
+            background: rgba(255,255,255,0.2);
+            z-index: 999;
+        }
+
+        .progress-bar {
+            height: 100%;
+            background: linear-gradient(90deg, #714B67, #ec4899);
+            width: 0%;
+            transition: width 0.1s ease;
+        }
+
+        /* ==================== MAIN CONTAINER ==================== */
+        .container {
+            max-width: calc(100vw - 320px);
+            width: 100%;
+            margin: 0 auto;
+            background: white;
+            padding: 50px 60px;
+            border-radius: 20px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+            position: relative;
+            box-sizing: border-box;
+        }
+
+        @media (min-width: 1500px) {
+            .container {
+                max-width: 1200px;
+            }
+        }
+
+        /* ==================== BACK TO TOP BUTTON ==================== */
+        .back-to-top {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            width: 50px;
+            height: 50px;
+            background: #714B67;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 15px rgba(113, 75, 103, 0.4);
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+            z-index: 998;
+        }
+
+        .back-to-top.visible {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .back-to-top:hover {
+            background: #5a3d53;
+            transform: translateY(-3px);
+            box-shadow: 0 6px 20px rgba(113, 75, 103, 0.5);
+        }
+
+        /* ==================== HEADINGS ==================== */
+        h1 {
+            font-size: 42px;
+            color: #1e293b;
+            margin-bottom: 20px;
+            text-align: center;
+            border-bottom: 4px solid #714B67;
+            padding-bottom: 20px;
+        }
+
+        h2 {
+            font-size: 32px;
+            color: #714B67;
+            margin: 60px 0 25px 0;
+            border-bottom: 3px solid #714B67;
+            padding-bottom: 15px;
+            padding-top: 20px;
+            scroll-margin-top: 20px;
+        }
+
+        h3 {
+            font-size: 24px;
+            color: #1e293b;
+            margin: 35px 0 20px 0;
+            background: #f1f5f9;
+            padding: 15px;
+            border-left: 5px solid #714B67;
+            border-radius: 0 8px 8px 0;
+        }
+
+        h4 { font-size: 20px; color: #475569; margin: 25px 0 15px 0; }
+        p { font-size: 17px; color: #475569; margin-bottom: 18px; line-height: 1.8; }
+
+        /* ==================== CONTENT BOXES ==================== */
+        .critical-box { background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%); padding: 30px; border-radius: 12px; border-left: 6px solid #ef4444; margin: 25px 0; }
+        .technical-box { background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%); padding: 30px; border-radius: 12px; border-left: 6px solid #2563eb; margin: 25px 0; }
+        .foundation-box { background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%); padding: 30px; border-radius: 12px; border-left: 6px solid #f59e0b; margin: 25px 0; }
+        .success-box { background: linear-gradient(135deg, #dcfce7 0%, #bbf7d0 100%); padding: 30px; border-radius: 12px; border-left: 6px solid #10b981; margin: 25px 0; }
+        .mechanism-box { background: linear-gradient(135deg, #e0e7ff 0%, #c7d2fe 100%); padding: 30px; border-radius: 12px; border-left: 6px solid #4f46e5; margin: 25px 0; }
+        .analogy-box { background: linear-gradient(135deg, #fce7f3 0%, #fbcfe8 100%); padding: 30px; border-radius: 12px; border-left: 6px solid #ec4899; margin: 25px 0; }
+        .warning-box { background: #fee2e2; padding: 25px; border-radius: 12px; border-left: 6px solid #ef4444; margin: 25px 0; }
+        .info-box { background: linear-gradient(135deg, #e0f2fe 0%, #bae6fd 100%); padding: 25px; border-radius: 12px; border-left: 6px solid #0284c7; margin: 25px 0; }
+        .odoo-box { background: linear-gradient(135deg, #fdf4ff 0%, #fae8ff 100%); padding: 30px; border-radius: 12px; border-left: 6px solid #714B67; margin: 25px 0; }
+
+        /* Box hover effect */
+        .critical-box, .technical-box, .foundation-box, .success-box,
+        .mechanism-box, .analogy-box, .warning-box, .info-box, .odoo-box {
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .critical-box:hover, .technical-box:hover, .foundation-box:hover, .success-box:hover,
+        .mechanism-box:hover, .analogy-box:hover, .warning-box:hover, .info-box:hover, .odoo-box:hover {
+            transform: translateX(5px);
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+        }
+
+        /* ==================== CODE BLOCKS ==================== */
+        .code-block { background: #1e293b; color: #e2e8f0; padding: 25px; border-radius: 12px; font-family: 'Courier New', monospace; margin: 20px 0; overflow-x: auto; font-size: 14px; line-height: 1.6; white-space: pre-wrap; }
+        .code-comment { color: #94a3b8; }
+        .code-keyword { color: #f472b6; }
+        .code-string { color: #a5f3fc; }
+        .code-function { color: #fbbf24; }
+        code { background: #f1f5f9; padding: 2px 8px; border-radius: 4px; font-family: 'Courier New', monospace; font-size: 14px; color: #714B67; }
+
+        /* ==================== TABLES ==================== */
+        table { width: 100%; border-collapse: collapse; margin: 25px 0; box-shadow: 0 2px 8px rgba(0,0,0,0.1); border-radius: 12px; overflow: hidden; display: block; overflow-x: auto; }
+        th { background: #714B67; color: white; padding: 18px; text-align: left; font-size: 16px; font-weight: 600; white-space: nowrap; }
+        td { padding: 16px; border: 1px solid #e2e8f0; font-size: 15px; vertical-align: top; }
+        tr:nth-child(even) { background: #f8fafc; }
+        tr:hover { background: #f1f5f9; transition: background 0.2s ease; }
+
+        @media (min-width: 900px) {
+            table { display: table; }
+            th { white-space: normal; }
+        }
+
+        /* ==================== LISTS ==================== */
+        ul, ol { margin: 20px 0; padding-left: 40px; }
+        li { margin: 12px 0; font-size: 17px; color: #475569; line-height: 1.7; }
+        strong { color: #1e293b; }
+
+        /* ==================== COMPARISON GRIDS ==================== */
+        .comparison-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin: 25px 0; }
+        .comparison-card { padding: 25px; border-radius: 12px; border: 2px solid; transition: transform 0.2s ease; }
+        .comparison-card:hover { transform: scale(1.02); }
+        .comparison-card.good { background: #dcfce7; border-color: #10b981; }
+        .comparison-card.bad { background: #fee2e2; border-color: #ef4444; }
+
+        /* ==================== HEADER STYLES ==================== */
+        .subtitle { text-align: center; font-size: 20px; color: #64748b; margin-bottom: 40px; font-style: italic; }
+
+        /* ==================== TOC (in main content) ==================== */
+        .toc { background: #f1f5f9; padding: 30px; border-radius: 12px; margin: 30px 0; columns: 2; }
+        .toc a { color: #714B67; text-decoration: none; font-size: 16px; display: block; padding: 6px 0; break-inside: avoid; transition: all 0.2s ease; }
+        .toc a:hover { color: #ec4899; padding-left: 10px; }
+
+        /* ==================== DIAGRAMS ==================== */
+        .diagram { background: white; border: 3px solid #714B67; border-radius: 12px; padding: 30px; text-align: center; margin: 25px 0; }
+        .diagram-box { background: #714B67; color: white; border-radius: 8px; padding: 15px 25px; display: inline-block; margin: 10px; font-weight: bold; transition: transform 0.2s ease; }
+        .diagram-box:hover { transform: scale(1.05); }
+        .diagram-box.secondary { background: #9f7aea; }
+        .diagram-box.tertiary { background: #38bdf8; }
+        .arrow { font-size: 28px; color: #714B67; display: inline-block; margin: 0 15px; }
+        .arrow-down { display: block; font-size: 28px; color: #714B67; margin: 10px auto; }
+
+        /* ==================== BADGES ==================== */
+        .badge { display: inline-block; padding: 4px 12px; border-radius: 20px; font-size: 13px; font-weight: bold; margin: 2px; }
+        .badge-new { background: #dcfce7; color: #166534; }
+        .badge-important { background: #fee2e2; color: #991b1b; }
+        .badge-enterprise { background: #fef3c7; color: #92400e; }
+
+        /* ==================== SECTION INDICATOR ==================== */
+        .current-section {
+            position: fixed;
+            bottom: 30px;
+            left: 280px;
+            background: rgba(30, 41, 59, 0.9);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 30px;
+            font-size: 14px;
+            z-index: 997;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            opacity: 0;
+            transform: translateY(20px);
+            transition: all 0.3s ease;
+        }
+
+        .current-section.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        /* ==================== PRINT / PDF OPTIMIZATION ==================== */
+        @media print {
+            /* Hide ALL interactive elements - including search, toolbar, resume banner, keyboard hints */
+            .sidebar, .progress-container, .back-to-top, .current-section,
+            .mobile-menu-toggle, .sidebar-overlay,
+            .search-container, .toolbar, .resume-banner, .keyboard-hint-overlay,
+            .search-results, .keyboard-hint-badge {
+                display: none !important;
+            }
+
+            /* Reset background and padding for clean print */
+            body {
+                padding-left: 0 !important;
+                background: white !important;
+                padding: 0 !important;
+                margin: 0 !important;
+                -webkit-print-color-adjust: exact !important;
+                print-color-adjust: exact !important;
+            }
+
+            /* Container adjustments */
+            .container {
+                box-shadow: none !important;
+                padding: 30px !important;
+                max-width: 100% !important;
+                border-radius: 0 !important;
+            }
+
+            /* Reset dark mode colors for print */
+            body.dark-mode,
+            body.dark-mode .container {
+                background: white !important;
+                color: #1e293b !important;
+            }
+            body.dark-mode h1,
+            body.dark-mode h2,
+            body.dark-mode h3,
+            body.dark-mode h4,
+            body.dark-mode strong {
+                color: #1e293b !important;
+            }
+            body.dark-mode p,
+            body.dark-mode li,
+            body.dark-mode td {
+                color: #475569 !important;
+            }
+            body.dark-mode .critical-box,
+            body.dark-mode .technical-box,
+            body.dark-mode .foundation-box,
+            body.dark-mode .success-box,
+            body.dark-mode .mechanism-box,
+            body.dark-mode .analogy-box,
+            body.dark-mode .info-box,
+            body.dark-mode .odoo-box {
+                background: inherit !important;
+            }
+
+            /* Page breaks - each major section on new page */
+            h2 {
+                page-break-before: always !important;
+                margin-top: 0 !important;
+                padding-top: 20px !important;
+            }
+
+            /* First h2 (after TOC) should not break */
+            h2#intro { page-break-before: avoid !important; }
+
+            /* Prevent orphaned headers */
+            h3, h4 {
+                page-break-after: avoid !important;
+                page-break-inside: avoid !important;
+            }
+
+            /* Keep boxes together - don't split across pages */
+            .critical-box, .technical-box, .foundation-box, .success-box,
+            .mechanism-box, .analogy-box, .warning-box, .info-box, .odoo-box,
+            .diagram, .comparison-card {
+                page-break-inside: avoid !important;
+                break-inside: avoid !important;
+            }
+
+            /* Tables - keep header with at least some rows */
+            table {
+                page-break-inside: auto !important;
+            }
+            tr {
+                page-break-inside: avoid !important;
+                page-break-after: auto !important;
+            }
+            thead {
+                display: table-header-group !important;
+            }
+
+            /* Comparison grids - keep cards together */
+            .comparison-grid {
+                page-break-inside: avoid !important;
+            }
+
+            /* TOC single column for print */
+            .toc {
+                columns: 1 !important;
+                page-break-after: always !important;
+            }
+
+            /* Hide hover effects */
+            tr:hover { background: inherit !important; }
+
+            /* Ensure colors print */
+            .critical-box, .technical-box, .foundation-box, .success-box,
+            .mechanism-box, .analogy-box, .warning-box, .info-box, .odoo-box {
+                -webkit-print-color-adjust: exact !important;
+                print-color-adjust: exact !important;
+            }
+
+            th {
+                -webkit-print-color-adjust: exact !important;
+                print-color-adjust: exact !important;
+                background: #714B67 !important;
+                color: white !important;
+            }
+
+            .diagram-box {
+                -webkit-print-color-adjust: exact !important;
+                print-color-adjust: exact !important;
+            }
+
+            .badge {
+                -webkit-print-color-adjust: exact !important;
+                print-color-adjust: exact !important;
+            }
+
+            /* Reduce font sizes slightly for print */
+            h1 { font-size: 36px !important; }
+            h2 { font-size: 28px !important; }
+            h3 { font-size: 20px !important; }
+            h4 { font-size: 17px !important; }
+            p, li, td { font-size: 14px !important; }
+            th { font-size: 14px !important; }
+
+            /* Reduce padding for boxes */
+            .critical-box, .technical-box, .foundation-box, .success-box,
+            .mechanism-box, .analogy-box, .warning-box, .info-box, .odoo-box {
+                padding: 20px !important;
+                margin: 15px 0 !important;
+            }
+
+            /* Links - show URL for reference (optional - commented out)
+            a[href]:after { content: " (" attr(href) ")"; font-size: 12px; color: #666; }
+            */
+
+            /* Page margins via @page */
+            @page {
+                margin: 1.5cm 1.5cm 2cm 1.5cm;
+                size: A4;
+            }
+
+            /* First page no top margin */
+            @page :first {
+                margin-top: 1cm;
+            }
+
+            /* Footer area for page numbers (handled by browser) */
+            @page {
+                @bottom-center {
+                    content: counter(page);
+                }
+            }
+        }
+        /* ==================== MOBILE MENU TOGGLE BUTTON ==================== */
+        .mobile-menu-toggle {
+            display: none;
+            position: fixed;
+            top: 15px;
+            left: 15px;
+            width: 45px;
+            height: 45px;
+            background: #714B67;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            z-index: 1001;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 5px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        }
+
+        .mobile-menu-toggle span {
+            display: block;
+            width: 22px;
+            height: 2px;
+            background: white;
+            border-radius: 2px;
+            transition: all 0.3s ease;
+        }
+
+        .sidebar-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.5);
+            z-index: 999;
+        }
+
+        /* ==================== MOBILE RESPONSIVE - TABLET ==================== */
+        @media (max-width: 1024px) {
+            body {
+                padding: 20px;
+                padding-top: 70px;
+            }
+
+            .sidebar {
+                transform: translateX(-100%);
+                transition: transform 0.3s ease;
+            }
+
+            .sidebar.open {
+                transform: translateX(0);
+            }
+
+            .sidebar-overlay.active {
+                display: block;
+            }
+
+            .progress-container {
+                left: 0;
+            }
+
+            .mobile-menu-toggle {
+                display: flex !important;
+            }
+
+            .current-section {
+                left: 70px;
+                max-width: calc(100% - 90px);
+                font-size: 12px;
+            }
+
+            .container {
+                padding: 30px;
+            }
+
+            .back-to-top {
+                right: 15px;
+                bottom: 15px;
+                width: 45px;
+                height: 45px;
+            }
+
+            .resume-banner {
+                left: 50%;
+                transform: translateX(-50%);
+                max-width: 90%;
+            }
+
+            .resume-banner:hover {
+                transform: translateX(-50%) scale(1.02);
+            }
+
+            .keyboard-hint {
+                width: 90%;
+                max-width: 350px;
+                left: 50%;
+                transform: translateX(-50%);
+                top: auto;
+                bottom: 80px;
+            }
+
+            .keyboard-hint.visible {
+                transform: translateX(-50%) translateY(0);
+            }
+        }
+
+        /* ==================== MOBILE RESPONSIVE - PHONE ==================== */
+        @media (max-width: 768px) {
+            body {
+                padding: 10px;
+                padding-top: 65px;
+            }
+
+            .container {
+                padding: 20px;
+                border-radius: 12px;
+            }
+
+            h1 {
+                font-size: 26px;
+                line-height: 1.3;
+            }
+
+            h2 {
+                font-size: 22px;
+                padding-bottom: 10px;
+                margin: 35px 0 20px 0;
+            }
+
+            h3 {
+                font-size: 18px;
+                padding: 12px;
+            }
+
+            h4 {
+                font-size: 16px;
+            }
+
+            p, li, td {
+                font-size: 15px;
+            }
+
+            .subtitle {
+                font-size: 14px;
+            }
+
+            .badge {
+                font-size: 11px;
+                padding: 4px 10px;
+            }
+
+            /* Boxes */
+            .critical-box, .technical-box, .foundation-box, .success-box,
+            .mechanism-box, .analogy-box, .warning-box, .info-box, .odoo-box {
+                padding: 18px;
+                margin: 18px 0;
+            }
+
+            /* Tables */
+            table {
+                font-size: 13px;
+            }
+
+            th, td {
+                padding: 10px 8px;
+            }
+
+            /* Code blocks */
+            .code-block {
+                padding: 15px;
+                font-size: 12px;
+                overflow-x: auto;
+            }
+
+            /* TOC */
+            .toc {
+                columns: 1;
+                padding: 20px;
+            }
+
+            .toc a {
+                font-size: 15px;
+                padding: 6px 0;
+            }
+
+            /* Grids */
+            .comparison-grid {
+                grid-template-columns: 1fr;
+                gap: 15px;
+            }
+
+            .comparison-card {
+                padding: 18px;
+            }
+
+            /* Diagrams */
+            .diagram {
+                padding: 15px;
+                overflow-x: auto;
+            }
+
+            .diagram-box {
+                padding: 12px 15px;
+                font-size: 13px;
+                margin: 5px;
+            }
+
+            .arrow {
+                font-size: 24px;
+                margin: 0 10px;
+            }
+
+            /* Current section indicator */
+            .current-section {
+                display: none;
+            }
+
+            /* Back to top */
+            .back-to-top {
+                right: 10px;
+                bottom: 10px;
+                width: 40px;
+                height: 40px;
+                font-size: 18px;
+            }
+
+            /* Lists */
+            ul, ol {
+                padding-left: 25px;
+            }
+
+            li {
+                margin: 8px 0;
+            }
+        }
+
+        /* ==================== MOBILE RESPONSIVE - SMALL PHONE ==================== */
+        @media (max-width: 480px) {
+            body {
+                padding: 8px;
+                padding-top: 60px;
+            }
+
+            .container {
+                padding: 15px;
+                border-radius: 10px;
+            }
+
+            h1 {
+                font-size: 22px;
+            }
+
+            h2 {
+                font-size: 19px;
+            }
+
+            h3 {
+                font-size: 16px;
+                padding: 10px;
+            }
+
+            p, li, td {
+                font-size: 14px;
+                line-height: 1.6;
+            }
+
+            .code-block {
+                font-size: 11px;
+                padding: 12px;
+            }
+
+            th, td {
+                padding: 8px 6px;
+                font-size: 12px;
+            }
+
+            .mobile-menu-toggle {
+                top: 10px;
+                left: 10px;
+                width: 40px;
+                height: 40px;
+            }
+
+            .sidebar {
+                width: 280px;
+            }
+
+            .diagram-box {
+                display: block;
+                margin: 8px auto;
+            }
+
+            .arrow {
+                display: block;
+                margin: 5px auto;
+                transform: rotate(90deg);
+            }
+        }
+    </style>
 </head>
 <body>
-    <!-- Spider Animation Canvas - Transparent overlay for cursor effect -->
-    <canvas id="spiderCanvas"></canvas>
-
-    <!-- Skip Link for Accessibility -->
-    <a href="#intro" class="skip-link">Skip to main content</a>
-
     <!-- Progress Bar -->
     <div class="progress-container">
         <div class="progress-bar" id="progressBar"></div>
@@ -46,7 +1128,6 @@
         <div class="keyboard-hint-row"><kbd>←</kbd> <kbd>→</kbd> Previous / Next section</div>
         <div class="keyboard-hint-row"><kbd>/</kbd> Focus search</div>
         <div class="keyboard-hint-row"><kbd>D</kbd> Toggle dark mode</div>
-        <div class="keyboard-hint-row"><kbd>Esc</kbd> Disable spider cursor</div>
         <div class="keyboard-hint-row"><kbd>?</kbd> Show/hide shortcuts</div>
     </div>
 
@@ -54,13 +1135,7 @@
     <aside class="sidebar" id="sidebar">
         <div class="sidebar-header">
             <div class="sidebar-logo">
-                <div class="sidebar-logo-icon">
-                    <!-- Odoo logo: the purple "o" ring from official branding -->
-                    <svg viewBox="0 0 150 150" width="28" height="28">
-                        <circle cx="75" cy="75" r="75" fill="#714B67"/>
-                        <circle cx="75" cy="75" r="44" fill="white"/>
-                    </svg>
-                </div>
+                <div class="sidebar-logo-icon">O</div>
                 <span>Odoo Training</span>
             </div>
             <div class="sidebar-subtitle">Functional Consultant Guide</div>
@@ -69,11 +1144,10 @@
         <!-- Search Bar -->
         <div class="search-container">
             <div class="search-wrapper">
-                <label for="searchInput" class="visually-hidden">Search topics</label>
-                <span class="search-icon" aria-hidden="true">🔍</span>
-                <input type="text" class="search-input" id="searchInput" placeholder="Search topics... (Press /)" autocomplete="off" role="combobox" aria-autocomplete="list" aria-controls="searchResults" aria-expanded="false">
+                <span class="search-icon">🔍</span>
+                <input type="text" class="search-input" id="searchInput" placeholder="Search topics... (Press /)" autocomplete="off">
             </div>
-            <div class="search-results" id="searchResults" role="listbox" aria-label="Search results" aria-live="polite"></div>
+            <div class="search-results" id="searchResults"></div>
         </div>
 
         <!-- Toolbar -->
@@ -81,13 +1155,11 @@
             <button class="toolbar-btn" id="darkModeBtn" title="Toggle dark mode (D)">🌙</button>
             <button class="toolbar-btn" id="fontSmallBtn" title="Smaller text">A-</button>
             <button class="toolbar-btn" id="fontLargeBtn" title="Larger text">A+</button>
-            <button class="toolbar-btn" id="spideyToggleBtn" title="Toggle spider cursor (Esc to disable)">🕷️</button>
             <button class="toolbar-btn" id="helpBtn" title="Keyboard shortcuts (?)">⌨️</button>
         </div>
 
         <nav>
             <div class="sidebar-section-title">Getting Started</div>
-            <a href="#what-is-odoo">What is Odoo?</a>
             <a href="#intro">Introduction</a>
             <a href="#models">1. Models</a>
             <a href="#field-types">2. Field Types</a>
@@ -116,11 +1188,7 @@
             <a href="#performance">17. Performance</a>
             <a href="#decision">18. Decision Matrix</a>
             <a href="#practical">19. Examples</a>
-            <a href="#odoosh">20. Odoo.sh</a>
-            <a href="#chatter">21. Chatter & Activities</a>
-            <a href="#emails">22. Email</a>
-            <a href="#context">23. Context</a>
-            <a href="#constraints">24. Constraints</a>
+            <a href="#mistakes">20. Common Mistakes</a>
         </nav>
     </aside>
 
@@ -132,7 +1200,7 @@
 
     <!-- Main Content -->
     <div class="container">
-        <h1 data-true-focus data-true-focus-duration="0.3" data-true-focus-pause="0.7">Odoo Conceptual Training</h1>
+        <h1>Complete Odoo Framework Training</h1>
         <p class="subtitle"><span class="badge badge-new">Odoo 17/18/19 Compatible</span>
         <span class="badge badge-enterprise">Community & Enterprise</span></p>
 
@@ -163,183 +1231,8 @@
             <a href="#performance">17. Performance Considerations</a>
             <a href="#decision">18. Decision Matrix - When to Use What</a>
             <a href="#practical">19. Real-World Business Examples</a>
-            <a href="#odoosh">20. Odoo.sh - The Cloud Platform</a>
-            <a href="#chatter">21. Chatter, Followers & Activities</a>
-            <a href="#emails">22. Email in Odoo</a>
-            <a href="#context">23. Context - The Hidden Parameter</a>
-            <a href="#constraints">24. Constraints - Data Validation Rules</a>
+            <a href="#mistakes">20. Common Mistakes & How to Avoid Them</a>
         </div>
-
-        <!-- ==================== SECTION 0: WHAT IS ODOO ==================== -->
-        <h2 id="what-is-odoo">What is Odoo?</h2>
-
-        <h3>The Technology Stack</h3>
-        <p>Understanding what powers Odoo helps you troubleshoot issues and communicate with developers.</p>
-
-        <table>
-            <tr>
-                <th>Layer</th>
-                <th>Technology</th>
-                <th>What It Does</th>
-            </tr>
-            <tr>
-                <td><strong>Database</strong></td>
-                <td>PostgreSQL (psql)</td>
-                <td>Stores all your data - customers, orders, products, everything. Each Odoo database is a separate PostgreSQL database.</td>
-            </tr>
-            <tr>
-                <td><strong>Backend</strong></td>
-                <td>Python 3</td>
-                <td>The brain of Odoo. All business logic, calculations, workflows, and data processing happen in Python.</td>
-            </tr>
-            <tr>
-                <td><strong>Frontend</strong></td>
-                <td>JavaScript (OWL Framework)</td>
-                <td>What you see in the browser. OWL (Odoo Web Library) is Odoo's own reactive framework, similar to React or Vue.</td>
-            </tr>
-            <tr>
-                <td><strong>Web Server</strong></td>
-                <td>Werkzeug (Python)</td>
-                <td>Handles HTTP requests. Odoo runs its own web server - no Apache or Nginx required (though often used as proxy).</td>
-            </tr>
-            <tr>
-                <td><strong>API</strong></td>
-                <td>XML-RPC / JSON-RPC</td>
-                <td>How external systems talk to Odoo. Used for integrations, mobile apps, and automation scripts.</td>
-            </tr>
-            <tr>
-                <td><strong>Templating</strong></td>
-                <td>QWeb (XML)</td>
-                <td>Odoo's template engine for reports, website pages, and email templates. Similar to Jinja2 but XML-based.</td>
-            </tr>
-        </table>
-
-        <h3>How It All Connects</h3>
-
-        <div class="diagram">
-            <pre>
-┌─────────────────────────────────────────────────────────────────────────┐
-│                          YOUR BROWSER                                    │
-│  ┌─────────────────────────────────────────────────────────────────┐   │
-│  │                 JAVASCRIPT FRONTEND (OWL)                        │   │
-│  │     OWL Components  │  Web Client  │  Widgets  │  Actions       │   │
-│  └─────────────────────────────────────────────────────────────────┘   │
-└─────────────────────────────────┬───────────────────────────────────────┘
-                                  │ JSON-RPC / HTTP
-                                  ▼
-┌─────────────────────────────────────────────────────────────────────────┐
-│                       ODOO SERVER (Python)                               │
-│  ┌─────────────────────────────────────────────────────────────────┐   │
-│  │  Werkzeug (HTTP)  │  Controllers  │  Authentication             │   │
-│  └─────────────────────────────────────────────────────────────────┘   │
-│  ┌─────────────────────────────────────────────────────────────────┐   │
-│  │     Models (ORM)  │  Business Logic  │  Reports (QWeb)          │   │
-│  └─────────────────────────────────────────────────────────────────┘   │
-└─────────────────────────────────┬───────────────────────────────────────┘
-                                  │ SQL (via ORM)
-                                  ▼
-┌─────────────────────────────────────────────────────────────────────────┐
-│                       POSTGRESQL DATABASE                                │
-│     res_partner  │  sale_order  │  product_product  │  account_move     │
-│      (Contacts)  │   (Sales)    │    (Products)     │    (Invoices)     │
-└─────────────────────────────────────────────────────────────────────────┘
-            </pre>
-        </div>
-
-        <h3>Key Terminology</h3>
-
-        <table>
-            <tr>
-                <th>Term</th>
-                <th>What It Means</th>
-                <th>Example</th>
-            </tr>
-            <tr>
-                <td><strong>Module / App</strong></td>
-                <td>A self-contained package of features that can be installed or uninstalled</td>
-                <td><code>sale</code>, <code>stock</code>, <code>hr</code></td>
-            </tr>
-            <tr>
-                <td><strong>Model</strong></td>
-                <td>A database table that stores a specific type of data</td>
-                <td><code>res.partner</code> (contacts), <code>sale.order</code> (quotations)</td>
-            </tr>
-            <tr>
-                <td><strong>Record</strong></td>
-                <td>A single row in a model (one customer, one order)</td>
-                <td>Customer "Acme Corp" with ID 42</td>
-            </tr>
-            <tr>
-                <td><strong>Field</strong></td>
-                <td>A column in a model that stores a specific piece of data</td>
-                <td><code>name</code>, <code>email</code>, <code>amount_total</code></td>
-            </tr>
-            <tr>
-                <td><strong>View</strong></td>
-                <td>How data is displayed to users (form, list, kanban, etc.)</td>
-                <td>The sales order form you fill out</td>
-            </tr>
-            <tr>
-                <td><strong>ORM</strong></td>
-                <td>Object-Relational Mapping - Python code that talks to the database</td>
-                <td><code>self.env['res.partner'].search([])</code></td>
-            </tr>
-            <tr>
-                <td><strong>XML-ID / External ID</strong></td>
-                <td>A unique identifier for records, used in data files and code</td>
-                <td><code>base.main_company</code>, <code>sale.action_orders</code></td>
-            </tr>
-            <tr>
-                <td><strong>Context</strong></td>
-                <td>A dictionary of parameters passed around to control behavior</td>
-                <td><code>{'default_partner_id': 5, 'lang': 'en_US'}</code></td>
-            </tr>
-            <tr>
-                <td><strong>Domain</strong></td>
-                <td>A filter condition written as a list of tuples</td>
-                <td><code>[('state', '=', 'sale'), ('amount_total', '>', 1000)]</code></td>
-            </tr>
-        </table>
-
-        <h3>Common File Types</h3>
-
-        <table>
-            <tr>
-                <th>Extension</th>
-                <th>Purpose</th>
-                <th>Where You'll See It</th>
-            </tr>
-            <tr>
-                <td><code>.py</code></td>
-                <td>Python code - models, business logic, controllers</td>
-                <td><code>models/sale_order.py</code></td>
-            </tr>
-            <tr>
-                <td><code>.xml</code></td>
-                <td>Views, actions, menus, demo data, security rules</td>
-                <td><code>views/sale_order_views.xml</code></td>
-            </tr>
-            <tr>
-                <td><code>.js</code></td>
-                <td>JavaScript - custom widgets, frontend logic</td>
-                <td><code>static/src/js/my_widget.js</code></td>
-            </tr>
-            <tr>
-                <td><code>.scss</code> / <code>.css</code></td>
-                <td>Styling - colors, layouts, fonts</td>
-                <td><code>static/src/scss/style.scss</code></td>
-            </tr>
-            <tr>
-                <td><code>.csv</code></td>
-                <td>Data import files (demo data, initial records)</td>
-                <td><code>data/res.country.csv</code></td>
-            </tr>
-            <tr>
-                <td><code>.po</code> / <code>.pot</code></td>
-                <td>Translation files</td>
-                <td><code>i18n/fr.po</code></td>
-            </tr>
-        </table>
 
         <!-- ==================== SECTION 1: INTRODUCTION ==================== -->
         <h2 id="intro">Introduction & Teaching Philosophy</h2>
@@ -584,20 +1477,20 @@
         </div>
 
         <div class="technical-box">
-            <h4>AbstractModel = Feature Packs</h4>
-            <p>An <strong>AbstractModel</strong> is a reusable set of features that can be added to any model. It doesn't create its own database table - it just provides functionality that other models can use.</p>
+            <h4>AbstractModel = Shared Features</h4>
+            <p>An <strong>AbstractModel</strong> is like a template that adds features to other models. It doesn't store any data itself.</p>
 
-            <p><strong>Common AbstractModels in Odoo:</strong></p>
+            <p><strong>Common AbstractModels and what they add:</strong></p>
             <table>
                 <tr>
                     <th>AbstractModel</th>
-                    <th>What It Adds</th>
+                    <th>Feature It Adds</th>
                     <th>Where You See It</th>
                 </tr>
                 <tr>
                     <td><code>mail.thread</code></td>
                     <td>Chatter (messages, followers, log)</td>
-                    <td>Bottom of Sales Orders, Invoices, Contacts</td>
+                    <td>Bottom of Sales Orders, Invoices, etc.</td>
                 </tr>
                 <tr>
                     <td><code>mail.activity.mixin</code></td>
@@ -610,44 +1503,8 @@
                     <td>"Share" or "Preview" button on quotations</td>
                 </tr>
             </table>
-        </div>
 
-        <div class="diagram">
-            <h4>How It Works: Chatter Example</h4>
-            <div style="text-align: center;">
-                <div class="diagram-box" style="background: #6366f1;">mail.thread</div>
-                <p style="margin: 8px 0; font-size: 13px; color: #64748b;">Feature pack: Chatter, Followers, Messages</p>
-                <div class="arrow-down">↓ used by ↓</div>
-                <div style="display: flex; justify-content: center; gap: 15px; flex-wrap: wrap; margin-top: 15px;">
-                    <div class="diagram-box">sale.order</div>
-                    <div class="diagram-box">account.move</div>
-                    <div class="diagram-box">project.task</div>
-                    <div class="diagram-box">crm.lead</div>
-                </div>
-            </div>
-            <p style="margin-top: 20px;">All these models have chatter at the bottom of their forms. Instead of coding chatter 4 times, Odoo coded it once in <code>mail.thread</code> and each model simply says "I want those features".</p>
-        </div>
-
-        <div class="example-box">
-            <h4>In Code: How Sale Order Gets Chatter</h4>
-            <pre><code>class SaleOrder(models.Model):
-    _name = 'sale.order'
-    _inherit = ['mail.thread', 'mail.activity.mixin']  # ← Gets chatter + activities!
-
-    name = fields.Char(string='Order Reference')
-    partner_id = fields.Many2one('res.partner')
-    # ... other fields</code></pre>
-            <p>The <code>_inherit</code> line adds all the chatter functionality. Without it, no chatter would appear on the form.</p>
-        </div>
-
-        <div class="info-box">
-            <h4>Key Points</h4>
-            <ul>
-                <li><strong>If you see chatter on a form</strong> → that model inherits <code>mail.thread</code></li>
-                <li><strong>If a form has "Plan Activity" button</strong> → that model inherits <code>mail.activity.mixin</code></li>
-                <li><strong>Need chatter on a custom model?</strong> → Tell developers to add <code>_inherit = ['mail.thread']</code></li>
-                <li><strong>Each record has its own messages</strong> → The feature is shared, but data is separate per record</li>
-            </ul>
+            <p><strong>Why this matters:</strong> When you see chatter on a form, that model uses <code>mail.thread</code>. Understanding this helps you know what features are available on different screens.</p>
         </div>
 
         <h3>How to Find a Model Name</h3>
@@ -667,706 +1524,6 @@
             <p>Look at the URL in your browser. In Odoo 17+, URLs use path segments:</p>
             <p><code>https://mycompany.odoo.com/odoo/<strong>sale.order</strong>/5</code></p>
             <p>The model name appears in the URL path! (Older versions used hash format: <code>#model=sale.order&id=5</code>)</p>
-        </div>
-
-        <h3>How Data is Actually Stored - The Relational Database</h3>
-
-        <div class="info-box">
-            <h4>Beyond the Excel Analogy</h4>
-            <p>While the Excel analogy helps understand the basics, Odoo uses a <strong>relational database (PostgreSQL)</strong> which is more powerful. The key difference: <strong>tables are connected to each other using IDs</strong>.</p>
-            <p>When you create a Sales Order in Odoo, you're not just creating one record - you're creating <strong>multiple records across several tables</strong>, all linked together by their IDs.</p>
-        </div>
-
-        <h4>What Happens When You Create a Sales Order?</h4>
-
-        <p>Let's say you create a quotation for customer "Acme Corp" with 2 product lines. Here's what actually gets stored in the database:</p>
-
-        <!-- Visual Database Tables Diagram -->
-        <div style="background: #1e293b; padding: 24px; border-radius: 12px; margin: 20px 0; overflow-x: auto;">
-            <p style="color: #94a3b8; font-size: 13px; margin-bottom: 16px; text-align: center;">DATABASE TABLES - What Odoo Creates Behind the Scenes</p>
-
-            <!-- res_partner table -->
-            <div style="margin-bottom: 20px;">
-                <div style="background: #3b82f6; color: white; padding: 8px 16px; border-radius: 8px 8px 0 0; font-weight: 600; font-size: 14px;">
-                    📋 res_partner (Contacts Table)
-                </div>
-                <table style="width: 100%; border-collapse: collapse; background: #334155; font-size: 13px;">
-                    <tr style="background: #475569;">
-                        <th style="padding: 10px; color: #fbbf24; text-align: left; border: 1px solid #4b5563;">id</th>
-                        <th style="padding: 10px; color: #e2e8f0; text-align: left; border: 1px solid #4b5563;">name</th>
-                        <th style="padding: 10px; color: #e2e8f0; text-align: left; border: 1px solid #4b5563;">email</th>
-                        <th style="padding: 10px; color: #e2e8f0; text-align: left; border: 1px solid #4b5563;">phone</th>
-                    </tr>
-                    <tr>
-                        <td style="padding: 10px; color: #fbbf24; font-weight: bold; border: 1px solid #4b5563;">42</td>
-                        <td style="padding: 10px; color: #e2e8f0; border: 1px solid #4b5563;">Acme Corp</td>
-                        <td style="padding: 10px; color: #e2e8f0; border: 1px solid #4b5563;">contact@acme.com</td>
-                        <td style="padding: 10px; color: #e2e8f0; border: 1px solid #4b5563;">+1 555-0100</td>
-                    </tr>
-                </table>
-            </div>
-
-            <!-- product_product table -->
-            <div style="margin-bottom: 20px;">
-                <div style="background: #10b981; color: white; padding: 8px 16px; border-radius: 8px 8px 0 0; font-weight: 600; font-size: 14px;">
-                    📦 product_product (Products Table)
-                </div>
-                <table style="width: 100%; border-collapse: collapse; background: #334155; font-size: 13px;">
-                    <tr style="background: #475569;">
-                        <th style="padding: 10px; color: #34d399; text-align: left; border: 1px solid #4b5563;">id</th>
-                        <th style="padding: 10px; color: #e2e8f0; text-align: left; border: 1px solid #4b5563;">name</th>
-                        <th style="padding: 10px; color: #e2e8f0; text-align: left; border: 1px solid #4b5563;">list_price</th>
-                        <th style="padding: 10px; color: #e2e8f0; text-align: left; border: 1px solid #4b5563;">default_code</th>
-                    </tr>
-                    <tr>
-                        <td style="padding: 10px; color: #34d399; font-weight: bold; border: 1px solid #4b5563;">15</td>
-                        <td style="padding: 10px; color: #e2e8f0; border: 1px solid #4b5563;">Laptop Pro</td>
-                        <td style="padding: 10px; color: #e2e8f0; border: 1px solid #4b5563;">1,200.00</td>
-                        <td style="padding: 10px; color: #e2e8f0; border: 1px solid #4b5563;">LAPTOP-001</td>
-                    </tr>
-                    <tr>
-                        <td style="padding: 10px; color: #34d399; font-weight: bold; border: 1px solid #4b5563;">23</td>
-                        <td style="padding: 10px; color: #e2e8f0; border: 1px solid #4b5563;">Wireless Mouse</td>
-                        <td style="padding: 10px; color: #e2e8f0; border: 1px solid #4b5563;">45.00</td>
-                        <td style="padding: 10px; color: #e2e8f0; border: 1px solid #4b5563;">MOUSE-001</td>
-                    </tr>
-                </table>
-            </div>
-
-            <!-- sale_order table -->
-            <div style="margin-bottom: 20px;">
-                <div style="background: #8b5cf6; color: white; padding: 8px 16px; border-radius: 8px 8px 0 0; font-weight: 600; font-size: 14px;">
-                    🛒 sale_order (Sales Orders Table) - THE HEADER
-                </div>
-                <table style="width: 100%; border-collapse: collapse; background: #334155; font-size: 13px;">
-                    <tr style="background: #475569;">
-                        <th style="padding: 10px; color: #a78bfa; text-align: left; border: 1px solid #4b5563;">id</th>
-                        <th style="padding: 10px; color: #e2e8f0; text-align: left; border: 1px solid #4b5563;">name</th>
-                        <th style="padding: 10px; color: #fbbf24; text-align: left; border: 1px solid #4b5563;">partner_id 🔗</th>
-                        <th style="padding: 10px; color: #e2e8f0; text-align: left; border: 1px solid #4b5563;">date_order</th>
-                        <th style="padding: 10px; color: #e2e8f0; text-align: left; border: 1px solid #4b5563;">state</th>
-                        <th style="padding: 10px; color: #e2e8f0; text-align: left; border: 1px solid #4b5563;">amount_total</th>
-                    </tr>
-                    <tr>
-                        <td style="padding: 10px; color: #a78bfa; font-weight: bold; border: 1px solid #4b5563;">108</td>
-                        <td style="padding: 10px; color: #e2e8f0; border: 1px solid #4b5563;">S00108</td>
-                        <td style="padding: 10px; color: #fbbf24; font-weight: bold; border: 1px solid #4b5563;">42 → Acme Corp</td>
-                        <td style="padding: 10px; color: #e2e8f0; border: 1px solid #4b5563;">2024-12-09</td>
-                        <td style="padding: 10px; color: #e2e8f0; border: 1px solid #4b5563;">draft</td>
-                        <td style="padding: 10px; color: #e2e8f0; border: 1px solid #4b5563;">2,490.00</td>
-                    </tr>
-                </table>
-            </div>
-
-            <!-- sale_order_line table -->
-            <div style="margin-bottom: 10px;">
-                <div style="background: #f59e0b; color: white; padding: 8px 16px; border-radius: 8px 8px 0 0; font-weight: 600; font-size: 14px;">
-                    📝 sale_order_line (Order Lines Table) - THE LINES
-                </div>
-                <table style="width: 100%; border-collapse: collapse; background: #334155; font-size: 13px;">
-                    <tr style="background: #475569;">
-                        <th style="padding: 10px; color: #fbbf24; text-align: left; border: 1px solid #4b5563;">id</th>
-                        <th style="padding: 10px; color: #a78bfa; text-align: left; border: 1px solid #4b5563;">order_id 🔗</th>
-                        <th style="padding: 10px; color: #34d399; text-align: left; border: 1px solid #4b5563;">product_id 🔗</th>
-                        <th style="padding: 10px; color: #e2e8f0; text-align: left; border: 1px solid #4b5563;">product_uom_qty</th>
-                        <th style="padding: 10px; color: #e2e8f0; text-align: left; border: 1px solid #4b5563;">price_unit</th>
-                        <th style="padding: 10px; color: #e2e8f0; text-align: left; border: 1px solid #4b5563;">price_subtotal</th>
-                    </tr>
-                    <tr>
-                        <td style="padding: 10px; color: #fbbf24; font-weight: bold; border: 1px solid #4b5563;">201</td>
-                        <td style="padding: 10px; color: #a78bfa; font-weight: bold; border: 1px solid #4b5563;">108 → S00108</td>
-                        <td style="padding: 10px; color: #34d399; font-weight: bold; border: 1px solid #4b5563;">15 → Laptop Pro</td>
-                        <td style="padding: 10px; color: #e2e8f0; border: 1px solid #4b5563;">2</td>
-                        <td style="padding: 10px; color: #e2e8f0; border: 1px solid #4b5563;">1,200.00</td>
-                        <td style="padding: 10px; color: #e2e8f0; border: 1px solid #4b5563;">2,400.00</td>
-                    </tr>
-                    <tr>
-                        <td style="padding: 10px; color: #fbbf24; font-weight: bold; border: 1px solid #4b5563;">202</td>
-                        <td style="padding: 10px; color: #a78bfa; font-weight: bold; border: 1px solid #4b5563;">108 → S00108</td>
-                        <td style="padding: 10px; color: #34d399; font-weight: bold; border: 1px solid #4b5563;">23 → Mouse</td>
-                        <td style="padding: 10px; color: #e2e8f0; border: 1px solid #4b5563;">2</td>
-                        <td style="padding: 10px; color: #e2e8f0; border: 1px solid #4b5563;">45.00</td>
-                        <td style="padding: 10px; color: #e2e8f0; border: 1px solid #4b5563;">90.00</td>
-                    </tr>
-                </table>
-            </div>
-
-            <!-- Legend -->
-            <div style="margin-top: 16px; padding: 12px; background: #475569; border-radius: 8px;">
-                <p style="color: #e2e8f0; font-size: 12px; margin: 0;">
-                    <span style="color: #fbbf24;">🔗 Yellow = Foreign Key (ID linking to another table)</span> &nbsp;|&nbsp;
-                    <span style="color: #a78bfa;">Purple = Sale Order ID</span> &nbsp;|&nbsp;
-                    <span style="color: #34d399;">Green = Product ID</span> &nbsp;|&nbsp;
-                    <span style="color: #3b82f6;">Blue = Partner ID</span>
-                </p>
-            </div>
-        </div>
-
-        <h4>Understanding the Relationships</h4>
-
-        <div class="comparison-grid" style="grid-template-columns: 1fr 1fr;">
-            <div class="comparison-card" style="border-left: 4px solid #8b5cf6;">
-                <h4>The "Header" Record</h4>
-                <p><strong>sale_order</strong> (id: 108)</p>
-                <ul>
-                    <li>Stores order-level info: date, state, totals</li>
-                    <li><code>partner_id = 42</code> links to the customer</li>
-                    <li>This is ONE record for the whole order</li>
-                </ul>
-            </div>
-            <div class="comparison-card" style="border-left: 4px solid #f59e0b;">
-                <h4>The "Line" Records</h4>
-                <p><strong>sale_order_line</strong> (ids: 201, 202)</p>
-                <ul>
-                    <li>Each product line = separate record</li>
-                    <li><code>order_id = 108</code> links back to header</li>
-                    <li><code>product_id</code> links to the product</li>
-                </ul>
-            </div>
-        </div>
-
-        <div class="foundation-box">
-            <h4>Why IDs Matter - The Magic of Relational Databases</h4>
-            <p>Every record in Odoo has a unique <strong>id</strong> (also called primary key). This ID is:</p>
-            <ul>
-                <li><strong>Auto-generated:</strong> Odoo creates it automatically when you save</li>
-                <li><strong>Unique:</strong> No two records in the same table have the same ID</li>
-                <li><strong>Permanent:</strong> Once assigned, the ID never changes</li>
-                <li><strong>The Link:</strong> Other tables reference this ID to create relationships</li>
-            </ul>
-            <p style="margin-top: 12px;"><strong>Example:</strong> When Odoo displays "Acme Corp" on the sales order, it's actually reading <code>partner_id = 42</code>, then looking up id 42 in the res_partner table to get the name.</p>
-        </div>
-
-        <h4>The Full Picture: What Confirming a Sales Order Creates</h4>
-
-        <p>When you click <strong>"Confirm"</strong> on a quotation, Odoo creates even more records:</p>
-
-        <div style="background: #f8fafc; border: 2px solid #e2e8f0; border-radius: 12px; padding: 20px; margin: 20px 0;">
-            <div style="display: flex; flex-wrap: wrap; gap: 12px; justify-content: center; align-items: center;">
-                <div style="background: #8b5cf6; color: white; padding: 12px 20px; border-radius: 8px; text-align: center;">
-                    <strong>sale.order</strong><br><span style="font-size: 12px;">S00108</span>
-                </div>
-                <div style="font-size: 24px; color: #64748b;">→</div>
-                <div style="background: #3b82f6; color: white; padding: 12px 20px; border-radius: 8px; text-align: center;">
-                    <strong>stock.picking</strong><br><span style="font-size: 12px;">Delivery Order</span>
-                </div>
-                <div style="font-size: 24px; color: #64748b;">→</div>
-                <div style="background: #10b981; color: white; padding: 12px 20px; border-radius: 8px; text-align: center;">
-                    <strong>stock.move</strong><br><span style="font-size: 12px;">Stock Movements</span>
-                </div>
-            </div>
-            <div style="display: flex; flex-wrap: wrap; gap: 12px; justify-content: center; align-items: center; margin-top: 16px;">
-                <div style="background: #8b5cf6; color: white; padding: 12px 20px; border-radius: 8px; text-align: center;">
-                    <strong>sale.order</strong><br><span style="font-size: 12px;">S00108</span>
-                </div>
-                <div style="font-size: 24px; color: #64748b;">→</div>
-                <div style="background: #ef4444; color: white; padding: 12px 20px; border-radius: 8px; text-align: center;">
-                    <strong>account.move</strong><br><span style="font-size: 12px;">Invoice</span>
-                </div>
-                <div style="font-size: 24px; color: #64748b;">→</div>
-                <div style="background: #f59e0b; color: white; padding: 12px 20px; border-radius: 8px; text-align: center;">
-                    <strong>account.move.line</strong><br><span style="font-size: 12px;">Journal Items</span>
-                </div>
-            </div>
-            <p style="text-align: center; color: #64748b; font-size: 13px; margin-top: 16px;">All these records are linked back to the original Sale Order using IDs!</p>
-        </div>
-
-        <div class="warning-box">
-            <h4>Why This Matters for Consultants</h4>
-            <ul>
-                <li><strong>Debugging:</strong> When something looks wrong, understanding that data lives in multiple tables helps you investigate</li>
-                <li><strong>Reports:</strong> Custom reports often need to join multiple tables using these ID relationships</li>
-                <li><strong>Data Migration:</strong> Moving data between systems requires understanding these connections</li>
-                <li><strong>Smart Buttons:</strong> Those counts you see (like "2 Deliveries") are queries counting related records by ID</li>
-            </ul>
-        </div>
-
-        <div class="analogy-box">
-            <h4>Excel vs Relational Database - Key Difference</h4>
-            <table>
-                <tr>
-                    <th>Concept</th>
-                    <th>Excel Approach</th>
-                    <th>Odoo/Database Approach</th>
-                </tr>
-                <tr>
-                    <td><strong>Customer name on order</strong></td>
-                    <td>Type "Acme Corp" directly in cell</td>
-                    <td>Store ID 42, look up name from res_partner</td>
-                </tr>
-                <tr>
-                    <td><strong>Customer changes name</strong></td>
-                    <td>Must update every order manually</td>
-                    <td>Update once in res_partner, all orders show new name</td>
-                </tr>
-                <tr>
-                    <td><strong>Order lines</strong></td>
-                    <td>Multiple columns: Product1, Qty1, Product2, Qty2...</td>
-                    <td>Separate table with unlimited rows, linked by order_id</td>
-                </tr>
-                <tr>
-                    <td><strong>Find all orders for customer</strong></td>
-                    <td>Manually search/filter</td>
-                    <td>Query: WHERE partner_id = 42</td>
-                </tr>
-            </table>
-        </div>
-
-        <h3>The ir.model Model (Model Registry)</h3>
-
-        <div class="technical-box">
-            <p><code>ir.model</code> is Odoo's <strong>meta-model</strong> - it stores information about all models in the system. You can access it via Settings → Technical → Database Structure → Models.</p>
-        </div>
-
-        <table>
-            <tr>
-                <th>Field</th>
-                <th>Type</th>
-                <th>Description</th>
-            </tr>
-            <tr>
-                <td><code>name</code></td>
-                <td>Char</td>
-                <td>Human-readable model name (e.g., "Sales Order")</td>
-            </tr>
-            <tr>
-                <td><code>model</code></td>
-                <td>Char</td>
-                <td>Technical model name (e.g., "sale.order"). Custom models start with "x_"</td>
-            </tr>
-            <tr>
-                <td><code>order</code></td>
-                <td>Char</td>
-                <td>Default SQL ordering (e.g., "date desc, id desc")</td>
-            </tr>
-            <tr>
-                <td><code>info</code></td>
-                <td>Text</td>
-                <td>Model documentation/description</td>
-            </tr>
-            <tr>
-                <td><code>field_id</code></td>
-                <td>One2many</td>
-                <td>Link to all fields defined on this model (ir.model.fields)</td>
-            </tr>
-            <tr>
-                <td><code>access_ids</code></td>
-                <td>One2many</td>
-                <td>Access control rules for this model (ir.model.access)</td>
-            </tr>
-            <tr>
-                <td><code>rule_ids</code></td>
-                <td>One2many</td>
-                <td>Record rules / row-level security (ir.rule)</td>
-            </tr>
-            <tr>
-                <td><code>state</code></td>
-                <td>Selection</td>
-                <td><code>manual</code> = Created via Studio/UI, <code>base</code> = Defined in Python code</td>
-            </tr>
-            <tr>
-                <td><code>transient</code></td>
-                <td>Boolean</td>
-                <td>True for wizard models (auto-deleted after use)</td>
-            </tr>
-            <tr>
-                <td><code>abstract</code></td>
-                <td>Boolean</td>
-                <td>True for mixin models (no database table)</td>
-            </tr>
-            <tr>
-                <td><code>modules</code></td>
-                <td>Char (computed)</td>
-                <td>Which installed modules define/extend this model</td>
-            </tr>
-            <tr>
-                <td><code>view_ids</code></td>
-                <td>One2many (computed)</td>
-                <td>All views (form, tree, kanban, etc.) for this model</td>
-            </tr>
-            <tr>
-                <td><code>count</code></td>
-                <td>Integer (computed)</td>
-                <td>Total number of records in this model</td>
-            </tr>
-        </table>
-
-        <h3>The ir.model.fields Model (Field Registry)</h3>
-
-        <div class="technical-box">
-            <p><code>ir.model.fields</code> stores metadata about every field in Odoo. Access via Settings → Technical → Database Structure → Fields. This is where Studio stores custom field definitions.</p>
-        </div>
-
-        <table>
-            <tr>
-                <th>Field</th>
-                <th>Type</th>
-                <th>Description</th>
-            </tr>
-            <tr>
-                <td><code>name</code></td>
-                <td>Char</td>
-                <td>Technical field name (e.g., "partner_id"). Custom fields start with "x_"</td>
-            </tr>
-            <tr>
-                <td><code>field_description</code></td>
-                <td>Char</td>
-                <td>Human-readable label shown in UI (e.g., "Customer")</td>
-            </tr>
-            <tr>
-                <td><code>model_id</code></td>
-                <td>Many2one</td>
-                <td>The model this field belongs to (ir.model)</td>
-            </tr>
-            <tr>
-                <td><code>ttype</code></td>
-                <td>Selection</td>
-                <td>Field type: char, integer, float, boolean, date, datetime, text, html, binary, selection, many2one, one2many, many2many, reference, monetary, properties</td>
-            </tr>
-            <tr>
-                <td><code>relation</code></td>
-                <td>Char</td>
-                <td>For relational fields: target model name (e.g., "res.partner")</td>
-            </tr>
-            <tr>
-                <td><code>relation_field</code></td>
-                <td>Char</td>
-                <td>For One2many: the Many2one field on the related model</td>
-            </tr>
-            <tr>
-                <td><code>required</code></td>
-                <td>Boolean</td>
-                <td>Field must have a value (cannot be empty)</td>
-            </tr>
-            <tr>
-                <td><code>readonly</code></td>
-                <td>Boolean</td>
-                <td>Field cannot be edited by users</td>
-            </tr>
-            <tr>
-                <td><code>index</code></td>
-                <td>Boolean</td>
-                <td>Database index for faster searches</td>
-            </tr>
-            <tr>
-                <td><code>store</code></td>
-                <td>Boolean</td>
-                <td>True = saved in database, False = computed on-the-fly</td>
-            </tr>
-            <tr>
-                <td><code>copied</code></td>
-                <td>Boolean</td>
-                <td>Value is copied when duplicating records</td>
-            </tr>
-            <tr>
-                <td><code>translate</code></td>
-                <td>Selection</td>
-                <td>Translation mode: standard, html_translate, xml_translate</td>
-            </tr>
-            <tr>
-                <td><code>company_dependent</code></td>
-                <td>Boolean</td>
-                <td>Different value per company (multi-company)</td>
-            </tr>
-            <tr>
-                <td><code>domain</code></td>
-                <td>Char</td>
-                <td>Filter for relational fields (e.g., "[('active','=',True)]")</td>
-            </tr>
-            <tr>
-                <td><code>on_delete</code></td>
-                <td>Selection</td>
-                <td>For Many2one: cascade, set null, or restrict</td>
-            </tr>
-            <tr>
-                <td><code>related</code></td>
-                <td>Char</td>
-                <td>Dot-path for related fields (e.g., "partner_id.email")</td>
-            </tr>
-            <tr>
-                <td><code>compute</code></td>
-                <td>Text</td>
-                <td>Python code for computed fields</td>
-            </tr>
-            <tr>
-                <td><code>depends</code></td>
-                <td>Char</td>
-                <td>Fields that trigger recomputation (e.g., "quantity,price_unit")</td>
-            </tr>
-            <tr>
-                <td><code>selection_ids</code></td>
-                <td>One2many</td>
-                <td>For Selection fields: the available options</td>
-            </tr>
-            <tr>
-                <td><code>state</code></td>
-                <td>Selection</td>
-                <td><code>manual</code> = Custom field, <code>base</code> = Defined in code</td>
-            </tr>
-            <tr>
-                <td><code>groups</code></td>
-                <td>Many2many</td>
-                <td>Security groups that can see this field</td>
-            </tr>
-        </table>
-
-        <div class="info-box">
-            <h4>Why This Matters</h4>
-            <ul>
-                <li><strong>Debugging</strong>: Check field properties when something isn't working as expected</li>
-                <li><strong>Studio</strong>: All custom fields you create are stored in ir.model.fields</li>
-                <li><strong>Export/Import</strong>: Understanding field metadata helps with data migration</li>
-                <li><strong>Security</strong>: Verify which fields are company_dependent or have access restrictions</li>
-            </ul>
-        </div>
-
-        <!-- Quick Tips -->
-        <h3>Quick Tips</h3>
-        <div class="tips-container">
-            <div class="tip-card">
-                <div class="tip-icon">💡</div>
-                <div class="tip-content">
-                    <p>Every model automatically gets 5 "magic" columns: <code>id</code>, <code>create_uid</code>, <code>create_date</code>, <code>write_uid</code>, <code>write_date</code>. These track who created/modified each record and when.</p>
-                </div>
-            </div>
-            <div class="tip-card">
-                <div class="tip-icon">💡</div>
-                <div class="tip-content">
-                    <p>Custom fields created via UI or XML must start with <code>x_</code>. Studio specifically uses <code>x_studio_</code> prefix.</p>
-                </div>
-            </div>
-            <div class="tip-card">
-                <div class="tip-icon">💡</div>
-                <div class="tip-content">
-                    <p>To find a model's technical name, enable Developer Mode, hover over any field, and the tooltip shows "Model:".</p>
-                </div>
-            </div>
-            <div class="tip-card">
-                <div class="tip-icon">💡</div>
-                <div class="tip-content">
-                    <p><code>_rec_name</code> controls what appears in dropdowns. If not set and no <code>name</code> field exists, it shows the record ID.</p>
-                </div>
-            </div>
-            <div class="tip-card">
-                <div class="tip-icon">💡</div>
-                <div class="tip-content">
-                    <p>Models use <code>_order</code> to define default sorting. For example, <code>sale.order</code> uses <code>_order = 'date_order desc, id desc'</code> to show newest records first.</p>
-                </div>
-            </div>
-        </div>
-
-        <!-- Practical Use Cases -->
-        <h3>Practical Use Cases</h3>
-        <div class="use-cases-container">
-            <div class="use-case-card">
-                <div class="use-case-scenario">Need temporary data for a multi-step wizard</div>
-                <div class="use-case-solution">Use <code>TransientModel</code> - records are automatically cleaned up after a configured time</div>
-            </div>
-            <div class="use-case-card">
-                <div class="use-case-scenario">A dropdown shows IDs instead of meaningful names</div>
-                <div class="use-case-solution">Ensure the model has a <code>name</code> field or set <code>_rec_name</code> to an existing field</div>
-            </div>
-            <div class="use-case-card">
-                <div class="use-case-scenario">Want to know which module created a model</div>
-                <div class="use-case-solution">Go to Settings → Technical → Models → check "In Apps" column</div>
-            </div>
-            <div class="use-case-card">
-                <div class="use-case-scenario">Need to see all fields on a model</div>
-                <div class="use-case-solution">Settings → Technical → Models → select model → "Fields" tab</div>
-            </div>
-            <div class="use-case-card">
-                <div class="use-case-scenario">Check how many records exist in a model</div>
-                <div class="use-case-solution">Settings → Technical → Models → "Count" column shows total records</div>
-            </div>
-        </div>
-
-        <!-- Common Mistakes -->
-        <h3>Common Mistakes</h3>
-        <div class="mistakes-container">
-            <div class="mistake-card">
-                <div class="mistake-header">
-                    <div class="mistake-icon">✕</div>
-                    <div class="mistake-title">Custom field name rejected</div>
-                </div>
-                <div class="mistake-body">
-                    <div class="mistake-cause">
-                        <span class="mistake-label">Cause</span>
-                        <span class="mistake-text">Field name doesn't start with <code>x_</code></span>
-                    </div>
-                    <div class="mistake-solution">
-                        <span class="mistake-label">Solution</span>
-                        <span class="mistake-text">All custom fields must use <code>x_</code> prefix (Studio adds <code>x_studio_</code> automatically)</span>
-                    </div>
-                </div>
-            </div>
-            <div class="mistake-card">
-                <div class="mistake-header">
-                    <div class="mistake-icon">✕</div>
-                    <div class="mistake-title">Dropdown shows IDs like "42"</div>
-                </div>
-                <div class="mistake-body">
-                    <div class="mistake-cause">
-                        <span class="mistake-label">Cause</span>
-                        <span class="mistake-text">No <code>_rec_name</code> set and no <code>name</code> field exists</span>
-                    </div>
-                    <div class="mistake-solution">
-                        <span class="mistake-label">Solution</span>
-                        <span class="mistake-text">Add a <code>name</code> field or configure <code>_rec_name</code> to point to an existing field</span>
-                    </div>
-                </div>
-            </div>
-            <div class="mistake-card">
-                <div class="mistake-header">
-                    <div class="mistake-icon">✕</div>
-                    <div class="mistake-title">Wizard data disappears</div>
-                </div>
-                <div class="mistake-body">
-                    <div class="mistake-cause">
-                        <span class="mistake-label">Cause</span>
-                        <span class="mistake-text">Using <code>TransientModel</code> which auto-deletes records</span>
-                    </div>
-                    <div class="mistake-solution">
-                        <span class="mistake-label">Solution</span>
-                        <span class="mistake-text">This is expected behavior - transient records auto-delete. Use regular <code>Model</code> for persistent data</span>
-                    </div>
-                </div>
-            </div>
-            <div class="mistake-card">
-                <div class="mistake-header">
-                    <div class="mistake-icon">✕</div>
-                    <div class="mistake-title">Can't find custom model in Technical menu</div>
-                </div>
-                <div class="mistake-body">
-                    <div class="mistake-cause">
-                        <span class="mistake-label">Cause</span>
-                        <span class="mistake-text">Model is transient (a wizard)</span>
-                    </div>
-                    <div class="mistake-solution">
-                        <span class="mistake-label">Solution</span>
-                        <span class="mistake-text">Transient models (wizards) don't appear in the Models list - this is normal</span>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Knowledge Check Quiz -->
-        <h3>Knowledge Check</h3>
-        <div class="quiz-container">
-            <div class="quiz-card" data-correct="a">
-                <div class="quiz-header">
-                    <div class="quiz-number">Q1</div>
-                    <div class="quiz-question">What's the difference between a regular Model and a TransientModel?</div>
-                </div>
-                <div class="quiz-options">
-                    <div class="quiz-option" data-option="a">
-                        <div class="quiz-option-letter">A</div>
-                        <div class="quiz-option-text">Model stores data permanently; TransientModel auto-deletes old records</div>
-                    </div>
-                    <div class="quiz-option" data-option="b">
-                        <div class="quiz-option-letter">B</div>
-                        <div class="quiz-option-text">Model is faster than TransientModel</div>
-                    </div>
-                    <div class="quiz-option" data-option="c">
-                        <div class="quiz-option-letter">C</div>
-                        <div class="quiz-option-text">TransientModel cannot have relationships</div>
-                    </div>
-                    <div class="quiz-option" data-option="d">
-                        <div class="quiz-option-letter">D</div>
-                        <div class="quiz-option-text">There is no difference</div>
-                    </div>
-                </div>
-                <div class="quiz-answer">
-                    <div class="quiz-answer-label">Correct Answer: A</div>
-                    <div class="quiz-explanation">TransientModel is used for wizards. Records are automatically cleaned up based on time/count limits configured in the system.</div>
-                </div>
-            </div>
-
-            <div class="quiz-card" data-correct="b">
-                <div class="quiz-header">
-                    <div class="quiz-number">Q2</div>
-                    <div class="quiz-question">Which columns does Odoo automatically add to every record?</div>
-                </div>
-                <div class="quiz-options">
-                    <div class="quiz-option" data-option="a">
-                        <div class="quiz-option-letter">A</div>
-                        <div class="quiz-option-text">id, name, active</div>
-                    </div>
-                    <div class="quiz-option" data-option="b">
-                        <div class="quiz-option-letter">B</div>
-                        <div class="quiz-option-text">id, create_uid, create_date, write_uid, write_date</div>
-                    </div>
-                    <div class="quiz-option" data-option="c">
-                        <div class="quiz-option-letter">C</div>
-                        <div class="quiz-option-text">id, sequence, parent_id</div>
-                    </div>
-                    <div class="quiz-option" data-option="d">
-                        <div class="quiz-option-letter">D</div>
-                        <div class="quiz-option-text">id, company_id, user_id</div>
-                    </div>
-                </div>
-                <div class="quiz-answer">
-                    <div class="quiz-answer-label">Correct Answer: B</div>
-                    <div class="quiz-explanation">These "magic columns" track record creation and modification. Useful for auditing who changed what and when.</div>
-                </div>
-            </div>
-
-            <div class="quiz-card" data-correct="c">
-                <div class="quiz-header">
-                    <div class="quiz-number">Q3</div>
-                    <div class="quiz-question">You created a custom field via Studio but can't find it in the database. What prefix should it have?</div>
-                </div>
-                <div class="quiz-options">
-                    <div class="quiz-option" data-option="a">
-                        <div class="quiz-option-letter">A</div>
-                        <div class="quiz-option-text">custom_</div>
-                    </div>
-                    <div class="quiz-option" data-option="b">
-                        <div class="quiz-option-letter">B</div>
-                        <div class="quiz-option-text">studio_</div>
-                    </div>
-                    <div class="quiz-option" data-option="c">
-                        <div class="quiz-option-letter">C</div>
-                        <div class="quiz-option-text">x_studio_</div>
-                    </div>
-                    <div class="quiz-option" data-option="d">
-                        <div class="quiz-option-letter">D</div>
-                        <div class="quiz-option-text">field_</div>
-                    </div>
-                </div>
-                <div class="quiz-answer">
-                    <div class="quiz-answer-label">Correct Answer: C</div>
-                    <div class="quiz-explanation">Studio fields use <code>x_studio_</code> prefix. Manual custom fields (via UI or XML) use <code>x_</code> prefix.</div>
-                </div>
-            </div>
-
-            <div class="quiz-card" data-correct="b">
-                <div class="quiz-header">
-                    <div class="quiz-number">Q4</div>
-                    <div class="quiz-question">A dropdown field shows record IDs (like "42") instead of names. What's likely missing?</div>
-                </div>
-                <div class="quiz-options">
-                    <div class="quiz-option" data-option="a">
-                        <div class="quiz-option-letter">A</div>
-                        <div class="quiz-option-text">The active field</div>
-                    </div>
-                    <div class="quiz-option" data-option="b">
-                        <div class="quiz-option-letter">B</div>
-                        <div class="quiz-option-text">The _rec_name attribute or a name field</div>
-                    </div>
-                    <div class="quiz-option" data-option="c">
-                        <div class="quiz-option-letter">C</div>
-                        <div class="quiz-option-text">Access rights</div>
-                    </div>
-                    <div class="quiz-option" data-option="d">
-                        <div class="quiz-option-letter">D</div>
-                        <div class="quiz-option-text">The field's domain</div>
-                    </div>
-                </div>
-                <div class="quiz-answer">
-                    <div class="quiz-answer-label">Correct Answer: B</div>
-                    <div class="quiz-explanation"><code>_rec_name</code> tells Odoo which field to display in dropdowns. If not set and no <code>name</code> field exists, it shows the ID.</div>
-                </div>
-            </div>
         </div>
 
         <!-- ==================== SECTION 3: FIELD TYPES ==================== -->
@@ -2485,9 +2642,9 @@
             </ol>
 
             <p><strong>Example breakdown:</strong></p>
-            <pre style="background: #1e293b; color: #e2e8f0; padding: 16px; border-radius: 8px;"><code style="background: transparent; color: inherit;">[('state', '=', 'draft'), ('amount', '>', 1000)]
- <span style="color: #fbbf24;">↓</span>         <span style="color: #fbbf24;">↓</span>       <span style="color: #fbbf24;">↓</span>
- <span style="color: #60a5fa;">field</span>   <span style="color: #34d399;">operator</span>  <span style="color: #f472b6;">value</span></code></pre>
+            <pre><code>[('state', '=', 'draft'), ('amount', '>', 1000)]
+ ↓         ↓       ↓
+ field   operator  value</code></pre>
 
             <p><strong>Default behavior:</strong> Multiple conditions are combined with AND (all must be true).</p>
         </div>
@@ -2762,29 +2919,29 @@ domain="[('company_id', '=?', company_id)]"
             <p><strong>Key rule:</strong> The operator applies to the conditions that follow it.</p>
 
             <p><strong>Simple OR:</strong></p>
-            <pre style="background: #1e293b; color: #e2e8f0; padding: 16px; border-radius: 8px;"><code style="background: transparent; color: inherit;">['|', ('state', '=', 'draft'), ('state', '=', 'sent')]
-  <span style="color: #fbbf24;">↓</span>         <span style="color: #fbbf24;">↓</span>                        <span style="color: #fbbf24;">↓</span>
- <span style="color: #f472b6;">OR</span>    <span style="color: #60a5fa;">first condition</span>        <span style="color: #60a5fa;">second condition</span>
+            <pre><code>['|', ('state', '=', 'draft'), ('state', '=', 'sent')]
+  ↓         ↓                        ↓
+ OR    first condition        second condition
 
-<span style="color: #34d399;">→ state is draft OR state is sent</span></code></pre>
+→ state is draft OR state is sent</code></pre>
 
             <p><strong>Chained OR (A OR B OR C):</strong></p>
-            <pre style="background: #1e293b; color: #e2e8f0; padding: 16px; border-radius: 8px;"><code style="background: transparent; color: inherit;">['|', '|', ('a', '=', 1), ('b', '=', 2), ('c', '=', 3)]
-  <span style="color: #fbbf24;">↓</span>    <span style="color: #fbbf24;">↓</span>       <span style="color: #fbbf24;">↓</span>              <span style="color: #fbbf24;">↓</span>              <span style="color: #fbbf24;">↓</span>
- <span style="color: #f472b6;">OR</span>   <span style="color: #f472b6;">OR</span>      <span style="color: #60a5fa;">A</span>              <span style="color: #60a5fa;">B</span>              <span style="color: #60a5fa;">C</span>
+            <pre><code>['|', '|', ('a', '=', 1), ('b', '=', 2), ('c', '=', 3)]
+  ↓    ↓       ↓              ↓              ↓
+ OR   OR      A              B              C
 
-<span style="color: #94a3b8;">→ First | applies to (result of second |) and C</span>
-<span style="color: #94a3b8;">→ Second | applies to A and B</span>
-<span style="color: #34d399;">→ Final: A OR B OR C</span></code></pre>
+→ First | applies to (result of second |) and C
+→ Second | applies to A and B
+→ Final: A OR B OR C</code></pre>
 
             <p><strong>Mixed AND/OR (A AND (B OR C)):</strong></p>
-            <pre style="background: #1e293b; color: #e2e8f0; padding: 16px; border-radius: 8px;"><code style="background: transparent; color: inherit;">['&', ('a', '=', 1), '|', ('b', '=', 2), ('c', '=', 3)]
-  <span style="color: #fbbf24;">↓</span>       <span style="color: #fbbf24;">↓</span>          <span style="color: #fbbf24;">↓</span>       <span style="color: #fbbf24;">↓</span>              <span style="color: #fbbf24;">↓</span>
- <span style="color: #a78bfa;">AND</span>      <span style="color: #60a5fa;">A</span>         <span style="color: #f472b6;">OR</span>       <span style="color: #60a5fa;">B</span>              <span style="color: #60a5fa;">C</span>
+            <pre><code>['&', ('a', '=', 1), '|', ('b', '=', 2), ('c', '=', 3)]
+  ↓       ↓          ↓       ↓              ↓
+ AND      A         OR       B              C
 
-<span style="color: #94a3b8;">→ & applies to A and (result of |)</span>
-<span style="color: #94a3b8;">→ | applies to B and C</span>
-<span style="color: #34d399;">→ Final: A AND (B OR C)</span></code></pre>
+→ & applies to A and (result of |)
+→ | applies to B and C
+→ Final: A AND (B OR C)</code></pre>
         </div>
 
         <div class="success-box">
@@ -5020,1123 +5177,6 @@ Content-Type: text/xml
             </tr>
         </table>
 
-        <!-- ==================== SECTION 20: ODOO.SH ==================== -->
-        <h2 id="odoosh">20. Odoo.sh - The Cloud Platform</h2>
-
-        <div class="info-box">
-            <h4>What is Odoo.sh?</h4>
-            <p>Odoo.sh is Odoo's official cloud hosting platform. Think of it as a managed environment where your Odoo instance lives, with automatic backups, updates, and professional infrastructure - all handled by Odoo's team.</p>
-        </div>
-
-        <h3>Why Odoo.sh Matters for Consultants</h3>
-        <p>Understanding Odoo.sh helps you:</p>
-        <ul>
-            <li><strong>Communicate with developers</strong> - Know the terminology when discussing deployments</li>
-            <li><strong>Understand project timelines</strong> - Know why testing happens in stages</li>
-            <li><strong>Troubleshoot issues</strong> - Know where to look when something goes wrong</li>
-            <li><strong>Advise clients</strong> - Explain hosting options and their benefits</li>
-        </ul>
-
-        <h3>The Three Environments</h3>
-        <p>Odoo.sh organizes your project into three distinct environments, like three separate copies of your Odoo:</p>
-
-        <div class="comparison-grid" style="grid-template-columns: repeat(3, 1fr);">
-            <div class="comparison-card" style="border-left: 4px solid #ef4444;">
-                <h4>🔴 Production</h4>
-                <p><strong>The live system</strong></p>
-                <ul>
-                    <li>Real users work here</li>
-                    <li>Real business data</li>
-                    <li>Only ONE production environment</li>
-                    <li>Automatic daily backups</li>
-                    <li>Emails are sent for real</li>
-                </ul>
-                <p><em>Like: The actual store where customers shop</em></p>
-            </div>
-            <div class="comparison-card" style="border-left: 4px solid #f59e0b;">
-                <h4>🟡 Staging</h4>
-                <p><strong>The testing ground</strong></p>
-                <ul>
-                    <li>Copy of production data</li>
-                    <li>Test new features safely</li>
-                    <li>Emails are captured (not sent)</li>
-                    <li>Scheduled actions disabled</li>
-                    <li>Can have multiple staging branches</li>
-                </ul>
-                <p><em>Like: A training store with real inventory counts</em></p>
-            </div>
-            <div class="comparison-card" style="border-left: 4px solid #10b981;">
-                <h4>🟢 Development</h4>
-                <p><strong>The sandbox</strong></p>
-                <ul>
-                    <li>Fresh database each build</li>
-                    <li>Demo data loaded</li>
-                    <li>Automated tests run</li>
-                    <li>Safe to experiment</li>
-                    <li>Unlimited development branches</li>
-                </ul>
-                <p><em>Like: A playground store for training</em></p>
-            </div>
-        </div>
-
-        <h3>The Deployment Flow</h3>
-        <div class="mechanism-box">
-            <h4>How Changes Move to Production</h4>
-            <div style="background: #1e293b; padding: 20px; border-radius: 8px; text-align: center; font-size: 16px; color: #fff; font-family: monospace;">
-                <div style="display: flex; justify-content: space-around; align-items: center; flex-wrap: wrap; gap: 10px;">
-                    <div style="text-align: center;">
-                        <div style="background: #10b981; color: #fff; padding: 12px 20px; border-radius: 8px; font-weight: bold;">Development</div>
-                        <div style="margin-top: 8px; color: #94a3b8;">Build &amp; Test</div>
-                    </div>
-                    <div style="font-size: 24px; color: #64748b;">→</div>
-                    <div style="text-align: center;">
-                        <div style="background: #f59e0b; color: #fff; padding: 12px 20px; border-radius: 8px; font-weight: bold;">Staging</div>
-                        <div style="margin-top: 8px; color: #94a3b8;">Test with Real Data</div>
-                    </div>
-                    <div style="font-size: 24px; color: #64748b;">→</div>
-                    <div style="text-align: center;">
-                        <div style="background: #ef4444; color: #fff; padding: 12px 20px; border-radius: 8px; font-weight: bold;">Production</div>
-                        <div style="margin-top: 8px; color: #94a3b8;">Go Live</div>
-                    </div>
-                </div>
-            </div>
-            <p style="margin-top: 15px;"><strong>Why this matters:</strong> New customizations are tested with actual business data (in staging) before going live. This catches problems before they affect real users.</p>
-        </div>
-
-        <h3>Development Branches: Testing & Build Status</h3>
-        <p>Every time code is pushed to a development branch, Odoo.sh automatically:</p>
-        <ol>
-            <li>Creates a fresh database with demo data</li>
-            <li>Installs all modules from your repository</li>
-            <li>Runs <strong>all automated tests</strong> (thousands of test cases)</li>
-            <li>Marks the build with a status color</li>
-        </ol>
-
-        <div class="comparison-grid" style="grid-template-columns: repeat(3, 1fr);">
-            <div class="comparison-card" style="border-left: 4px solid #10b981; background: #f0fdf4;">
-                <h4 style="color: #10b981;">🟢 Green Build</h4>
-                <p><strong>All tests passed</strong></p>
-                <ul>
-                    <li>Code is working correctly</li>
-                    <li>No errors detected</li>
-                    <li>Safe to promote to staging</li>
-                </ul>
-            </div>
-            <div class="comparison-card" style="border-left: 4px solid #f59e0b; background: #fffbeb;">
-                <h4 style="color: #f59e0b;">🟡 Yellow Build</h4>
-                <p><strong>Warnings present</strong></p>
-                <ul>
-                    <li>Tests passed but with warnings</li>
-                    <li>Deprecated code detected</li>
-                    <li>Review logs before proceeding</li>
-                </ul>
-            </div>
-            <div class="comparison-card" style="border-left: 4px solid #ef4444; background: #fef2f2;">
-                <h4 style="color: #ef4444;">🔴 Red Build</h4>
-                <p><strong>Build failed</strong></p>
-                <ul>
-                    <li>Tests failed or errors occurred</li>
-                    <li>Code needs fixing</li>
-                    <li>Check logs to find the issue</li>
-                </ul>
-            </div>
-        </div>
-
-        <h3>How to Check Build Logs</h3>
-        <div class="info-box">
-            <h4>Finding Error Details</h4>
-            <p>When a build is yellow or red, you need to check the logs to understand what went wrong:</p>
-            <ol>
-                <li>Go to your Odoo.sh project dashboard</li>
-                <li>Click on the branch with the issue</li>
-                <li>Click the <strong>"Logs"</strong> tab</li>
-                <li>Look for lines with <code>ERROR</code> or <code>WARNING</code></li>
-                <li>The log shows exactly which test failed and why</li>
-            </ol>
-            <p><strong>Tip:</strong> Search for "FAIL" or "Error" in the log to quickly find problems.</p>
-        </div>
-
-        <h3>Key Features You Should Know</h3>
-
-        <table>
-            <tr>
-                <th>Feature</th>
-                <th>What It Does</th>
-                <th>Why It Matters</th>
-            </tr>
-            <tr>
-                <td><strong>Automatic Backups</strong></td>
-                <td>Daily backups kept for weeks</td>
-                <td>Data can be restored if something goes wrong</td>
-            </tr>
-            <tr>
-                <td><strong>Mail Catcher</strong></td>
-                <td>Captures emails in staging/dev</td>
-                <td>Test email workflows without spamming real customers</td>
-            </tr>
-            <tr>
-                <td><strong>One-Click Restore</strong></td>
-                <td>Restore any backup instantly</td>
-                <td>Recover from mistakes quickly</td>
-            </tr>
-            <tr>
-                <td><strong>Monitoring Dashboard</strong></td>
-                <td>Shows server health and performance</td>
-                <td>Identify slow processes or resource issues</td>
-            </tr>
-            <tr>
-                <td><strong>Logs</strong></td>
-                <td>Detailed activity records</td>
-                <td>Troubleshoot errors by seeing what happened</td>
-            </tr>
-            <tr>
-                <td><strong>Shell Access</strong></td>
-                <td>Direct server command line</td>
-                <td>Developers can debug directly on the server</td>
-            </tr>
-            <tr>
-                <td><strong>Online Editor</strong></td>
-                <td>Edit code directly in browser</td>
-                <td>Quick fixes without local setup</td>
-            </tr>
-        </table>
-
-        <h3>Understanding Builds</h3>
-        <p>Every time code is pushed to Odoo.sh, a "build" happens:</p>
-
-        <div class="info-box">
-            <h4>Build Status Indicators</h4>
-            <ul>
-                <li><strong style="color: #10b981;">✓ Success (Green)</strong> - Everything works, changes are live</li>
-                <li><strong style="color: #f59e0b;">⚠ Warning (Yellow)</strong> - Works but has minor issues</li>
-                <li><strong style="color: #ef4444;">✗ Failed (Red)</strong> - Something broke, previous version still runs</li>
-            </ul>
-            <p><strong>Safety Feature:</strong> If a build fails, the previous working version continues running. Your production never goes down due to a bad update.</p>
-        </div>
-
-        <h3>Backup Strategy</h3>
-        <p>Odoo.sh automatically maintains backups across three data centers:</p>
-        <ul>
-            <li><strong>7 daily backups</strong> - One for each of the last 7 days</li>
-            <li><strong>4 weekly backups</strong> - One for each of the last 4 weeks</li>
-            <li><strong>3 monthly backups</strong> - One for each of the last 3 months</li>
-        </ul>
-        <p>Each backup includes: database, attachments, and logs.</p>
-
-        <h3>Upgrade Process</h3>
-        <div class="warning-box">
-            <h4>How Version Upgrades Work</h4>
-            <p>When upgrading Odoo versions (e.g., 17 → 18):</p>
-            <ol>
-                <li>Odoo.sh takes your latest production backup</li>
-                <li>Sends it to Odoo's upgrade platform</li>
-                <li>Returns an upgraded database to a staging branch</li>
-                <li>You test the upgraded version thoroughly</li>
-                <li>When ready, deploy to production</li>
-            </ol>
-            <p><strong>Important:</strong> Custom modules need to be updated separately by developers to work with the new version.</p>
-        </div>
-
-        <h3>Staging vs Production: Key Differences</h3>
-        <table>
-            <tr>
-                <th>Aspect</th>
-                <th>Staging</th>
-                <th>Production</th>
-            </tr>
-            <tr>
-                <td>Emails</td>
-                <td>Captured (viewable in Mail Catcher)</td>
-                <td>Actually sent to recipients</td>
-            </tr>
-            <tr>
-                <td>Scheduled Actions</td>
-                <td>Disabled by default</td>
-                <td>Run as configured</td>
-            </tr>
-            <tr>
-                <td>Data</td>
-                <td>Copy of production (refreshed each build)</td>
-                <td>Real, live data</td>
-            </tr>
-            <tr>
-                <td>Automatic Backups</td>
-                <td>No</td>
-                <td>Yes (daily)</td>
-            </tr>
-            <tr>
-                <td>Payment Gateways</td>
-                <td>Test mode</td>
-                <td>Live transactions</td>
-            </tr>
-        </table>
-
-        <h3>Common Odoo.sh Terms</h3>
-        <table>
-            <tr>
-                <th>Term</th>
-                <th>Meaning</th>
-            </tr>
-            <tr>
-                <td><strong>Branch</strong></td>
-                <td>A version of your code (like a separate copy you can modify)</td>
-            </tr>
-            <tr>
-                <td><strong>Build</strong></td>
-                <td>The process of deploying code changes to a server</td>
-            </tr>
-            <tr>
-                <td><strong>Merge</strong></td>
-                <td>Combining code from one branch into another</td>
-            </tr>
-            <tr>
-                <td><strong>Push</strong></td>
-                <td>Sending code changes to Odoo.sh</td>
-            </tr>
-            <tr>
-                <td><strong>Repository</strong></td>
-                <td>Where all the code is stored (on GitHub)</td>
-            </tr>
-            <tr>
-                <td><strong>Commit</strong></td>
-                <td>A saved set of code changes</td>
-            </tr>
-            <tr>
-                <td><strong>Neutralized</strong></td>
-                <td>Staging database with emails/actions disabled</td>
-            </tr>
-        </table>
-
-        <h3>What Consultants Should Know</h3>
-        <div class="success-box">
-            <h4>Your Role with Odoo.sh</h4>
-            <ul>
-                <li><strong>Testing:</strong> When developers say "it's on staging," log in and test the changes with real scenarios</li>
-                <li><strong>Reporting Issues:</strong> Note the exact steps, time, and any error messages you see</li>
-                <li><strong>Configuration Changes:</strong> Remember that configuration done in staging doesn't automatically transfer to production - it must be coded or redone</li>
-                <li><strong>Timing:</strong> Understand that deployments take time - a complex change needs development → staging → production cycle</li>
-            </ul>
-        </div>
-
-        <div class="warning-box">
-            <h4>Common Misconception</h4>
-            <p><strong>Wrong:</strong> "I configured everything perfectly in staging, so production will have it too."</p>
-            <p><strong>Right:</strong> Only <em>code changes</em> move between branches. Database changes (records, settings, Studio customizations) must be either:</p>
-            <ul>
-                <li>Reconfigured manually in production, OR</li>
-                <li>Written as data files by developers to deploy automatically</li>
-            </ul>
-        </div>
-
-        <!-- ==================== SECTION 21: CHATTER & ACTIVITIES ==================== -->
-        <h2 id="chatter">21. Chatter, Followers & Activities</h2>
-
-        <div class="info-box">
-            <h4>What is the Chatter?</h4>
-            <p>The Chatter is the message log and communication hub that appears at the bottom of many Odoo records. It tracks all changes, messages, and activities related to that record - like a built-in timeline.</p>
-        </div>
-
-        <h3>Where You'll See the Chatter</h3>
-        <p>The Chatter appears on records that need collaboration or history tracking:</p>
-        <ul>
-            <li><strong>Sales Orders</strong> - Customer communications, status changes</li>
-            <li><strong>Invoices</strong> - Payment reminders, notes</li>
-            <li><strong>CRM Leads/Opportunities</strong> - Sales team discussions</li>
-            <li><strong>Projects & Tasks</strong> - Team collaboration</li>
-            <li><strong>Helpdesk Tickets</strong> - Customer support threads</li>
-            <li><strong>Purchase Orders</strong> - Vendor communications</li>
-            <li><strong>HR Applications</strong> - Interview notes, evaluations</li>
-        </ul>
-
-        <h3>The Three Parts of Chatter</h3>
-
-        <div class="comparison-grid" style="grid-template-columns: repeat(3, 1fr);">
-            <div class="comparison-card">
-                <h4>📝 Messages</h4>
-                <p><strong>What it shows:</strong></p>
-                <ul>
-                    <li>Internal notes (team only)</li>
-                    <li>Emails sent/received</li>
-                    <li>Automatic notifications</li>
-                </ul>
-                <p><em>Icon: Speech bubble</em></p>
-            </div>
-            <div class="comparison-card">
-                <h4>📅 Activities</h4>
-                <p><strong>What it shows:</strong></p>
-                <ul>
-                    <li>Scheduled tasks (calls, meetings)</li>
-                    <li>Due dates and reminders</li>
-                    <li>Assigned responsibilities</li>
-                </ul>
-                <p><em>Icon: Clock</em></p>
-            </div>
-            <div class="comparison-card">
-                <h4>👥 Followers</h4>
-                <p><strong>What it shows:</strong></p>
-                <ul>
-                    <li>Who receives notifications</li>
-                    <li>Customers and team members</li>
-                    <li>Subscription preferences</li>
-                </ul>
-                <p><em>Icon: Person/People</em></p>
-            </div>
-        </div>
-
-        <h3>Understanding Message Types</h3>
-
-        <table>
-            <tr>
-                <th>Type</th>
-                <th>Who Sees It</th>
-                <th>When to Use</th>
-            </tr>
-            <tr>
-                <td><strong>Log Note</strong></td>
-                <td>Internal users only</td>
-                <td>Team discussions, private comments, internal reminders</td>
-            </tr>
-            <tr>
-                <td><strong>Send Message</strong></td>
-                <td>Selected recipients (followers)</td>
-                <td>Communicating with customers, vendors, or external parties</td>
-            </tr>
-            <tr>
-                <td><strong>System Messages</strong></td>
-                <td>All followers</td>
-                <td>Automatic: status changes, field updates, assignments</td>
-            </tr>
-        </table>
-
-        <div class="warning-box">
-            <h4>Critical Difference: Log Note vs Send Message</h4>
-            <p><strong>Log Note:</strong> Never leaves Odoo. Perfect for "Customer called, seemed upset" type notes.</p>
-            <p><strong>Send Message:</strong> Can send actual emails to followers. Be careful - customers might be followers!</p>
-            <p><strong>Tip:</strong> Always check the recipient list before clicking "Send".</p>
-        </div>
-
-        <h3>Understanding Followers</h3>
-        <p>Followers are users or contacts who receive notifications about a record.</p>
-
-        <div class="mechanism-box">
-            <h4>How Someone Becomes a Follower</h4>
-            <ul>
-                <li><strong>Automatically:</strong> Salesperson assigned to a lead, customer on their order</li>
-                <li><strong>Manually:</strong> Click "Add Followers" button</li>
-                <li><strong>By Messaging:</strong> When you mention someone (@username), they become a follower</li>
-            </ul>
-        </div>
-
-        <h4>Follower Subscription Types</h4>
-        <p>Followers can choose what notifications they receive:</p>
-        <ul>
-            <li><strong>All Messages</strong> - Every update, every message</li>
-            <li><strong>Comments Only</strong> - Only direct messages, not system logs</li>
-            <li><strong>Not Following</strong> - No notifications (but can still view if they have access)</li>
-        </ul>
-
-        <h3>Activities: Scheduling Follow-ups</h3>
-        <p>Activities are scheduled tasks linked to a specific record. They help ensure nothing falls through the cracks.</p>
-
-        <table>
-            <tr>
-                <th>Activity Type</th>
-                <th>Common Use</th>
-            </tr>
-            <tr>
-                <td><strong>To Do</strong></td>
-                <td>General tasks: "Review contract", "Update pricing"</td>
-            </tr>
-            <tr>
-                <td><strong>Call</strong></td>
-                <td>Phone follow-ups: "Call customer about renewal"</td>
-            </tr>
-            <tr>
-                <td><strong>Meeting</strong></td>
-                <td>Schedule meetings: "Demo presentation"</td>
-            </tr>
-            <tr>
-                <td><strong>Email</strong></td>
-                <td>Email reminders: "Send proposal by Friday"</td>
-            </tr>
-            <tr>
-                <td><strong>Upload Document</strong></td>
-                <td>Document tasks: "Attach signed contract"</td>
-            </tr>
-        </table>
-
-        <div class="success-box">
-            <h4>Activity Due Date Colors</h4>
-            <ul>
-                <li><strong style="color: #10b981;">Green</strong> - Due in the future, you're on track</li>
-                <li><strong style="color: #f59e0b;">Orange</strong> - Due today, needs attention</li>
-                <li><strong style="color: #ef4444;">Red</strong> - Overdue, requires immediate action</li>
-            </ul>
-        </div>
-
-        <h3>Tracking Field Changes</h3>
-        <p>Some fields have "tracking" enabled, meaning changes are logged in the Chatter automatically.</p>
-
-        <div class="info-box">
-            <h4>Common Tracked Fields</h4>
-            <ul>
-                <li><strong>Status/Stage</strong> - "Stage changed from 'New' to 'Qualified'"</li>
-                <li><strong>Assigned User</strong> - "Salesperson changed from John to Sarah"</li>
-                <li><strong>Expected Revenue</strong> - "Expected Revenue changed from $10,000 to $15,000"</li>
-                <li><strong>Priority</strong> - "Priority changed from 'Normal' to 'Urgent'"</li>
-            </ul>
-            <p>This creates an audit trail showing who changed what and when.</p>
-        </div>
-
-        <h3>Practical Tips</h3>
-
-        <div class="foundation-box">
-            <h4>Best Practices for Chatter</h4>
-            <ul>
-                <li><strong>Use @mentions:</strong> Type @ followed by a name to notify specific people</li>
-                <li><strong>Attach files:</strong> Click the paperclip to add documents directly to the conversation</li>
-                <li><strong>Log notes for context:</strong> When taking over a record, check the Chatter for history</li>
-                <li><strong>Schedule activities:</strong> Don't rely on memory - create activities for follow-ups</li>
-                <li><strong>Check followers before sending:</strong> Know who will receive your message</li>
-            </ul>
-        </div>
-
-        <!-- ==================== SECTION 22: EMAIL CONFIGURATION ==================== -->
-        <h2 id="emails">22. Email in Odoo</h2>
-
-        <div class="info-box">
-            <h4>How Email Works in Odoo</h4>
-            <p>Odoo can both send and receive emails. Outgoing emails deliver invoices, quotes, and notifications. Incoming emails can create leads, tickets, or update existing records.</p>
-        </div>
-
-        <h3>Email Flow Overview</h3>
-
-        <div class="mechanism-box">
-            <h4>Outgoing Emails</h4>
-            <div style="background: #1e293b; color: #e2e8f0; padding: 16px; border-radius: 8px; text-align: center; font-size: 14px; font-family: monospace; margin: 10px 0;">
-                <span style="color: #60a5fa;">User clicks "Send"</span> → <span style="color: #fbbf24;">Odoo creates email</span> → <span style="color: #a78bfa;">Outgoing Server (SMTP)</span> → <span style="color: #34d399;">Recipient's inbox</span>
-            </div>
-            <h4 style="margin-top: 20px;">Incoming Emails</h4>
-            <div style="background: #1e293b; color: #e2e8f0; padding: 16px; border-radius: 8px; text-align: center; font-size: 14px; font-family: monospace; margin: 10px 0;">
-                <span style="color: #34d399;">Customer sends email</span> → <span style="color: #a78bfa;">Incoming Server (IMAP)</span> → <span style="color: #fbbf24;">Odoo processes</span> → <span style="color: #60a5fa;">Creates/updates record</span>
-            </div>
-        </div>
-
-        <h3>Common Email Features</h3>
-
-        <table>
-            <tr>
-                <th>Feature</th>
-                <th>What It Does</th>
-                <th>Example</th>
-            </tr>
-            <tr>
-                <td><strong>Email Templates</strong></td>
-                <td>Pre-written emails with dynamic placeholders</td>
-                <td>Invoice reminder that auto-fills customer name and amount</td>
-            </tr>
-            <tr>
-                <td><strong>Email Alias</strong></td>
-                <td>Auto-create records from emails to specific addresses</td>
-                <td>sales@company.com creates new CRM leads</td>
-            </tr>
-            <tr>
-                <td><strong>Mail Gateway</strong></td>
-                <td>Route incoming emails to correct records</td>
-                <td>Reply to invoice email updates that invoice's chatter</td>
-            </tr>
-            <tr>
-                <td><strong>Scheduled Emails</strong></td>
-                <td>Queue emails to send later</td>
-                <td>Send newsletter at 9 AM tomorrow</td>
-            </tr>
-        </table>
-
-        <h3>Email Aliases</h3>
-        <p>Aliases automatically create records when emails arrive at specific addresses.</p>
-
-        <div class="comparison-grid">
-            <div class="comparison-card">
-                <h4>Sales Alias</h4>
-                <p><code>sales@yourcompany.com</code></p>
-                <p>→ Creates new CRM Lead</p>
-            </div>
-            <div class="comparison-card">
-                <h4>Support Alias</h4>
-                <p><code>support@yourcompany.com</code></p>
-                <p>→ Creates Helpdesk Ticket</p>
-            </div>
-            <div class="comparison-card">
-                <h4>Jobs Alias</h4>
-                <p><code>jobs@yourcompany.com</code></p>
-                <p>→ Creates HR Application</p>
-            </div>
-        </div>
-
-        <h3>Troubleshooting Email Issues</h3>
-
-        <div class="warning-box">
-            <h4>Common Email Problems</h4>
-            <table style="width: 100%; margin-top: 10px;">
-                <tr>
-                    <th>Problem</th>
-                    <th>Possible Cause</th>
-                    <th>Where to Check</th>
-                </tr>
-                <tr>
-                    <td>Emails not sending</td>
-                    <td>Outgoing server misconfigured</td>
-                    <td>Settings → Technical → Outgoing Mail Servers</td>
-                </tr>
-                <tr>
-                    <td>Emails in outbox stuck</td>
-                    <td>Scheduled action not running</td>
-                    <td>Settings → Technical → Automation → Scheduled Actions</td>
-                </tr>
-                <tr>
-                    <td>Customer not receiving</td>
-                    <td>Spam filters, wrong email address</td>
-                    <td>Check contact's email, ask customer to check spam</td>
-                </tr>
-                <tr>
-                    <td>Incoming emails not creating records</td>
-                    <td>Alias not configured, incoming server issue</td>
-                    <td>Settings → Technical → Incoming Mail Servers</td>
-                </tr>
-            </table>
-        </div>
-
-        <h3>Email Templates</h3>
-        <p>Templates save time by pre-filling common emails with dynamic data.</p>
-
-        <div class="info-box">
-            <h4>Dynamic Placeholders</h4>
-            <p>Templates use placeholders that get replaced with real data:</p>
-            <ul>
-                <li><code>{{ object.partner_id.name }}</code> → Customer's name</li>
-                <li><code>{{ object.amount_total }}</code> → Invoice total</li>
-                <li><code>{{ object.date_order }}</code> → Order date</li>
-                <li><code>{{ object.user_id.name }}</code> → Assigned salesperson</li>
-            </ul>
-            <p>You can view and edit templates at: Settings → Technical → Email → Email Templates</p>
-        </div>
-
-        <!-- ==================== SECTION 23: CONTEXT ==================== -->
-        <h2 id="context">23. Context - The Hidden Parameter</h2>
-
-        <div class="info-box">
-            <h4>What is Context?</h4>
-            <p>Context is invisible information that travels with every action in Odoo. It tells views and actions how to behave, what defaults to set, and how to filter data. Think of it as instructions whispered behind the scenes.</p>
-        </div>
-
-        <h3>What Context Controls</h3>
-
-        <table>
-            <tr>
-                <th>Context Key</th>
-                <th>What It Does</th>
-                <th>Example</th>
-            </tr>
-            <tr>
-                <td><code>default_*</code></td>
-                <td>Pre-fills fields when creating new records</td>
-                <td><code>default_partner_id: 5</code> pre-selects customer ID 5</td>
-            </tr>
-            <tr>
-                <td><code>search_default_*</code></td>
-                <td>Activates a search filter automatically</td>
-                <td><code>search_default_my_tasks: 1</code> shows only your tasks</td>
-            </tr>
-            <tr>
-                <td><code>group_by</code></td>
-                <td>Groups records by a field</td>
-                <td><code>group_by: stage_id</code> groups by stage</td>
-            </tr>
-            <tr>
-                <td><code>active_test</code></td>
-                <td>Controls whether archived records are shown</td>
-                <td><code>active_test: False</code> shows archived records too</td>
-            </tr>
-            <tr>
-                <td><code>lang</code></td>
-                <td>Sets the language for translations</td>
-                <td><code>lang: 'fr_FR'</code> shows French translations</td>
-            </tr>
-        </table>
-
-        <h3>Where You See Context in Action</h3>
-
-        <div class="mechanism-box">
-            <h4>Example: Sales Team Button</h4>
-            <p>When you click "Quotations" from a Sales Team, the context includes:</p>
-            <pre style="background: #1e293b; color: #e2e8f0; padding: 16px; border-radius: 8px; font-size: 14px;">
-{
-    'default_team_id': 3,           <span style="color: #10b981;">// New quotes get this team</span>
-    'search_default_team_id': 3,    <span style="color: #10b981;">// Filter shows only this team's quotes</span>
-}</pre>
-            <p>This is why you only see that team's quotations, and new ones are assigned to that team automatically.</p>
-        </div>
-
-        <h3>Common Context Patterns</h3>
-
-        <div class="comparison-grid">
-            <div class="comparison-card">
-                <h4>Smart Buttons</h4>
-                <p>The "Invoices" button on a customer uses context to filter:</p>
-                <p><code>search_default_partner_id</code></p>
-                <p>Shows only that customer's invoices</p>
-            </div>
-            <div class="comparison-card">
-                <h4>Kanban Views</h4>
-                <p>CRM Pipeline uses context:</p>
-                <p><code>group_by: stage_id</code></p>
-                <p>Groups opportunities by stage automatically</p>
-            </div>
-            <div class="comparison-card">
-                <h4>Create Buttons</h4>
-                <p>"New Task" in a project uses:</p>
-                <p><code>default_project_id</code></p>
-                <p>Links the task to current project</p>
-            </div>
-        </div>
-
-        <h3>Why Context Matters for Consultants</h3>
-
-        <div class="success-box">
-            <h4>Practical Uses</h4>
-            <ul>
-                <li><strong>Understanding Filters:</strong> When data seems filtered unexpectedly, check if context is applying a search_default</li>
-                <li><strong>Default Values:</strong> If new records auto-fill with specific values, it's likely from context defaults</li>
-                <li><strong>Studio Customization:</strong> When configuring menu items or buttons, you can set context to control behavior</li>
-                <li><strong>Debugging:</strong> Enable Developer Mode → Debug Menu → Edit Action to see the context being passed</li>
-            </ul>
-        </div>
-
-        <div class="warning-box">
-            <h4>Common Confusion</h4>
-            <p><strong>Problem:</strong> "I created a record but it's not showing in the list!"</p>
-            <p><strong>Cause:</strong> The list might have a <code>search_default_*</code> filter active that excludes your record.</p>
-            <p><strong>Solution:</strong> Clear all filters (click the ✕ on filter tags) to see all records.</p>
-        </div>
-
-        <!-- ==================== SECTION 24: CONSTRAINTS ==================== -->
-        <h2 id="constraints">24. Constraints - Data Validation Rules</h2>
-
-        <div class="info-box">
-            <h4>What Are Constraints?</h4>
-            <p>Constraints are rules that enforce data integrity. They're like bouncers at a club - they check if your data meets certain conditions before letting it in. If data doesn't meet the rules, Odoo shows an error and prevents saving.</p>
-        </div>
-
-        <h3>Why Constraints Exist</h3>
-
-        <p>Without constraints, users could:</p>
-        <ul>
-            <li>Enter negative values where only positive makes sense (like negative stock quantities)</li>
-            <li>Create duplicate records that should be unique (like two products with the same barcode)</li>
-            <li>Create circular relationships (Department A reports to B, B reports to A)</li>
-            <li>Enter invalid percentages (like 150% discount)</li>
-        </ul>
-
-        <p>Constraints catch these issues <strong>at save time</strong> and display a clear error message explaining what's wrong.</p>
-
-        <h3>Two Types of Constraints</h3>
-
-        <div class="comparison-grid" style="grid-template-columns: 1fr 1fr;">
-            <div class="comparison-card" style="border-left: 4px solid #0284c7;">
-                <h4>SQL Constraints</h4>
-                <p><strong>What:</strong> Rules enforced by the database itself</p>
-                <p><strong>When checked:</strong> When data is written to database</p>
-                <p><strong>Speed:</strong> Very fast (database-level)</p>
-                <p><strong>Best for:</strong></p>
-                <ul>
-                    <li>Uniqueness (no duplicates)</li>
-                    <li>Simple value checks (positive numbers)</li>
-                    <li>Required combinations</li>
-                </ul>
-                <p><strong>Example errors you'll see:</strong></p>
-                <p style="color: var(--error); font-style: italic;">"Code must be unique."</p>
-                <p style="color: var(--error); font-style: italic;">"Quotation validity days cannot be negative."</p>
-            </div>
-            <div class="comparison-card" style="border-left: 4px solid #7c3aed;">
-                <h4>Python Constraints</h4>
-                <p><strong>What:</strong> Custom validation logic in code</p>
-                <p><strong>When checked:</strong> Before data reaches database</p>
-                <p><strong>Flexibility:</strong> Can check anything (related records, complex logic)</p>
-                <p><strong>Best for:</strong></p>
-                <ul>
-                    <li>Business logic validation</li>
-                    <li>Cross-field checks</li>
-                    <li>Relationship validation</li>
-                </ul>
-                <p><strong>Example errors you'll see:</strong></p>
-                <p style="color: var(--error); font-style: italic;">"You cannot create recursive departments."</p>
-                <p style="color: var(--error); font-style: italic;">"Prepayment percentage must be a valid percentage."</p>
-            </div>
-        </div>
-
-        <h3>SQL vs Python Constraints: Decision Matrix</h3>
-
-        <p>When developers need to add validation rules, they must choose between SQL and Python constraints. Here's how to decide:</p>
-
-        <table class="field-table">
-            <thead>
-                <tr>
-                    <th>Scenario</th>
-                    <th>Use SQL</th>
-                    <th>Use Python</th>
-                    <th>Why</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr>
-                    <td><strong>Field must be globally unique</strong></td>
-                    <td style="color: #10b981; text-align: center;">✓</td>
-                    <td style="color: #ef4444; text-align: center;">✗</td>
-                    <td>Simple unique constraint, database-native</td>
-                </tr>
-                <tr>
-                    <td><strong>Unique with conditions</strong><br><span style="font-size: 12px; color: #64748b;">(per company, per parent, only when active)</span></td>
-                    <td style="color: #ef4444; text-align: center;">✗</td>
-                    <td style="color: #10b981; text-align: center;">✓</td>
-                    <td>Conditional uniqueness needs Python logic</td>
-                </tr>
-                <tr>
-                    <td><strong>Value must be positive</strong></td>
-                    <td style="color: #10b981; text-align: center;">✓</td>
-                    <td style="color: #ef4444; text-align: center;">✗</td>
-                    <td>Simple CHECK constraint, very fast</td>
-                </tr>
-                <tr>
-                    <td><strong>Value must be in range</strong></td>
-                    <td style="color: #10b981; text-align: center;">✓</td>
-                    <td style="color: #ef4444; text-align: center;">✗</td>
-                    <td>Simple CHECK constraint (e.g., 0-100)</td>
-                </tr>
-                <tr>
-                    <td><strong>Combination must be unique</strong></td>
-                    <td style="color: #10b981; text-align: center;">✓</td>
-                    <td style="color: #ef4444; text-align: center;">✗</td>
-                    <td>unique(field1, field2) is database-level</td>
-                </tr>
-                <tr>
-                    <td><strong>No circular references</strong></td>
-                    <td style="color: #ef4444; text-align: center;">✗</td>
-                    <td style="color: #10b981; text-align: center;">✓</td>
-                    <td>Requires traversing parent relationships</td>
-                </tr>
-                <tr>
-                    <td><strong>Check related records</strong></td>
-                    <td style="color: #ef4444; text-align: center;">✗</td>
-                    <td style="color: #10b981; text-align: center;">✓</td>
-                    <td>SQL can't check data in other tables</td>
-                </tr>
-                <tr>
-                    <td><strong>Conditional validation</strong></td>
-                    <td style="color: #ef4444; text-align: center;">✗</td>
-                    <td style="color: #10b981; text-align: center;">✓</td>
-                    <td>"Only check if other field is set"</td>
-                </tr>
-                <tr>
-                    <td><strong>Date comparison logic</strong></td>
-                    <td style="color: #ef4444; text-align: center;">✗</td>
-                    <td style="color: #10b981; text-align: center;">✓</td>
-                    <td>Complex date math needs Python</td>
-                </tr>
-                <tr>
-                    <td><strong>Multi-company checks</strong></td>
-                    <td style="color: #ef4444; text-align: center;">✗</td>
-                    <td style="color: #10b981; text-align: center;">✓</td>
-                    <td>Requires context and ORM access</td>
-                </tr>
-                <tr>
-                    <td><strong>Custom error messages</strong></td>
-                    <td style="color: #f59e0b; text-align: center;">~</td>
-                    <td style="color: #10b981; text-align: center;">✓</td>
-                    <td>SQL can have messages, but Python is more flexible</td>
-                </tr>
-            </tbody>
-        </table>
-
-        <h4>Pros and Cons Comparison</h4>
-
-        <div class="comparison-grid" style="grid-template-columns: 1fr 1fr;">
-            <div class="comparison-card" style="background: #eff6ff; border: 1px solid #bfdbfe;">
-                <h4 style="color: #1d4ed8;">SQL Constraints</h4>
-                <p><strong style="color: #10b981;">Pros:</strong></p>
-                <ul>
-                    <li>Extremely fast (database-native)</li>
-                    <li>100% reliable - can't be bypassed even by raw SQL</li>
-                    <li>Works even when ORM is bypassed</li>
-                    <li>Less code to maintain</li>
-                    <li>Enforced at the lowest level</li>
-                </ul>
-                <p><strong style="color: #ef4444;">Cons:</strong></p>
-                <ul>
-                    <li>Limited to single-table checks</li>
-                    <li>Can't access related records</li>
-                    <li>Error messages can be cryptic</li>
-                    <li>No access to Python logic or context</li>
-                    <li>Harder to test in isolation</li>
-                </ul>
-            </div>
-            <div class="comparison-card" style="background: #f5f3ff; border: 1px solid #ddd6fe;">
-                <h4 style="color: #6d28d9;">Python Constraints</h4>
-                <p><strong style="color: #10b981;">Pros:</strong></p>
-                <ul>
-                    <li>Full flexibility - any logic possible</li>
-                    <li>Access to ORM and related records</li>
-                    <li>Clear, customizable error messages</li>
-                    <li>Can use context and environment</li>
-                    <li>Easy to debug and test</li>
-                </ul>
-                <p><strong style="color: #ef4444;">Cons:</strong></p>
-                <ul>
-                    <li>Slower (runs Python code)</li>
-                    <li>Can be bypassed with raw SQL</li>
-                    <li>More code to maintain</li>
-                    <li>Only runs through ORM operations</li>
-                    <li>Must handle recordsets properly</li>
-                </ul>
-            </div>
-        </div>
-
-        <div class="foundation-box">
-            <h4>The Golden Rule for Developers</h4>
-            <p><strong>Use SQL constraints when possible, Python constraints when necessary.</strong></p>
-            <p>SQL constraints are simpler, faster, and more reliable. Only reach for Python when you need:</p>
-            <ul>
-                <li>To check data in other tables/models</li>
-                <li>Complex business logic that SQL can't express</li>
-                <li>Context-aware validation</li>
-                <li>Rich, dynamic error messages</li>
-            </ul>
-        </div>
-
-        <h3>Real Examples from Odoo 19</h3>
-
-        <h4>SQL Constraints (models.Constraint)</h4>
-
-        <p>These are defined in the model class and translated directly to database-level rules:</p>
-
-        <div class="comparison-grid" style="grid-template-columns: 1fr;">
-            <div class="comparison-card">
-                <h4>Example 1: Unique Code</h4>
-                <p><strong>Model:</strong> Link Tracker (for tracking marketing links)</p>
-                <pre style="background: #1e293b; color: #e2e8f0; padding: 16px; border-radius: 8px; font-size: 14px; overflow-x: auto;">
-<span style="color: #fbbf24;">_code</span> = models.Constraint(
-    <span style="color: #34d399;">'unique(code)'</span>,
-    <span style="color: #34d399;">'Code must be unique.'</span>,
-)</pre>
-                <p><strong>What it prevents:</strong> Two tracking links with the same short code</p>
-                <p><strong>User sees:</strong> Error when trying to create a link with an existing code</p>
-            </div>
-        </div>
-
-        <div class="comparison-grid" style="grid-template-columns: 1fr;">
-            <div class="comparison-card">
-                <h4>Example 2: Positive Value Only</h4>
-                <p><strong>Model:</strong> Company Settings (Sale module)</p>
-                <pre style="background: #1e293b; color: #e2e8f0; padding: 16px; border-radius: 8px; font-size: 14px; overflow-x: auto;">
-<span style="color: #fbbf24;">_check_quotation_validity_days</span> = models.Constraint(
-    <span style="color: #34d399;">'CHECK(quotation_validity_days >= 0)'</span>,
-    <span style="color: #34d399;">'You cannot set a negative number for the default quotation validity.'</span>,
-)</pre>
-                <p><strong>What it prevents:</strong> Negative expiration days on quotations</p>
-                <p><strong>User sees:</strong> Error when entering -5 for quotation validity</p>
-            </div>
-        </div>
-
-        <div class="comparison-grid" style="grid-template-columns: 1fr;">
-            <div class="comparison-card">
-                <h4>Example 3: Time Range Validation</h4>
-                <p><strong>Model:</strong> Lunch Supplier</p>
-                <pre style="background: #1e293b; color: #e2e8f0; padding: 16px; border-radius: 8px; font-size: 14px; overflow-x: auto;">
-<span style="color: #fbbf24;">_automatic_email_time_range</span> = models.Constraint(
-    <span style="color: #34d399;">'CHECK(automatic_email_time >= 0 AND automatic_email_time <= 12)'</span>,
-    <span style="color: #34d399;">'Automatic Email Sending Time should be between 0 and 12'</span>,
-)</pre>
-                <p><strong>What it prevents:</strong> Invalid hour values (must be 0-12 for AM/PM)</p>
-            </div>
-        </div>
-
-        <div class="comparison-grid" style="grid-template-columns: 1fr;">
-            <div class="comparison-card">
-                <h4>Example 4: Multi-Field Uniqueness</h4>
-                <p><strong>Model:</strong> Slide/Partner (eLearning)</p>
-                <pre style="background: #1e293b; color: #e2e8f0; padding: 16px; border-radius: 8px; font-size: 14px; overflow-x: auto;">
-<span style="color: #fbbf24;">_slide_partner_uniq</span> = models.Constraint(
-    <span style="color: #34d399;">'unique(slide_id, partner_id)'</span>,
-    <span style="color: #34d399;">'A partner membership to a slide must be unique!'</span>,
-)</pre>
-                <p><strong>What it prevents:</strong> Same user being enrolled twice in the same slide</p>
-                <p><strong>Note:</strong> The combination must be unique, not each field individually</p>
-            </div>
-        </div>
-
-        <h4>Python Constraints (@api.constrains)</h4>
-
-        <p>These use the <code>@api.constrains</code> decorator and can contain complex business logic:</p>
-
-        <div class="comparison-grid" style="grid-template-columns: 1fr;">
-            <div class="comparison-card">
-                <h4>Example 1: Preventing Circular References</h4>
-                <p><strong>Model:</strong> HR Department</p>
-                <pre style="background: #1e293b; color: #e2e8f0; padding: 16px; border-radius: 8px; font-size: 14px; overflow-x: auto;">
-<span style="color: #60a5fa;">@api.constrains</span>(<span style="color: #34d399;">'parent_id'</span>)
-<span style="color: #c084fc;">def</span> <span style="color: #fbbf24;">_check_parent_id</span>(self):
-    <span style="color: #c084fc;">if</span> self._has_cycle():
-        <span style="color: #c084fc;">raise</span> ValidationError(<span style="color: #34d399;">'You cannot create recursive departments.'</span>)</pre>
-                <p><strong>What it prevents:</strong> Department A → Parent: B → Parent: A (circular loop)</p>
-                <p><strong>Why Python:</strong> Checking for cycles requires traversing relationships - can't be done in SQL</p>
-            </div>
-        </div>
-
-        <div class="comparison-grid" style="grid-template-columns: 1fr;">
-            <div class="comparison-card">
-                <h4>Example 2: Percentage Validation</h4>
-                <p><strong>Model:</strong> Company Settings (prepayment)</p>
-                <pre style="background: #1e293b; color: #e2e8f0; padding: 16px; border-radius: 8px; font-size: 14px; overflow-x: auto;">
-<span style="color: #60a5fa;">@api.constrains</span>(<span style="color: #34d399;">'prepayment_percent'</span>)
-<span style="color: #c084fc;">def</span> <span style="color: #fbbf24;">_check_prepayment_percent</span>(self):
-    <span style="color: #c084fc;">for</span> company <span style="color: #c084fc;">in</span> self:
-        <span style="color: #c084fc;">if</span> company.portal_confirmation_pay <span style="color: #c084fc;">and not</span> (<span style="color: #f472b6;">0</span> < company.prepayment_percent <= <span style="color: #f472b6;">1.0</span>):
-            <span style="color: #c084fc;">raise</span> ValidationError(<span style="color: #34d399;">'Prepayment percentage must be a valid percentage.'</span>)</pre>
-                <p><strong>What it prevents:</strong> Invalid percentages like 0%, -10%, or 150%</p>
-                <p><strong>Why Python:</strong> The check depends on another field (portal_confirmation_pay)</p>
-            </div>
-        </div>
-
-        <div class="comparison-grid" style="grid-template-columns: 1fr;">
-            <div class="comparison-card">
-                <h4>Example 3: Cross-Company Product Validation</h4>
-                <p><strong>Model:</strong> Sale Order</p>
-                <pre style="background: #1e293b; color: #e2e8f0; padding: 16px; border-radius: 8px; font-size: 14px; overflow-x: auto;">
-<span style="color: #60a5fa;">@api.constrains</span>(<span style="color: #34d399;">'company_id'</span>, <span style="color: #34d399;">'order_line'</span>)
-<span style="color: #c084fc;">def</span> <span style="color: #fbbf24;">_check_order_line_company_id</span>(self):
-    <span style="color: #c084fc;">for</span> order <span style="color: #c084fc;">in</span> self:
-        companies = order.order_line.product_id.company_id
-        <span style="color: #c084fc;">if</span> companies <span style="color: #c084fc;">and</span> companies != order.company_id:
-            <span style="color: #c084fc;">raise</span> ValidationError(
-                <span style="color: #34d399;">'Your quotation contains products from another company.'</span>
-            )</pre>
-                <p><strong>What it prevents:</strong> Adding Company B's products to Company A's quotation</p>
-                <p><strong>Why Python:</strong> Requires checking related records across multiple models</p>
-            </div>
-        </div>
-
-        <h3>How to Identify Constraint Errors</h3>
-
-        <p>When you see a validation error popup in Odoo, it's usually from a constraint. Here's how to understand them:</p>
-
-        <div class="comparison-grid" style="grid-template-columns: 1fr 1fr;">
-            <div class="comparison-card" style="background: #fef2f2; border: 1px solid #fecaca;">
-                <h4 style="color: #dc2626;">SQL Constraint Error</h4>
-                <p>Usually appears as:</p>
-                <ul>
-                    <li>"duplicate key value violates unique constraint"</li>
-                    <li>"check constraint violated"</li>
-                    <li>Technical message followed by the custom error message</li>
-                </ul>
-                <p><strong>Fix:</strong> The value you're entering already exists or doesn't meet the rule</p>
-            </div>
-            <div class="comparison-card" style="background: #fef2f2; border: 1px solid #fecaca;">
-                <h4 style="color: #dc2626;">Python Constraint Error</h4>
-                <p>Usually appears as:</p>
-                <ul>
-                    <li>A clear message in a popup</li>
-                    <li>"Validation Error" in the title</li>
-                    <li>Human-readable explanation of the problem</li>
-                </ul>
-                <p><strong>Fix:</strong> Follow the instructions in the error message</p>
-            </div>
-        </div>
-
-        <h3>Common Constraints You'll Encounter</h3>
-
-        <table class="field-table">
-            <thead>
-                <tr>
-                    <th>Module</th>
-                    <th>What's Checked</th>
-                    <th>Error You'll See</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr>
-                    <td><strong>Products</strong></td>
-                    <td>Barcode uniqueness</td>
-                    <td>"Barcode must be unique."</td>
-                </tr>
-                <tr>
-                    <td><strong>HR</strong></td>
-                    <td>No recursive departments</td>
-                    <td>"You cannot create recursive departments."</td>
-                </tr>
-                <tr>
-                    <td><strong>Sale</strong></td>
-                    <td>Valid prepayment percentage</td>
-                    <td>"Prepayment percentage must be a valid percentage."</td>
-                </tr>
-                <tr>
-                    <td><strong>Sale</strong></td>
-                    <td>Confirmed orders need date</td>
-                    <td>"A confirmed sales order requires a confirmation date."</td>
-                </tr>
-                <tr>
-                    <td><strong>Accounting</strong></td>
-                    <td>Journal entry balance</td>
-                    <td>"The balance of the journal entry is not zero."</td>
-                </tr>
-                <tr>
-                    <td><strong>Stock</strong></td>
-                    <td>No negative on-hand (if configured)</td>
-                    <td>"It is not possible to have a negative quantity."</td>
-                </tr>
-                <tr>
-                    <td><strong>Partners</strong></td>
-                    <td>Valid email format</td>
-                    <td>"Invalid email address."</td>
-                </tr>
-                <tr>
-                    <td><strong>Categories</strong></td>
-                    <td>No recursive categories</td>
-                    <td>"Error! You cannot create recursive categories."</td>
-                </tr>
-            </tbody>
-        </table>
-
-        <h3>For Consultants: What This Means</h3>
-
-        <div class="success-box">
-            <h4>Key Takeaways</h4>
-            <ul>
-                <li><strong>Constraints protect data quality:</strong> They prevent mistakes before they happen</li>
-                <li><strong>Error messages are clues:</strong> Read them carefully - they tell you exactly what's wrong</li>
-                <li><strong>Can't be bypassed:</strong> Unlike access rights, constraints apply to everyone including admins</li>
-                <li><strong>Studio can't add them:</strong> Constraints require code - if you need custom validation, you need a developer</li>
-            </ul>
-        </div>
-
-        <div class="warning-box">
-            <h4>When Users Report Constraint Errors</h4>
-            <ol>
-                <li><strong>Read the error message</strong> - It usually explains the problem clearly</li>
-                <li><strong>Check for duplicates</strong> - Uniqueness constraints are the most common cause</li>
-                <li><strong>Look at related records</strong> - Python constraints often check relationships</li>
-                <li><strong>Verify the data makes sense</strong> - Is the percentage valid? Is the quantity positive?</li>
-            </ol>
-        </div>
-
-        <div class="foundation-box">
-            <h4>Constraints vs Required Fields</h4>
-            <p>Don't confuse these two concepts:</p>
-            <ul>
-                <li><strong>Required Field:</strong> Must have a value (any value) - enforced by <code>required=True</code></li>
-                <li><strong>Constraint:</strong> Must have a <em>valid</em> value that meets specific rules</li>
-            </ul>
-            <p>A field can be both required AND constrained - for example, the field must exist AND be positive.</p>
-        </div>
-
         <!-- ==================== CONCLUSION ==================== -->
         <hr style="margin: 60px 0; border: 2px solid #e2e8f0;"/>
 
@@ -6162,10 +5202,7 @@ Content-Type: text/xml
                         <li>Domain filters and operators</li>
                         <li>Access Rights and Record Rules</li>
                         <li>Workflow and status management</li>
-                        <li>Odoo Studio and Odoo.sh basics</li>
-                        <li>Chatter, followers, and activities</li>
-                        <li>Email configuration and context</li>
-                        <li>Constraints and data validation</li>
+                        <li>Odoo Studio basics</li>
                     </ul>
                 </div>
             </div>
@@ -6178,7 +5215,6 @@ Content-Type: text/xml
                 <li>Enable Developer Mode and explore model structures</li>
                 <li>Try creating a simple custom field in Studio</li>
                 <li>Review access rights for your user groups</li>
-                <li>Use the Chatter to track communications on records</li>
                 <li>Document customization requirements using proper terminology</li>
             </ol>
         </div>
@@ -6203,6 +5239,614 @@ Content-Type: text/xml
     </div>
 
     <!-- JavaScript for Interactive Features -->
-    <script src="script.js" defer></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // ==================== ELEMENTS ====================
+            const progressBar = document.getElementById('progressBar');
+            const backToTop = document.getElementById('backToTop');
+            const sidebar = document.getElementById('sidebar');
+            const sidebarLinks = sidebar.querySelectorAll('nav a');
+            const mobileMenuToggle = document.getElementById('mobileMenuToggle');
+            const sidebarOverlay = document.getElementById('sidebarOverlay');
+            const currentSectionIndicator = document.getElementById('currentSection');
+            const sections = document.querySelectorAll('h2[id]');
+            const sectionsArray = Array.from(sections);
+
+            // New feature elements
+            const searchInput = document.getElementById('searchInput');
+            const searchResults = document.getElementById('searchResults');
+            const darkModeBtn = document.getElementById('darkModeBtn');
+            const fontSmallBtn = document.getElementById('fontSmallBtn');
+            const fontLargeBtn = document.getElementById('fontLargeBtn');
+            const helpBtn = document.getElementById('helpBtn');
+            const keyboardHint = document.getElementById('keyboardHint');
+            const resumeBanner = document.getElementById('resumeBanner');
+            const resumeSection = document.getElementById('resumeSection');
+            const resumeClose = document.getElementById('resumeClose');
+
+            // ==================== LOCAL STORAGE KEYS ====================
+            const STORAGE_KEYS = {
+                darkMode: 'odoo_training_dark_mode',
+                fontSize: 'odoo_training_font_size',
+                lastSection: 'odoo_training_last_section',
+                lastScrollPos: 'odoo_training_scroll_pos'
+            };
+
+            // ==================== PROGRESS BAR ====================
+            function updateProgressBar() {
+                const scrollTop = window.scrollY;
+                const docHeight = document.documentElement.scrollHeight - window.innerHeight;
+                if (docHeight > 0) {
+                    const progress = (scrollTop / docHeight) * 100;
+                    progressBar.style.width = Math.min(100, Math.max(0, progress)) + '%';
+                }
+            }
+
+            // ==================== BACK TO TOP ====================
+            function toggleBackToTop() {
+                if (window.scrollY > 500) {
+                    backToTop.classList.add('visible');
+                } else {
+                    backToTop.classList.remove('visible');
+                }
+            }
+
+            backToTop.addEventListener('click', function() {
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            });
+
+            // ==================== ACTIVE SECTION TRACKING ====================
+            let currentActiveSection = null;
+
+            function updateActiveSection() {
+                let foundSection = null;
+                const scrollPos = window.scrollY + 150;
+
+                for (let i = sectionsArray.length - 1; i >= 0; i--) {
+                    if (sectionsArray[i].offsetTop <= scrollPos) {
+                        foundSection = sectionsArray[i];
+                        break;
+                    }
+                }
+
+                if (foundSection && foundSection !== currentActiveSection) {
+                    currentActiveSection = foundSection;
+
+                    // Update sidebar active state
+                    sidebarLinks.forEach(link => {
+                        link.classList.remove('active');
+                        if (link.getAttribute('href') === '#' + foundSection.id) {
+                            link.classList.add('active');
+                            // Scroll sidebar to show active link
+                            const sidebarNav = sidebar.querySelector('nav');
+                            if (sidebarNav) {
+                                const linkRect = link.getBoundingClientRect();
+                                const sidebarRect = sidebar.getBoundingClientRect();
+                                if (linkRect.top < sidebarRect.top + 150 || linkRect.bottom > sidebarRect.bottom - 50) {
+                                    link.scrollIntoView({ block: 'center', behavior: 'smooth' });
+                                }
+                            }
+                        }
+                    });
+
+                    // Update current section indicator
+                    const activeLink = sidebar.querySelector('nav a.active');
+                    if (activeLink) {
+                        currentSectionIndicator.textContent = activeLink.textContent;
+                        currentSectionIndicator.classList.add('visible');
+                    }
+
+                    // Save to localStorage
+                    saveReadingProgress(foundSection.id);
+                }
+
+                // Hide indicator at top
+                if (window.scrollY < 300) {
+                    currentSectionIndicator.classList.remove('visible');
+                }
+            }
+
+            // ==================== MOBILE MENU ====================
+            function toggleMobileMenu() {
+                sidebar.classList.toggle('open');
+                sidebarOverlay.classList.toggle('active');
+            }
+
+            function closeMobileMenu() {
+                sidebar.classList.remove('open');
+                sidebarOverlay.classList.remove('active');
+            }
+
+            mobileMenuToggle.addEventListener('click', toggleMobileMenu);
+            sidebarOverlay.addEventListener('click', closeMobileMenu);
+
+            // Close menu when clicking a link (mobile)
+            sidebarLinks.forEach(link => {
+                link.addEventListener('click', function() {
+                    if (window.innerWidth <= 1024) {
+                        closeMobileMenu();
+                    }
+                });
+            });
+
+            // ==================== SEARCH FUNCTIONALITY ====================
+            let searchIndex = [];
+
+            // Fuzzy match scoring - returns score (higher = better match), 0 = no match
+            function fuzzyMatch(text, query) {
+                text = text.toLowerCase();
+                query = query.toLowerCase();
+
+                // Exact match - highest score
+                if (text === query) return 1000;
+
+                // Contains exact query - high score
+                if (text.includes(query)) {
+                    // Bonus for match at start
+                    if (text.startsWith(query)) return 800;
+                    // Bonus for word boundary match
+                    if (text.includes(' ' + query) || text.includes('.' + query)) return 700;
+                    return 600;
+                }
+
+                // Word-based matching
+                const queryWords = query.split(/\s+/).filter(w => w.length > 0);
+                const textWords = text.split(/\s+/).filter(w => w.length > 0);
+
+                let matchedWords = 0;
+                let partialScore = 0;
+
+                for (const qWord of queryWords) {
+                    for (const tWord of textWords) {
+                        if (tWord === qWord) {
+                            matchedWords++;
+                            partialScore += 100;
+                        } else if (tWord.startsWith(qWord)) {
+                            matchedWords++;
+                            partialScore += 80;
+                        } else if (tWord.includes(qWord)) {
+                            matchedWords++;
+                            partialScore += 50;
+                        }
+                    }
+                }
+
+                // All query words must match something
+                if (matchedWords >= queryWords.length) {
+                    return partialScore;
+                }
+
+                // Subsequence matching (for typos/partial)
+                let qi = 0;
+                let consecutive = 0;
+                let maxConsecutive = 0;
+
+                for (let ti = 0; ti < text.length && qi < query.length; ti++) {
+                    if (text[ti] === query[qi]) {
+                        qi++;
+                        consecutive++;
+                        maxConsecutive = Math.max(maxConsecutive, consecutive);
+                    } else {
+                        consecutive = 0;
+                    }
+                }
+
+                // If we matched all query characters in sequence
+                if (qi === query.length) {
+                    // Score based on how consecutive the matches were
+                    return 20 + (maxConsecutive / query.length) * 30;
+                }
+
+                return 0;
+            }
+
+            function buildSearchIndex() {
+                searchIndex = [];
+                const container = document.querySelector('.container');
+                if (!container) return;
+
+                const allH2s = Array.from(container.querySelectorAll('h2[id]'));
+
+                allH2s.forEach((h2, h2Index) => {
+                    const sectionTitle = h2.textContent.trim();
+
+                    searchIndex.push({
+                        title: sectionTitle,
+                        section: sectionTitle,
+                        element: h2,
+                        type: 'section'
+                    });
+
+                    const nextH2 = allH2s[h2Index + 1];
+                    let current = h2.nextElementSibling;
+
+                    while (current && current !== nextH2) {
+                        if (current.tagName === 'H3' || current.tagName === 'H4') {
+                            searchIndex.push({
+                                title: current.textContent.trim(),
+                                section: sectionTitle.substring(0, 35),
+                                element: current,
+                                type: 'heading'
+                            });
+                        }
+
+                        const innerHeadings = current.querySelectorAll ? current.querySelectorAll('h3, h4') : [];
+                        innerHeadings.forEach(heading => {
+                            const title = heading.textContent.trim();
+                            if (!searchIndex.some(item => item.title === title && item.section === sectionTitle.substring(0, 35))) {
+                                searchIndex.push({
+                                    title: title,
+                                    section: sectionTitle.substring(0, 35),
+                                    element: heading,
+                                    type: 'box-title'
+                                });
+                            }
+                        });
+
+                        current = current.nextElementSibling;
+                    }
+                });
+            }
+
+            function performSearch(query) {
+                if (!query || query.length < 2) {
+                    searchResults.innerHTML = '';
+                    return;
+                }
+
+                const scored = searchIndex.map(item => ({
+                    ...item,
+                    score: fuzzyMatch(item.title, query)
+                })).filter(item => item.score > 0);
+
+                // Sort by score descending
+                scored.sort((a, b) => b.score - a.score);
+
+                const results = scored.slice(0, 12);
+
+                if (results.length === 0) {
+                    searchResults.innerHTML = '<div class="no-results">No results found for "' + escapeHtml(query) + '"</div>';
+                    return;
+                }
+
+                // Build results HTML
+                const html = results.map((item, index) => {
+                    const highlighted = highlightMatch(item.title, query);
+                    return `
+                        <div class="search-result-item" data-index="${index}">
+                            <div class="search-result-title">${highlighted}</div>
+                            ${item.section && item.type !== 'section' ?
+                                `<div class="search-result-context">in ${escapeHtml(item.section)}...</div>` : ''}
+                        </div>
+                    `;
+                }).join('');
+
+                searchResults.innerHTML = html;
+                searchResults._results = results;
+            }
+
+            function highlightMatch(text, query) {
+                const escaped = escapeHtml(text);
+                const queryLower = query.toLowerCase();
+                const textLower = text.toLowerCase();
+
+                // Try exact substring match first
+                const idx = textLower.indexOf(queryLower);
+                if (idx !== -1) {
+                    const before = escapeHtml(text.substring(0, idx));
+                    const match = escapeHtml(text.substring(idx, idx + query.length));
+                    const after = escapeHtml(text.substring(idx + query.length));
+                    return before + '<span class="search-highlight">' + match + '</span>' + after;
+                }
+
+                // Highlight individual matching words
+                const queryWords = query.toLowerCase().split(/\s+/);
+                let result = escaped;
+                for (const word of queryWords) {
+                    if (word.length >= 2) {
+                        const regex = new RegExp('(' + escapeRegex(word) + ')', 'gi');
+                        result = result.replace(regex, '<span class="search-highlight">$1</span>');
+                    }
+                }
+                return result;
+            }
+
+            function escapeHtml(text) {
+                const div = document.createElement('div');
+                div.textContent = text;
+                return div.innerHTML;
+            }
+
+            function escapeRegex(string) {
+                return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+            }
+
+            // Click handler using event delegation
+            searchResults.addEventListener('click', function(e) {
+                const resultItem = e.target.closest('.search-result-item');
+                if (resultItem && searchResults._results) {
+                    const index = parseInt(resultItem.dataset.index, 10);
+                    const result = searchResults._results[index];
+                    if (result && result.element) {
+                        result.element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                        searchInput.value = '';
+                        searchResults.innerHTML = '';
+                        searchResults._results = null;
+                        closeMobileMenu();
+                    }
+                }
+            });
+
+            // Search on input with debounce
+            let searchTimeout;
+            searchInput.addEventListener('input', function() {
+                clearTimeout(searchTimeout);
+                searchTimeout = setTimeout(() => {
+                    performSearch(this.value.trim());
+                }, 100);
+            });
+
+            // Also trigger search on focus if there's already text
+            searchInput.addEventListener('focus', function() {
+                if (this.value.trim().length >= 2) {
+                    performSearch(this.value.trim());
+                }
+            });
+
+            searchInput.addEventListener('keydown', function(e) {
+                if (e.key === 'Escape') {
+                    this.value = '';
+                    searchResults.innerHTML = '';
+                    this.blur();
+                }
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    const selected = searchResults.querySelector('.search-result-item.selected');
+                    const firstResult = selected || searchResults.querySelector('.search-result-item');
+                    if (firstResult) {
+                        firstResult.click();
+                    }
+                }
+                // Arrow key navigation in search results
+                if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
+                    e.preventDefault();
+                    const items = searchResults.querySelectorAll('.search-result-item');
+                    if (items.length === 0) return;
+
+                    const current = searchResults.querySelector('.search-result-item.selected');
+                    let nextIndex = 0;
+
+                    if (current) {
+                        current.classList.remove('selected');
+                        const currentIndex = Array.from(items).indexOf(current);
+                        if (e.key === 'ArrowDown') {
+                            nextIndex = (currentIndex + 1) % items.length;
+                        } else {
+                            nextIndex = (currentIndex - 1 + items.length) % items.length;
+                        }
+                    }
+
+                    items[nextIndex].classList.add('selected');
+                    items[nextIndex].scrollIntoView({ block: 'nearest' });
+                }
+            });
+
+            // ==================== DARK MODE ====================
+            function toggleDarkMode() {
+                document.body.classList.toggle('dark-mode');
+                const isDark = document.body.classList.contains('dark-mode');
+                darkModeBtn.textContent = isDark ? '☀️' : '🌙';
+                darkModeBtn.classList.toggle('active', isDark);
+                localStorage.setItem(STORAGE_KEYS.darkMode, isDark ? 'true' : 'false');
+            }
+
+            function loadDarkMode() {
+                const saved = localStorage.getItem(STORAGE_KEYS.darkMode);
+                if (saved === 'true') {
+                    document.body.classList.add('dark-mode');
+                    darkModeBtn.textContent = '☀️';
+                    darkModeBtn.classList.add('active');
+                }
+            }
+
+            darkModeBtn.addEventListener('click', toggleDarkMode);
+
+            // ==================== FONT SIZE ====================
+            function setFontSize(size) {
+                document.body.classList.remove('font-small', 'font-large');
+                fontSmallBtn.classList.remove('active');
+                fontLargeBtn.classList.remove('active');
+
+                if (size === 'small') {
+                    document.body.classList.add('font-small');
+                    fontSmallBtn.classList.add('active');
+                } else if (size === 'large') {
+                    document.body.classList.add('font-large');
+                    fontLargeBtn.classList.add('active');
+                }
+
+                localStorage.setItem(STORAGE_KEYS.fontSize, size || 'normal');
+            }
+
+            function loadFontSize() {
+                const saved = localStorage.getItem(STORAGE_KEYS.fontSize);
+                if (saved && saved !== 'normal') {
+                    setFontSize(saved);
+                }
+            }
+
+            fontSmallBtn.addEventListener('click', function() {
+                const isActive = this.classList.contains('active');
+                setFontSize(isActive ? 'normal' : 'small');
+            });
+
+            fontLargeBtn.addEventListener('click', function() {
+                const isActive = this.classList.contains('active');
+                setFontSize(isActive ? 'normal' : 'large');
+            });
+
+            // ==================== KEYBOARD SHORTCUTS ====================
+            function toggleKeyboardHint() {
+                keyboardHint.classList.toggle('visible');
+            }
+
+            helpBtn.addEventListener('click', toggleKeyboardHint);
+
+            function navigateSection(direction) {
+                const currentIndex = sectionsArray.findIndex(s => s === currentActiveSection);
+                let newIndex = currentIndex + direction;
+
+                if (newIndex < 0) newIndex = 0;
+                if (newIndex >= sectionsArray.length) newIndex = sectionsArray.length - 1;
+
+                const targetSection = sectionsArray[newIndex];
+                if (targetSection) {
+                    targetSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }
+            }
+
+            document.addEventListener('keydown', function(e) {
+                // Ignore if typing in search
+                if (document.activeElement === searchInput) {
+                    return;
+                }
+
+                // Press '/' to focus search
+                if (e.key === '/' && !e.ctrlKey && !e.metaKey) {
+                    e.preventDefault();
+                    searchInput.focus();
+                    return;
+                }
+
+                // Press 'D' for dark mode
+                if ((e.key === 'd' || e.key === 'D') && !e.ctrlKey && !e.metaKey) {
+                    toggleDarkMode();
+                    return;
+                }
+
+                // Press '?' for help
+                if (e.key === '?' || (e.key === '/' && e.shiftKey)) {
+                    toggleKeyboardHint();
+                    return;
+                }
+
+                // Arrow keys for navigation
+                if (e.key === 'ArrowLeft') {
+                    e.preventDefault();
+                    navigateSection(-1);
+                    return;
+                }
+                if (e.key === 'ArrowRight') {
+                    e.preventDefault();
+                    navigateSection(1);
+                    return;
+                }
+
+                // Press Escape to close things
+                if (e.key === 'Escape') {
+                    closeMobileMenu();
+                    keyboardHint.classList.remove('visible');
+                    searchInput.blur();
+                    searchResults.innerHTML = '';
+                }
+            });
+
+            // ==================== READING PROGRESS (localStorage) ====================
+            function saveReadingProgress(sectionId) {
+                if (sectionId) {
+                    localStorage.setItem(STORAGE_KEYS.lastSection, sectionId);
+                    localStorage.setItem(STORAGE_KEYS.lastScrollPos, window.scrollY.toString());
+                }
+            }
+
+            function loadReadingProgress() {
+                const lastSection = localStorage.getItem(STORAGE_KEYS.lastSection);
+                const lastScrollPos = parseInt(localStorage.getItem(STORAGE_KEYS.lastScrollPos) || '0', 10);
+
+                // Only show resume banner if user scrolled past intro and not at top
+                if (lastSection && lastSection !== 'intro' && lastScrollPos > 500) {
+                    const sectionElement = document.getElementById(lastSection);
+                    if (sectionElement) {
+                        const link = sidebar.querySelector(`a[href="#${lastSection}"]`);
+                        const sectionName = link ? link.textContent : lastSection;
+                        resumeSection.textContent = sectionName;
+                        resumeBanner.style.display = 'flex';
+                    }
+                }
+            }
+
+            // Resume banner click - go to saved section
+            resumeBanner.addEventListener('click', function(e) {
+                if (e.target === resumeClose) return;
+                const lastSection = localStorage.getItem(STORAGE_KEYS.lastSection);
+                if (lastSection) {
+                    const target = document.getElementById(lastSection);
+                    if (target) {
+                        target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    }
+                }
+                resumeBanner.style.display = 'none';
+            });
+
+            resumeClose.addEventListener('click', function(e) {
+                e.stopPropagation();
+                resumeBanner.style.display = 'none';
+            });
+
+            // ==================== SMOOTH SCROLL FOR SIDEBAR LINKS ====================
+            sidebarLinks.forEach(link => {
+                link.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const targetId = this.getAttribute('href');
+                    const targetElement = document.querySelector(targetId);
+                    if (targetElement) {
+                        targetElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                        history.pushState(null, null, targetId);
+                    }
+                });
+            });
+
+            // ==================== SCROLL EVENT LISTENER ====================
+            let ticking = false;
+            let lastSaveTime = 0;
+
+            window.addEventListener('scroll', function() {
+                if (!ticking) {
+                    window.requestAnimationFrame(function() {
+                        updateProgressBar();
+                        toggleBackToTop();
+                        updateActiveSection();
+
+                        // Save scroll position periodically (every 2 seconds while scrolling)
+                        const now = Date.now();
+                        if (now - lastSaveTime > 2000) {
+                            if (currentActiveSection) {
+                                saveReadingProgress(currentActiveSection.id);
+                            }
+                            lastSaveTime = now;
+                        }
+
+                        ticking = false;
+                    });
+                    ticking = true;
+                }
+            });
+
+            // ==================== INITIALIZATION ====================
+            function init() {
+                buildSearchIndex();
+                loadDarkMode();
+                loadFontSize();
+                updateProgressBar();
+                toggleBackToTop();
+                updateActiveSection();
+
+                // Show resume banner after a short delay
+                setTimeout(loadReadingProgress, 500);
+            }
+
+            init();
+        });
+    </script>
 </body>
 </html>
