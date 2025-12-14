@@ -22,6 +22,12 @@ const resumeBanner = document.getElementById('resumeBanner');
 const resumeSection = document.getElementById('resumeSection');
 const resumeClose = document.getElementById('resumeClose');
 
+// Command palette elements
+const commandPalette = document.getElementById('commandPalette');
+const commandPaletteOverlay = document.getElementById('commandPaletteOverlay');
+const commandPaletteInput = document.getElementById('commandPaletteInput');
+const commandPaletteResults = document.getElementById('commandPaletteResults');
+
 // ==================== LOCAL STORAGE KEYS ====================
 const STORAGE_KEYS = {
     darkMode: 'odoo_training_dark_mode',
@@ -1120,6 +1126,222 @@ spideyToggleBtn.addEventListener('click', toggleSpidey);
 
 // Initialize spidey preference
 loadSpideyPreference();
+
+// ==================== COMMAND PALETTE ====================
+let commandPaletteSelectedIndex = 0;
+let commandPaletteItems = [];
+
+// Define available commands
+const commands = [
+    // Navigation
+    { type: 'nav', icon: '📖', title: 'Go to: What is Odoo?', action: () => navigateTo('what-is-odoo'), keywords: ['intro', 'start', 'beginning'] },
+    { type: 'nav', icon: '📖', title: 'Go to: Models', action: () => navigateTo('models'), keywords: ['model', 'database', 'table'] },
+    { type: 'nav', icon: '📖', title: 'Go to: Field Types', action: () => navigateTo('field-types'), keywords: ['fields', 'char', 'integer', 'boolean'] },
+    { type: 'nav', icon: '📖', title: 'Go to: Relationships', action: () => navigateTo('relationships'), keywords: ['many2one', 'one2many', 'many2many', 'relation'] },
+    { type: 'nav', icon: '📖', title: 'Go to: Computed Fields', action: () => navigateTo('computed'), keywords: ['compute', 'calculate', 'depends'] },
+    { type: 'nav', icon: '📖', title: 'Go to: Views', action: () => navigateTo('views'), keywords: ['form', 'list', 'kanban', 'tree'] },
+    { type: 'nav', icon: '📖', title: 'Go to: Domains', action: () => navigateTo('domains'), keywords: ['filter', 'domain', 'search'] },
+    { type: 'nav', icon: '📖', title: 'Go to: Access Rights', action: () => navigateTo('access'), keywords: ['security', 'permissions', 'groups'] },
+    { type: 'nav', icon: '📖', title: 'Go to: Actions', action: () => navigateTo('actions'), keywords: ['automation', 'server action', 'scheduled'] },
+    { type: 'nav', icon: '📖', title: 'Go to: Odoo Studio', action: () => navigateTo('studio'), keywords: ['studio', 'customize', 'no-code'] },
+    { type: 'nav', icon: '📖', title: 'Go to: Chatter', action: () => navigateTo('chatter'), keywords: ['messages', 'followers', 'activities'] },
+    { type: 'nav', icon: '📖', title: 'Go to: Email', action: () => navigateTo('emails'), keywords: ['email', 'smtp', 'mail'] },
+    { type: 'nav', icon: '📖', title: 'Go to: Context', action: () => navigateTo('context'), keywords: ['context', 'default', 'parameter'] },
+
+    // Actions
+    { type: 'action', icon: '🌙', title: 'Toggle Dark Mode', action: toggleDarkMode, shortcut: 'D', keywords: ['dark', 'light', 'theme', 'mode'] },
+    { type: 'action', icon: '🔍', title: 'Focus Search', action: () => { closeCommandPalette(); searchInput.focus(); }, shortcut: '/', keywords: ['search', 'find'] },
+    { type: 'action', icon: '⬆️', title: 'Back to Top', action: () => { closeCommandPalette(); window.scrollTo({ top: 0, behavior: getScrollBehavior() }); }, keywords: ['top', 'scroll', 'beginning'] },
+    { type: 'action', icon: '📏', title: 'Increase Font Size', action: () => { if (currentFontSizeIndex < FONT_SIZES.length - 1) { currentFontSizeIndex++; setFontSize(FONT_SIZES[currentFontSizeIndex]); } }, keywords: ['font', 'larger', 'bigger', 'text'] },
+    { type: 'action', icon: '📏', title: 'Decrease Font Size', action: () => { if (currentFontSizeIndex > 0) { currentFontSizeIndex--; setFontSize(FONT_SIZES[currentFontSizeIndex]); } }, keywords: ['font', 'smaller', 'text'] },
+    { type: 'action', icon: '🖨️', title: 'Print Page', action: () => { closeCommandPalette(); window.print(); }, keywords: ['print', 'pdf', 'export'] },
+    { type: 'action', icon: '⌨️', title: 'Show Keyboard Shortcuts', action: () => { closeCommandPalette(); toggleKeyboardHint(); }, shortcut: '?', keywords: ['keyboard', 'shortcuts', 'help'] },
+];
+
+function navigateTo(sectionId) {
+    closeCommandPalette();
+    const target = document.getElementById(sectionId);
+    if (target) {
+        target.scrollIntoView({ behavior: getScrollBehavior(), block: 'start' });
+    }
+}
+
+function openCommandPalette() {
+    commandPalette.classList.add('active');
+    commandPaletteOverlay.classList.add('active');
+    commandPalette.setAttribute('aria-hidden', 'false');
+    commandPaletteOverlay.setAttribute('aria-hidden', 'false');
+    commandPaletteInput.value = '';
+    commandPaletteInput.focus();
+    renderCommandPaletteResults('');
+    document.body.style.overflow = 'hidden';
+}
+
+function closeCommandPalette() {
+    commandPalette.classList.remove('active');
+    commandPaletteOverlay.classList.remove('active');
+    commandPalette.setAttribute('aria-hidden', 'true');
+    commandPaletteOverlay.setAttribute('aria-hidden', 'true');
+    commandPaletteInput.value = '';
+    document.body.style.overflow = '';
+}
+
+function renderCommandPaletteResults(query) {
+    const lowerQuery = query.toLowerCase().trim();
+
+    // Filter commands
+    let filteredCommands = commands;
+    if (lowerQuery) {
+        filteredCommands = commands.filter(cmd => {
+            const titleMatch = cmd.title.toLowerCase().includes(lowerQuery);
+            const keywordMatch = cmd.keywords && cmd.keywords.some(k => k.includes(lowerQuery));
+            return titleMatch || keywordMatch;
+        });
+    }
+
+    // Also search through sections from the search index
+    let sectionResults = [];
+    if (lowerQuery && searchIndex.length > 0) {
+        sectionResults = searchIndex
+            .filter(item => item.title.toLowerCase().includes(lowerQuery))
+            .slice(0, 5)
+            .map(item => ({
+                type: 'search',
+                icon: item.type === 'section' ? '📑' : '📝',
+                title: item.title,
+                description: item.section !== item.title ? `in ${item.section}` : '',
+                action: () => {
+                    closeCommandPalette();
+                    item.element.scrollIntoView({ behavior: getScrollBehavior(), block: 'start' });
+                }
+            }));
+    }
+
+    // Group results
+    const navCommands = filteredCommands.filter(c => c.type === 'nav').slice(0, 6);
+    const actionCommands = filteredCommands.filter(c => c.type === 'action');
+
+    commandPaletteItems = [...actionCommands, ...navCommands, ...sectionResults];
+    commandPaletteSelectedIndex = 0;
+
+    if (commandPaletteItems.length === 0) {
+        commandPaletteResults.innerHTML = `
+            <div class="command-palette-empty">
+                <div class="command-palette-empty-icon">🔍</div>
+                <div>No results found for "${escapeHtml(query)}"</div>
+            </div>
+        `;
+        return;
+    }
+
+    let html = '';
+
+    // Actions group
+    if (actionCommands.length > 0) {
+        html += `<div class="command-palette-group">
+            <div class="command-palette-group-title">Actions</div>
+            ${actionCommands.map((cmd, i) => renderCommandItem(cmd, i)).join('')}
+        </div>`;
+    }
+
+    // Navigation group
+    if (navCommands.length > 0) {
+        html += `<div class="command-palette-group">
+            <div class="command-palette-group-title">Navigation</div>
+            ${navCommands.map((cmd, i) => renderCommandItem(cmd, actionCommands.length + i)).join('')}
+        </div>`;
+    }
+
+    // Search results group
+    if (sectionResults.length > 0) {
+        html += `<div class="command-palette-group">
+            <div class="command-palette-group-title">Search Results</div>
+            ${sectionResults.map((cmd, i) => renderCommandItem(cmd, actionCommands.length + navCommands.length + i)).join('')}
+        </div>`;
+    }
+
+    commandPaletteResults.innerHTML = html;
+    updateSelectedItem();
+}
+
+function renderCommandItem(cmd, index) {
+    return `
+        <div class="command-palette-item" data-index="${index}" role="option">
+            <div class="command-palette-item-icon">${cmd.icon}</div>
+            <div class="command-palette-item-content">
+                <div class="command-palette-item-title">${escapeHtml(cmd.title)}</div>
+                ${cmd.description ? `<div class="command-palette-item-description">${escapeHtml(cmd.description)}</div>` : ''}
+            </div>
+            ${cmd.shortcut ? `<div class="command-palette-item-shortcut"><kbd>${cmd.shortcut}</kbd></div>` : ''}
+        </div>
+    `;
+}
+
+function updateSelectedItem() {
+    const items = commandPaletteResults.querySelectorAll('.command-palette-item');
+    items.forEach((item, i) => {
+        item.classList.toggle('selected', i === commandPaletteSelectedIndex);
+        item.setAttribute('aria-selected', i === commandPaletteSelectedIndex ? 'true' : 'false');
+    });
+
+    // Scroll selected item into view
+    const selectedItem = items[commandPaletteSelectedIndex];
+    if (selectedItem) {
+        selectedItem.scrollIntoView({ block: 'nearest' });
+    }
+}
+
+function executeSelectedCommand() {
+    if (commandPaletteItems[commandPaletteSelectedIndex]) {
+        commandPaletteItems[commandPaletteSelectedIndex].action();
+    }
+}
+
+// Event listeners for command palette
+commandPaletteOverlay.addEventListener('click', closeCommandPalette);
+
+commandPaletteInput.addEventListener('input', function() {
+    renderCommandPaletteResults(this.value);
+});
+
+commandPaletteInput.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') {
+        closeCommandPalette();
+    } else if (e.key === 'ArrowDown') {
+        e.preventDefault();
+        commandPaletteSelectedIndex = Math.min(commandPaletteSelectedIndex + 1, commandPaletteItems.length - 1);
+        updateSelectedItem();
+    } else if (e.key === 'ArrowUp') {
+        e.preventDefault();
+        commandPaletteSelectedIndex = Math.max(commandPaletteSelectedIndex - 1, 0);
+        updateSelectedItem();
+    } else if (e.key === 'Enter') {
+        e.preventDefault();
+        executeSelectedCommand();
+    }
+});
+
+commandPaletteResults.addEventListener('click', function(e) {
+    const item = e.target.closest('.command-palette-item');
+    if (item) {
+        const index = parseInt(item.dataset.index, 10);
+        if (!isNaN(index) && commandPaletteItems[index]) {
+            commandPaletteItems[index].action();
+        }
+    }
+});
+
+// Global keyboard shortcut for command palette (Cmd/Ctrl + K)
+document.addEventListener('keydown', function(e) {
+    if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+        e.preventDefault();
+        if (commandPalette.classList.contains('active')) {
+            closeCommandPalette();
+        } else {
+            openCommandPalette();
+        }
+    }
+});
 
 // ==================== INTERACTIVE QUIZ ====================
 function initQuiz() {

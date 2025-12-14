@@ -44,10 +44,34 @@
     <!-- Keyboard Shortcuts Hint -->
     <div class="keyboard-hint" id="keyboardHint">
         <div class="keyboard-hint-row"><kbd>←</kbd> <kbd>→</kbd> Previous / Next section</div>
+        <div class="keyboard-hint-row"><kbd>⌘/Ctrl</kbd> + <kbd>K</kbd> Command palette</div>
         <div class="keyboard-hint-row"><kbd>/</kbd> Focus search</div>
         <div class="keyboard-hint-row"><kbd>D</kbd> Toggle dark mode</div>
-        <div class="keyboard-hint-row"><kbd>Esc</kbd> Disable spider cursor</div>
+        <div class="keyboard-hint-row"><kbd>Esc</kbd> Close / Disable spider</div>
         <div class="keyboard-hint-row"><kbd>?</kbd> Show/hide shortcuts</div>
+    </div>
+
+    <!-- Command Palette -->
+    <div class="command-palette-overlay" id="commandPaletteOverlay" aria-hidden="true"></div>
+    <div class="command-palette" id="commandPalette" role="dialog" aria-modal="true" aria-label="Command palette" aria-hidden="true">
+        <div class="command-palette-header">
+            <div class="command-palette-input-wrapper">
+                <svg class="command-palette-search-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="11" cy="11" r="8"></circle>
+                    <path d="M21 21l-4.35-4.35"></path>
+                </svg>
+                <input type="text" class="command-palette-input" id="commandPaletteInput" placeholder="Type a command or search..." autocomplete="off" aria-autocomplete="list" aria-controls="commandPaletteResults">
+                <kbd class="command-palette-esc">Esc</kbd>
+            </div>
+        </div>
+        <div class="command-palette-results" id="commandPaletteResults" role="listbox" aria-label="Commands and results">
+            <!-- Results populated by JS -->
+        </div>
+        <div class="command-palette-footer">
+            <span><kbd>↑</kbd><kbd>↓</kbd> Navigate</span>
+            <span><kbd>↵</kbd> Select</span>
+            <span><kbd>Esc</kbd> Close</span>
+        </div>
     </div>
 
     <!-- Sidebar Navigation -->
