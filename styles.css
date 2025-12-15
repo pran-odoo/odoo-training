@@ -162,26 +162,35 @@
 
 /* Dark Mode Variables */
 body.dark-mode {
-    --bg-main: #0f172a;
-    --bg-card: #1e293b;
-    --bg-primary: #1e293b;
-    --bg-secondary: #0f172a;
-    --bg-tertiary: #334155;
-    --bg-hover: rgba(255, 255, 255, 0.08);
-    --bg-active: rgba(255, 255, 255, 0.12);
-    --text-primary: #f1f5f9;
-    --text-secondary: #cbd5e1;
-    --text-muted: #94a3b8;
-    --text-light: #64748b;
-    --border: #334155;
-    --border-light: #1e293b;
-    --success-light: rgba(16, 185, 129, 0.2);
-    --warning-light: rgba(245, 158, 11, 0.2);
-    --error-light: rgba(239, 68, 68, 0.2);
-    --info-light: rgba(2, 132, 199, 0.2);
-    --shadow-sm: 0 1px 2px rgba(0,0,0,0.3);
-    --shadow-md: 0 4px 6px -1px rgba(0,0,0,0.4);
-    --shadow-lg: 0 10px 15px -3px rgba(0,0,0,0.4);
+    --bg-main: #0a0f1a;
+    --bg-card: #141b2d;
+    --bg-primary: #1a2332;
+    --bg-secondary: #0d1321;
+    --bg-tertiary: #243044;
+    --bg-hover: rgba(255, 255, 255, 0.1);
+    --bg-active: rgba(255, 255, 255, 0.15);
+    --text-primary: #ffffff;
+    --text-secondary: #e2e8f0;
+    --text-muted: #a0aec0;
+    --text-light: #718096;
+    --border: #2d3a4f;
+    --border-light: #1e2a3a;
+    --border-dark: #2d3a4f;
+    --primary: #9f7aea;
+    --primary-dark: #805ad5;
+    --primary-light: #b794f4;
+    --success: #48bb78;
+    --success-light: rgba(72, 187, 120, 0.25);
+    --warning: #ecc94b;
+    --warning-light: rgba(236, 201, 75, 0.25);
+    --error: #fc8181;
+    --error-light: rgba(252, 129, 129, 0.25);
+    --info: #63b3ed;
+    --info-light: rgba(99, 179, 237, 0.25);
+    --shadow-sm: 0 1px 3px rgba(0,0,0,0.4);
+    --shadow-md: 0 4px 8px rgba(0,0,0,0.5);
+    --shadow-lg: 0 10px 20px rgba(0,0,0,0.5);
+    --shadow-xl: 0 20px 40px rgba(0,0,0,0.6);
 }
 
 html {
@@ -663,89 +672,139 @@ body.dark-mode .container {
     color: var(--text-primary);
 }
 
-body.dark-mode h1,
-body.dark-mode h2,
-body.dark-mode h3,
-body.dark-mode h4,
-body.dark-mode strong {
-    color: var(--text-primary);
+body.dark-mode h1 {
+    color: #ffffff;
+    text-shadow: 0 0 30px rgba(159, 122, 234, 0.3);
 }
 
 body.dark-mode h2 {
-    border-bottom-color: var(--primary);
+    color: #ffffff;
+    border-bottom: 2px solid var(--primary);
 }
 
 body.dark-mode h3 {
-    background: rgba(255,255,255,0.05);
-    color: var(--text-primary);
+    background: linear-gradient(135deg, rgba(159, 122, 234, 0.15), rgba(99, 179, 237, 0.1));
+    color: #ffffff;
+    border-left: 3px solid var(--primary);
+}
+
+body.dark-mode h4,
+body.dark-mode strong {
+    color: #ffffff;
 }
 
 body.dark-mode p,
-body.dark-mode li,
+body.dark-mode li {
+    color: #e2e8f0;
+}
+
 body.dark-mode td {
-    color: var(--text-secondary);
+    color: #e2e8f0;
+    border-color: var(--border);
 }
 
 body.dark-mode table {
-    box-shadow: var(--shadow-md);
+    box-shadow: var(--shadow-lg);
+    border: 1px solid var(--border);
 }
 
 body.dark-mode th {
-    background: var(--primary);
-}
-
-body.dark-mode td {
-    border-color: var(--border-light);
+    background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+    color: #ffffff;
 }
 
 body.dark-mode tr:nth-child(even) {
-    background: rgba(255,255,255,0.02);
+    background: rgba(159, 122, 234, 0.05);
 }
 
 body.dark-mode tr:hover {
-    background: rgba(255,255,255,0.05);
+    background: rgba(159, 122, 234, 0.12);
 }
 
 body.dark-mode .toc {
-    background: rgba(255,255,255,0.03);
-    border: 1px solid var(--border-light);
+    background: linear-gradient(135deg, rgba(159, 122, 234, 0.08), rgba(99, 179, 237, 0.05));
+    border: 1px solid var(--border);
 }
 
 body.dark-mode .toc a {
-    color: #f0abfc;
+    color: #d6bcfa;
+}
+
+body.dark-mode .toc a:hover {
+    color: #e9d8fd;
+    background: rgba(159, 122, 234, 0.15);
 }
 
 body.dark-mode code {
-    background: rgba(255,255,255,0.1);
-    color: #f0abfc;
+    background: rgba(159, 122, 234, 0.2);
+    color: #e9d8fd;
+    border: 1px solid rgba(159, 122, 234, 0.3);
 }
 
-body.dark-mode .critical-box,
-body.dark-mode .technical-box,
-body.dark-mode .foundation-box,
-body.dark-mode .success-box,
+body.dark-mode pre {
+    background: #1a1b26;
+    border: 1px solid var(--border);
+}
+
+body.dark-mode .critical-box {
+    background: linear-gradient(135deg, rgba(252, 129, 129, 0.15), rgba(252, 129, 129, 0.05));
+    border-left-color: var(--error);
+}
+
+body.dark-mode .technical-box {
+    background: linear-gradient(135deg, rgba(99, 179, 237, 0.15), rgba(99, 179, 237, 0.05));
+    border-left-color: var(--info);
+}
+
+body.dark-mode .foundation-box {
+    background: linear-gradient(135deg, rgba(159, 122, 234, 0.15), rgba(159, 122, 234, 0.05));
+    border-left-color: var(--primary);
+}
+
+body.dark-mode .success-box {
+    background: linear-gradient(135deg, rgba(72, 187, 120, 0.15), rgba(72, 187, 120, 0.05));
+    border-left-color: var(--success);
+}
+
+body.dark-mode .warning-box {
+    background: linear-gradient(135deg, rgba(236, 201, 75, 0.15), rgba(236, 201, 75, 0.05));
+    border-left-color: var(--warning);
+}
+
+body.dark-mode .info-box {
+    background: linear-gradient(135deg, rgba(99, 179, 237, 0.15), rgba(99, 179, 237, 0.05));
+    border-left-color: var(--info);
+}
+
 body.dark-mode .mechanism-box,
 body.dark-mode .analogy-box,
-body.dark-mode .warning-box,
-body.dark-mode .info-box,
 body.dark-mode .odoo-box,
 body.dark-mode .example-box {
-    background: rgba(255,255,255,0.03);
+    background: linear-gradient(135deg, rgba(159, 122, 234, 0.1), rgba(99, 179, 237, 0.05));
+    border: 1px solid var(--border);
 }
 
 body.dark-mode .diagram {
-    background: rgba(255,255,255,0.03);
-    border-color: var(--primary);
+    background: linear-gradient(135deg, rgba(159, 122, 234, 0.1), rgba(99, 179, 237, 0.05));
+    border: 2px solid var(--primary);
 }
 
 body.dark-mode .comparison-card.good {
-    background: rgba(16, 185, 129, 0.1);
+    background: linear-gradient(135deg, rgba(72, 187, 120, 0.2), rgba(72, 187, 120, 0.05));
     border-color: var(--success);
 }
 
 body.dark-mode .comparison-card.bad {
-    background: rgba(239, 68, 68, 0.1);
+    background: linear-gradient(135deg, rgba(252, 129, 129, 0.2), rgba(252, 129, 129, 0.05));
     border-color: var(--error);
+}
+
+body.dark-mode a:not(.nav-link):not(.toc a) {
+    color: #b794f4;
+}
+
+body.dark-mode a:not(.nav-link):not(.toc a):hover {
+    color: #d6bcfa;
 }
 
 /* ==================== FONT SIZE CONTROLS ==================== */
