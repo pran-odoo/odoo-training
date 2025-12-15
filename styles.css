@@ -1272,6 +1272,13 @@ pre {
     overflow-x: auto;
     font-size: 13px;
     line-height: 1.6;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+    user-select: text;
+    -webkit-user-select: text;
+    -moz-user-select: text;
+    -ms-user-select: text;
+    cursor: text;
 }
 
 code {
@@ -1282,12 +1289,17 @@ code {
     font-size: 0.875em;
     color: var(--primary);
     word-break: break-word;
+    user-select: text;
+    -webkit-user-select: text;
 }
 
 pre code {
     background: none;
     padding: 0;
     color: inherit;
+    display: block;
+    user-select: text;
+    -webkit-user-select: text;
 }
 
 
