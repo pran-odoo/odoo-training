@@ -6106,16 +6106,16 @@ odoo.rpc('/web/dataset/search_read', {
                 <td>Confirmed, Creates delivery & invoice</td>
             </tr>
             <tr>
-                <td>Locked</td>
-                <td>'done'</td>
-                <td>Completed, no changes</td>
-            </tr>
-            <tr>
                 <td>Cancelled</td>
                 <td>'cancel'</td>
                 <td>Voided, can set back to draft</td>
             </tr>
         </table>
+
+        <div class="info-box">
+            <h4>Note: No "Done" State in Odoo 19</h4>
+            <p>In earlier Odoo versions, Sales Orders had a "done" state. In Odoo 19, this has been removed. Instead, use the <strong>locked</strong> boolean field to prevent modifications on completed orders.</p>
+        </div>
 
         <h3>The Statusbar Widget</h3>
 
@@ -6140,17 +6140,17 @@ odoo.rpc('/web/dataset/search_read', {
             </tr>
             <tr>
                 <td><strong>Sales Order</strong></td>
-                <td>Draft → Sent → Sale → Done/Cancel</td>
+                <td>Draft → Sent → Sale → Cancel</td>
                 <td>Confirm creates delivery/invoice</td>
             </tr>
             <tr>
                 <td><strong>Purchase Order</strong></td>
-                <td>Draft → Sent → Purchase → Done/Cancel</td>
+                <td>Draft → Sent → To Approve → Purchase → Cancel</td>
                 <td>Confirm creates receipt</td>
             </tr>
             <tr>
                 <td><strong>Invoice</strong></td>
-                <td>Draft → Posted → Paid/Cancel</td>
+                <td>Draft → Posted → Cancel<br><small>(+ payment_state: not_paid → paid)</small></td>
                 <td>Post creates journal entries</td>
             </tr>
             <tr>
@@ -6160,7 +6160,7 @@ odoo.rpc('/web/dataset/search_read', {
             </tr>
             <tr>
                 <td><strong>Manufacturing Order</strong></td>
-                <td>Draft → Confirmed → In Progress → Done</td>
+                <td>Draft → Confirmed → In Progress → To Close → Done</td>
                 <td>Produces finished goods</td>
             </tr>
             <tr>
