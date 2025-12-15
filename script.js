@@ -2124,7 +2124,7 @@ const DEFAULT_SETTINGS = {
     // Layout
     density: 'default',
     sidebarWidth: 'default',
-    contentWidth: 'default',
+    contentWidth: 'wide',
     // Motion
     animations: 'normal'
 };
