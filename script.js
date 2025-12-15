@@ -1228,14 +1228,25 @@ loadSpideyPreference();
 // ==================== COMMAND PALETTE ====================
 let commandPaletteSelectedIndex = 0;
 let commandPaletteItems = [];
-let recentCommands = JSON.parse(localStorage.getItem('odooTraining_recentCommands') || '[]');
+let recentCommands = [];
+
+// Load recent commands safely
+try {
+    const saved = safeGetItem('odooTraining_recentCommands');
+    if (saved) {
+        recentCommands = JSON.parse(saved);
+        if (!Array.isArray(recentCommands)) recentCommands = [];
+    }
+} catch (e) {
+    recentCommands = [];
+}
 
 // Track command usage
 function trackCommandUsage(commandId) {
     recentCommands = recentCommands.filter(id => id !== commandId);
     recentCommands.unshift(commandId);
     recentCommands = recentCommands.slice(0, 5); // Keep last 5
-    localStorage.setItem('odooTraining_recentCommands', JSON.stringify(recentCommands));
+    safeSetItem('odooTraining_recentCommands', JSON.stringify(recentCommands));
 }
 
 // Fuzzy match for command palette (reuse scoring logic)
@@ -1282,7 +1293,7 @@ function getCommands() {
         { id: 'font-down', type: 'action', icon: '🔡', title: 'Decrease Font Size', action: () => { if (currentFontSizeIndex > 0) { currentFontSizeIndex--; setFontSize(FONT_SIZES[currentFontSizeIndex]); } }, keywords: ['font', 'smaller', 'text', 'zoom'] },
         { id: 'print', type: 'action', icon: '🖨️', title: 'Print Page', action: () => { closeCommandPalette(); window.print(); }, keywords: ['print', 'pdf', 'export', 'save'] },
         { id: 'keyboard', type: 'action', icon: '⌨️', title: 'Show Keyboard Shortcuts', action: () => { closeCommandPalette(); toggleKeyboardHint(); }, shortcut: '?', keywords: ['keyboard', 'shortcuts', 'help', 'keys'] },
-        { id: 'toc', type: 'action', icon: '📋', title: 'Toggle Table of Contents', action: () => { closeCommandPalette(); toggleSidebar(); }, shortcut: 'T', keywords: ['sidebar', 'menu', 'navigation', 'toc', 'contents'] },
+        { id: 'toc', type: 'action', icon: '📋', title: 'Toggle Table of Contents', action: () => { closeCommandPalette(); toggleMobileMenu(); }, shortcut: 'T', keywords: ['sidebar', 'menu', 'navigation', 'toc', 'contents'] },
 
         // Navigation
         { id: 'nav-what-is-odoo', type: 'nav', icon: '📖', title: 'Go to: What is Odoo?', action: () => navigateTo('what-is-odoo'), keywords: ['intro', 'start', 'beginning', 'overview'] },
@@ -2236,12 +2247,12 @@ function updateSettingsUI() {
         });
     }
 
-    // Helper to update toggle options
+    // Helper to update toggle options (role="switch" uses aria-checked)
     function updateToggle(selector, settingValue) {
         const toggle = document.querySelector(selector);
         if (toggle) {
             toggle.classList.toggle('active', settingValue === true);
-            toggle.setAttribute('aria-pressed', settingValue ? 'true' : 'false');
+            toggle.setAttribute('aria-checked', settingValue ? 'true' : 'false');
         }
     }
 
@@ -2273,12 +2284,23 @@ function initPersonalization() {
 
     if (!settingsBtn || !settingsPanel) return;
 
+    // Get focusable elements in settings panel
+    function getFocusableElements() {
+        return settingsPanel.querySelectorAll('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])');
+    }
+
     function openSettings() {
         settingsPanel.classList.add('open');
         if (settingsOverlay) settingsOverlay.classList.add('open');
         settingsBtn.setAttribute('aria-expanded', 'true');
         settingsPanel.setAttribute('aria-hidden', 'false');
         if (settingsOverlay) settingsOverlay.setAttribute('aria-hidden', 'false');
+
+        // Focus first focusable element
+        setTimeout(() => {
+            const focusable = getFocusableElements();
+            if (focusable.length) focusable[0].focus();
+        }, 100);
     }
 
     function closeSettings() {
@@ -2287,7 +2309,34 @@ function initPersonalization() {
         settingsBtn.setAttribute('aria-expanded', 'false');
         settingsPanel.setAttribute('aria-hidden', 'true');
         if (settingsOverlay) settingsOverlay.setAttribute('aria-hidden', 'true');
+
+        // Restore focus to trigger button
+        settingsBtn.focus();
     }
+
+    // Focus trap for modal
+    settingsPanel.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') {
+            closeSettings();
+            return;
+        }
+
+        if (e.key !== 'Tab') return;
+
+        const focusable = getFocusableElements();
+        if (!focusable.length) return;
+
+        const first = focusable[0];
+        const last = focusable[focusable.length - 1];
+
+        if (e.shiftKey && document.activeElement === first) {
+            e.preventDefault();
+            last.focus();
+        } else if (!e.shiftKey && document.activeElement === last) {
+            e.preventDefault();
+            first.focus();
+        }
+    });
 
     // Toggle settings panel
     settingsBtn.addEventListener('click', (e) => {
@@ -2457,18 +2506,7 @@ function showToast(message) {
     }, 2500);
 }
 
-// Add share command to command palette
-function addShareCommand() {
-    if (typeof commands !== 'undefined' && Array.isArray(commands)) {
-        commands.push(
-            { type: 'action', icon: '🔗', title: 'Copy Page Link', action: () => { closeCommandPalette(); copyToClipboard(window.location.href); }, keywords: ['share', 'copy', 'link', 'url'] },
-            { type: 'action', icon: '📤', title: 'Share Page', action: () => { closeCommandPalette(); if (navigator.share) { navigator.share({ title: document.title, url: window.location.href }); } else { copyToClipboard(window.location.href); } }, keywords: ['share', 'send'] }
-        );
-    }
-}
-
 initShareability();
-addShareCommand();
 
 // ==================== SERVICE WORKER REGISTRATION ====================
 if ('serviceWorker' in navigator) {
@@ -2498,11 +2536,23 @@ if ('serviceWorker' in navigator) {
 function showUpdateNotification() {
     const notification = document.createElement('div');
     notification.className = 'update-notification';
-    notification.innerHTML = `
-        <span>A new version is available!</span>
-        <button class="update-btn" onclick="location.reload()">Update</button>
-        <button class="update-dismiss" onclick="this.parentElement.remove()">&times;</button>
-    `;
+
+    const span = document.createElement('span');
+    span.textContent = 'A new version is available!';
+
+    const updateBtn = document.createElement('button');
+    updateBtn.className = 'update-btn';
+    updateBtn.textContent = 'Update';
+    updateBtn.addEventListener('click', () => location.reload());
+
+    const dismissBtn = document.createElement('button');
+    dismissBtn.className = 'update-dismiss';
+    dismissBtn.innerHTML = '&times;';
+    dismissBtn.addEventListener('click', () => notification.remove());
+
+    notification.appendChild(span);
+    notification.appendChild(updateBtn);
+    notification.appendChild(dismissBtn);
     document.body.appendChild(notification);
     setTimeout(() => notification.classList.add('visible'), 100);
 }

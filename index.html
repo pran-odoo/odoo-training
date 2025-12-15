@@ -91,7 +91,7 @@
 
     <!-- Settings Panel (outside sidebar to avoid overflow:hidden clipping) -->
     <div class="settings-panel-overlay" id="settingsPanelOverlay" aria-hidden="true"></div>
-    <div class="settings-panel" id="settingsPanel" role="dialog" aria-label="Personalization settings" aria-hidden="true">
+    <div class="settings-panel" id="settingsPanel" role="dialog" aria-label="Personalization settings" aria-modal="true" aria-hidden="true">
         <div class="settings-header">
             <h3>Personalization</h3>
             <button class="settings-close" id="settingsClose" aria-label="Close settings">&times;</button>
@@ -123,7 +123,7 @@
                 <!-- High Contrast Toggle -->
                 <div class="settings-group settings-group-inline">
                     <label class="settings-label">High Contrast Mode</label>
-                    <button class="settings-toggle" id="highContrastToggle" aria-label="Toggle high contrast mode" aria-pressed="false" role="switch">
+                    <button class="settings-toggle" id="highContrastToggle" aria-label="Toggle high contrast mode" aria-checked="false" role="switch">
                         <span class="toggle-track"><span class="toggle-thumb"></span></span>
                     </button>
                 </div>
