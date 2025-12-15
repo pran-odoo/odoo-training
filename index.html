@@ -2960,6 +2960,263 @@ state = fields.Selection(
             </ol>
         </div>
 
+        <!-- ==================== CASE STUDY: DELEGATION INHERITANCE ==================== -->
+        <h3>Case Study: Why Can You Group Employees By Department?</h3>
+
+        <div class="critical-box">
+            <h4>A Real Investigation from Odoo 19 Source Code</h4>
+            <p>This case study explores a question that puzzles many functional consultants: <strong>"How can I Group By a field that seems to belong to another model?"</strong></p>
+        </div>
+
+        <div class="analogy-box">
+            <h4>The Mystery</h4>
+            <p>In the Employee list view, you can "Group By Department":</p>
+            <ul>
+                <li>Open <strong>Employees → Employees</strong></li>
+                <li>Click <strong>Group By → Department</strong></li>
+                <li>It works! Employees are grouped by their department.</li>
+            </ul>
+            <p>But wait... if you investigate the <code>hr.employee</code> model, you won't find <code>department_id</code> directly defined there! So how does this work?</p>
+        </div>
+
+        <h4>The Investigation</h4>
+
+        <div class="mechanism-box">
+            <h4>Step 1: Check the Search View</h4>
+            <p>Looking at the search view in <code>hr/views/hr_employee_views.xml</code>:</p>
+            <pre><code>&lt;filter name="group_department" string="Department"
+        domain="[]" context="{'group_by': 'department_id'}"/&gt;</code></pre>
+            <p>So the Group By uses <code>department_id</code>. But where is this field defined?</p>
+        </div>
+
+        <div class="mechanism-box">
+            <h4>Step 2: Look at the Model Definition</h4>
+            <p>In <code>hr/models/hr_employee.py</code>:</p>
+            <pre><code>class HrEmployee(models.Model):
+    _name = 'hr.employee'
+    _inherit = ['mail.thread.main.attachment', 'mail.activity.mixin',
+                'resource.mixin', 'avatar.mixin']
+    _inherits = {'hr.version': 'version_id'}  # ← This is the key!</code></pre>
+            <p>Notice <code>_inherits</code> (with an 's') - this is <strong>delegation inheritance</strong>!</p>
+        </div>
+
+        <div class="mechanism-box">
+            <h4>Step 3: Find the Field in hr.version</h4>
+            <p>In <code>hr/models/hr_version.py</code>:</p>
+            <pre><code>class HrVersion(models.Model):
+    _name = 'hr.version'
+
+    department_id = fields.Many2one('hr.department',
+        check_company=True, tracking=True, index=True)</code></pre>
+            <p>Found it! <code>department_id</code> is defined in <code>hr.version</code>, and it's a <strong>regular stored Many2one field</strong> with <code>index=True</code>.</p>
+        </div>
+
+        <h4>Understanding Delegation Inheritance (_inherits)</h4>
+
+        <div class="critical-box">
+            <h4>What is _inherits?</h4>
+            <p><strong>Delegation inheritance</strong> means: "This model delegates some of its data to another model."</p>
+            <ul>
+                <li>Every <code>hr.employee</code> record automatically has a linked <code>hr.version</code> record</li>
+                <li>All fields from <code>hr.version</code> are accessible directly on <code>hr.employee</code></li>
+                <li>The data physically lives in the <code>hr_version</code> table</li>
+                <li>From the user's perspective, it's all one form</li>
+            </ul>
+        </div>
+
+        <div class="analogy-box">
+            <h4>Analogy: A Resume with Attachments</h4>
+            <p>Think of it like a resume system:</p>
+            <table>
+                <tr>
+                    <th>Concept</th>
+                    <th>In Odoo</th>
+                    <th>Real World</th>
+                </tr>
+                <tr>
+                    <td>Main Record</td>
+                    <td><code>hr.employee</code></td>
+                    <td>The person (name, photo, contact)</td>
+                </tr>
+                <tr>
+                    <td>Delegated Record</td>
+                    <td><code>hr.version</code></td>
+                    <td>Current job details (department, position, salary)</td>
+                </tr>
+                <tr>
+                    <td>Why Separate?</td>
+                    <td>Job details change over time</td>
+                    <td>Person stays same, but gets promoted, changes dept</td>
+                </tr>
+            </table>
+            <p>The employee "delegates" their current job information to a version record. When they get promoted, a new version is created - the history is preserved!</p>
+        </div>
+
+        <div class="info-box">
+            <h4>How the Database Actually Looks</h4>
+            <table>
+                <tr>
+                    <th colspan="3" style="background: #dbeafe;">hr_employee table</th>
+                </tr>
+                <tr>
+                    <td>id</td>
+                    <td>name</td>
+                    <td>version_id (FK)</td>
+                </tr>
+                <tr>
+                    <td>1</td>
+                    <td>John Smith</td>
+                    <td>101</td>
+                </tr>
+                <tr>
+                    <td>2</td>
+                    <td>Jane Doe</td>
+                    <td>102</td>
+                </tr>
+            </table>
+            <br>
+            <table>
+                <tr>
+                    <th colspan="4" style="background: #d1fae5;">hr_version table</th>
+                </tr>
+                <tr>
+                    <td>id</td>
+                    <td>department_id</td>
+                    <td>job_id</td>
+                    <td>contract_wage</td>
+                </tr>
+                <tr>
+                    <td>101</td>
+                    <td>5 (Sales)</td>
+                    <td>3 (Manager)</td>
+                    <td>5000</td>
+                </tr>
+                <tr>
+                    <td>102</td>
+                    <td>2 (IT)</td>
+                    <td>7 (Developer)</td>
+                    <td>4500</td>
+                </tr>
+            </table>
+            <p style="margin-top: 15px;"><strong>Key insight:</strong> When you "Group By Department" on employees, Odoo automatically JOINs these two tables and groups by <code>hr_version.department_id</code>. Because that column exists and is indexed, the Group By works!</p>
+        </div>
+
+        <h4>Why This Matters for Consultants</h4>
+
+        <div class="warning-box">
+            <h4>When Investigating "Can I Group By This Field?"</h4>
+            <p>Don't just look at the model itself. Also check:</p>
+            <ol>
+                <li><strong>_inherits delegation:</strong> Field might be in a delegated model</li>
+                <li><strong>_inherit extension:</strong> Field might be added by another module</li>
+                <li><strong>Related fields:</strong> Field might be pulling from linked record</li>
+            </ol>
+        </div>
+
+        <div class="success-box">
+            <h4>Quick Check: Is a Field Stored?</h4>
+            <table>
+                <tr>
+                    <th>Field Type</th>
+                    <th>Stored?</th>
+                    <th>Can Group By?</th>
+                </tr>
+                <tr>
+                    <td>Regular field (Char, Integer, Many2one)</td>
+                    <td>✓ Yes</td>
+                    <td>✓ Yes</td>
+                </tr>
+                <tr>
+                    <td>Field via <code>_inherits</code> delegation</td>
+                    <td>✓ Yes (in parent table)</td>
+                    <td>✓ Yes</td>
+                </tr>
+                <tr>
+                    <td>Computed field with <code>store=True</code></td>
+                    <td>✓ Yes</td>
+                    <td>✓ Yes</td>
+                </tr>
+                <tr>
+                    <td>Computed field without <code>store=True</code></td>
+                    <td>✗ No</td>
+                    <td>✗ No</td>
+                </tr>
+                <tr>
+                    <td>Related field with <code>store=True</code></td>
+                    <td>✓ Yes</td>
+                    <td>✓ Yes</td>
+                </tr>
+                <tr>
+                    <td>Related field without <code>store=True</code></td>
+                    <td>✗ No</td>
+                    <td>✗ No</td>
+                </tr>
+                <tr>
+                    <td>One2many field</td>
+                    <td>✗ Never</td>
+                    <td>✗ Never</td>
+                </tr>
+            </table>
+        </div>
+
+        <h4>Other Examples of Delegation Inheritance in Odoo</h4>
+
+        <div class="info-box">
+            <h4>Common _inherits Patterns</h4>
+            <table>
+                <tr>
+                    <th>Model</th>
+                    <th>Delegates To</th>
+                    <th>Why?</th>
+                </tr>
+                <tr>
+                    <td><code>hr.employee</code></td>
+                    <td><code>hr.version</code></td>
+                    <td>Track job history - each promotion/transfer is a new version</td>
+                </tr>
+                <tr>
+                    <td><code>product.product</code></td>
+                    <td><code>product.template</code></td>
+                    <td>Variants share common data (description, category) from template</td>
+                </tr>
+                <tr>
+                    <td><code>res.users</code></td>
+                    <td><code>res.partner</code></td>
+                    <td>Users are also contacts - share name, email, phone</td>
+                </tr>
+            </table>
+            <p style="margin-top: 10px;">In all these cases, fields from the delegated model are <strong>stored</strong> and can be used for grouping!</p>
+        </div>
+
+        <div class="analogy-box">
+            <h4>The Product Variant Example</h4>
+            <p>This is why you can Group Products by Category:</p>
+            <ul>
+                <li><code>product.product</code> (variant) → delegates to → <code>product.template</code></li>
+                <li><code>categ_id</code> (category) is defined on <code>product.template</code></li>
+                <li>When you Group By Category on product variants, Odoo joins the tables</li>
+                <li>Works because <code>categ_id</code> is stored in <code>product_template</code> table</li>
+            </ul>
+        </div>
+
+        <div class="mechanism-box">
+            <h4>How to Check in Developer Mode</h4>
+            <p>To investigate a field's storage yourself:</p>
+            <ol>
+                <li>Enable <strong>Developer Mode</strong> (Settings → Activate Developer Mode)</li>
+                <li>Go to <strong>Settings → Technical → Database Structure → Models</strong></li>
+                <li>Search for the model (e.g., "hr.employee")</li>
+                <li>Look at the <strong>Fields</strong> tab</li>
+                <li>Find your field and check:
+                    <ul>
+                        <li><strong>Stored:</strong> Yes/No</li>
+                        <li><strong>Related Model:</strong> If it's delegated</li>
+                        <li><strong>Compute:</strong> If it's computed</li>
+                    </ul>
+                </li>
+            </ol>
+        </div>
+
         <!-- ==================== SECTION 6: COMPUTED FIELDS ==================== -->
         <h2 id="computed">5. Computed Fields Explained</h2>
 
