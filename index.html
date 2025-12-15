@@ -2965,7 +2965,7 @@ state = fields.Selection(
 
         <div class="critical-box">
             <h4>A Real Investigation from Odoo 19 Source Code</h4>
-            <p>This case study explores a question that puzzles many functional consultants: <strong>"How can I Group By a field that seems to belong to another model?"</strong></p>
+            <p>This case study explores a question that puzzles many functional consultants: <strong>"How can I Group By a field that shows Stored: False in Developer Mode?"</strong></p>
         </div>
 
         <div class="analogy-box">
@@ -2976,7 +2976,8 @@ state = fields.Selection(
                 <li>Click <strong>Group By → Department</strong></li>
                 <li>It works! Employees are grouped by their department.</li>
             </ul>
-            <p>But wait... if you investigate the <code>hr.employee</code> model, you won't find <code>department_id</code> directly defined there! So how does this work?</p>
+            <p><strong>But here's the confusing part:</strong> If you check <code>department_id</code> in Developer Mode (Settings → Technical → Fields), it shows <strong>Stored: False</strong>!</p>
+            <p>We learned that non-stored fields can't be used for Group By. So how is this possible?</p>
         </div>
 
         <h4>The Investigation</h4>
@@ -2986,47 +2987,83 @@ state = fields.Selection(
             <p>Looking at the search view in <code>hr/views/hr_employee_views.xml</code>:</p>
             <pre><code>&lt;filter name="group_department" string="Department"
         domain="[]" context="{'group_by': 'department_id'}"/&gt;</code></pre>
-            <p>So the Group By uses <code>department_id</code>. But where is this field defined?</p>
+            <p>So the Group By uses <code>department_id</code>. Let's trace where this field comes from.</p>
         </div>
 
         <div class="mechanism-box">
             <h4>Step 2: Look at the Model Definition</h4>
-            <p>In <code>hr/models/hr_employee.py</code>:</p>
+            <p>In <code>hr/models/hr_employee.py</code>, we find something interesting:</p>
             <pre><code>class HrEmployee(models.Model):
     _name = 'hr.employee'
-    _inherit = ['mail.thread.main.attachment', 'mail.activity.mixin',
-                'resource.mixin', 'avatar.mixin']
-    _inherits = {'hr.version': 'version_id'}  # ← This is the key!</code></pre>
-            <p>Notice <code>_inherits</code> (with an 's') - this is <strong>delegation inheritance</strong>!</p>
+    _inherits = {'hr.version': 'version_id'}  # Delegation inheritance
+
+    # The link to hr.version - BUT LOOK CLOSELY:
+    version_id = fields.Many2one(
+        'hr.version',
+        compute='_compute_version_id',
+        store=False,  # ← NOT STORED!
+    )
+
+    # There's ALSO this field:
+    current_version_id = fields.Many2one(
+        'hr.version',
+        compute='_compute_current_version_id',
+        store=True,  # ← THIS ONE IS STORED!
+    )</code></pre>
+            <p><strong>Key discovery:</strong> There are TWO links to <code>hr.version</code> - one stored, one not!</p>
         </div>
 
         <div class="mechanism-box">
-            <h4>Step 3: Find the Field in hr.version</h4>
+            <h4>Step 3: The Magic - SQL Translation</h4>
+            <p>Here's the clever part that makes everything work. In the same file:</p>
+            <pre><code>def _field_to_sql(self, alias, field_expr, query=None):
+    """This is required to search for related fields
+       of version_id as version_id is not stored"""
+    if field_expr == 'version_id':
+        field_expr = 'current_version_id'  # ← Swap to stored field!
+    return super()._field_to_sql(alias, field_expr, query)</code></pre>
+            <p><strong>This is the magic!</strong> When you search or group by fields accessed through <code>version_id</code>, Odoo automatically translates it to use <code>current_version_id</code> instead - which IS stored!</p>
+        </div>
+
+        <div class="mechanism-box">
+            <h4>Step 4: The Actual Stored Field</h4>
             <p>In <code>hr/models/hr_version.py</code>:</p>
             <pre><code>class HrVersion(models.Model):
     _name = 'hr.version'
 
     department_id = fields.Many2one('hr.department',
-        check_company=True, tracking=True, index=True)</code></pre>
-            <p>Found it! <code>department_id</code> is defined in <code>hr.version</code>, and it's a <strong>regular stored Many2one field</strong> with <code>index=True</code>.</p>
+        check_company=True, tracking=True, index=True)  # ← Stored with index!</code></pre>
+            <p>The <code>department_id</code> is a regular stored Many2one field in <code>hr.version</code> with database index.</p>
         </div>
 
-        <h4>Understanding Delegation Inheritance (_inherits)</h4>
+        <h4>Understanding the Two-Version System (Odoo 19+)</h4>
 
         <div class="critical-box">
-            <h4>What is _inherits?</h4>
-            <p><strong>Delegation inheritance</strong> means: "This model delegates some of its data to another model."</p>
-            <ul>
-                <li>Every <code>hr.employee</code> record automatically has a linked <code>hr.version</code> record</li>
-                <li>All fields from <code>hr.version</code> are accessible directly on <code>hr.employee</code></li>
-                <li>The data physically lives in the <code>hr_version</code> table</li>
-                <li>From the user's perspective, it's all one form</li>
-            </ul>
+            <h4>Why Two Version Links?</h4>
+            <p>Odoo 19 introduced <strong>employee versioning</strong> to track history (promotions, department changes, salary changes):</p>
+            <table>
+                <tr>
+                    <th>Field</th>
+                    <th>Stored?</th>
+                    <th>Purpose</th>
+                </tr>
+                <tr>
+                    <td><code>version_id</code></td>
+                    <td>No (computed)</td>
+                    <td>Points to version you're VIEWING (can be historical)</td>
+                </tr>
+                <tr>
+                    <td><code>current_version_id</code></td>
+                    <td><strong>Yes</strong></td>
+                    <td>Always points to the CURRENT active version</td>
+                </tr>
+            </table>
+            <p>For searching and grouping, Odoo uses <code>current_version_id</code> to join to <code>hr_version</code> where <code>department_id</code> lives.</p>
         </div>
 
         <div class="analogy-box">
-            <h4>Analogy: A Resume with Attachments</h4>
-            <p>Think of it like a resume system:</p>
+            <h4>Analogy: Employee History Card</h4>
+            <p>Think of it like an employee record system:</p>
             <table>
                 <tr>
                     <th>Concept</th>
@@ -3036,42 +3073,45 @@ state = fields.Selection(
                 <tr>
                     <td>Main Record</td>
                     <td><code>hr.employee</code></td>
-                    <td>The person (name, photo, contact)</td>
+                    <td>The person (name, photo, personal info)</td>
                 </tr>
                 <tr>
-                    <td>Delegated Record</td>
+                    <td>Version Record</td>
                     <td><code>hr.version</code></td>
-                    <td>Current job details (department, position, salary)</td>
+                    <td>Job details (department, position, salary)</td>
                 </tr>
                 <tr>
                     <td>Why Separate?</td>
                     <td>Job details change over time</td>
-                    <td>Person stays same, but gets promoted, changes dept</td>
+                    <td>Person stays same, but gets promoted</td>
                 </tr>
             </table>
-            <p>The employee "delegates" their current job information to a version record. When they get promoted, a new version is created - the history is preserved!</p>
+            <p>When an employee gets promoted, a new version is created. The history is preserved, and you can view past versions!</p>
         </div>
 
         <div class="info-box">
             <h4>How the Database Actually Looks</h4>
             <table>
                 <tr>
-                    <th colspan="3" style="background: #dbeafe;">hr_employee table</th>
+                    <th colspan="4" style="background: #dbeafe;">hr_employee table</th>
                 </tr>
                 <tr>
                     <td>id</td>
                     <td>name</td>
-                    <td>version_id (FK)</td>
+                    <td>current_version_id (FK)</td>
+                    <td style="color: #999;">version_id (not in DB - computed)</td>
                 </tr>
                 <tr>
                     <td>1</td>
                     <td>John Smith</td>
                     <td>101</td>
+                    <td style="color: #999;">(calculated at runtime)</td>
                 </tr>
                 <tr>
                     <td>2</td>
                     <td>Jane Doe</td>
                     <td>102</td>
+                    <td style="color: #999;">(calculated at runtime)</td>
                 </tr>
             </table>
             <br>
@@ -3081,7 +3121,7 @@ state = fields.Selection(
                 </tr>
                 <tr>
                     <td>id</td>
-                    <td>department_id</td>
+                    <td>department_id (stored!)</td>
                     <td>job_id</td>
                     <td>contract_wage</td>
                 </tr>
@@ -3098,7 +3138,32 @@ state = fields.Selection(
                     <td>4500</td>
                 </tr>
             </table>
-            <p style="margin-top: 15px;"><strong>Key insight:</strong> When you "Group By Department" on employees, Odoo automatically JOINs these two tables and groups by <code>hr_version.department_id</code>. Because that column exists and is indexed, the Group By works!</p>
+        </div>
+
+        <div class="success-box">
+            <h4>How Group By Actually Works</h4>
+            <p>When you click "Group By Department" on employees:</p>
+            <ol>
+                <li>Odoo sees <code>group_by: 'department_id'</code></li>
+                <li>Since <code>department_id</code> comes through <code>version_id</code> (via <code>_inherits</code>)</li>
+                <li>The <code>_field_to_sql</code> method translates <code>version_id</code> → <code>current_version_id</code></li>
+                <li><code>current_version_id</code> IS stored, so Odoo can JOIN to <code>hr_version</code></li>
+                <li><code>department_id</code> IS stored in <code>hr_version</code> with an index</li>
+                <li>Database performs: <code>GROUP BY hr_version.department_id</code></li>
+                <li>Result: Employees grouped by department!</li>
+            </ol>
+        </div>
+
+        <div class="warning-box">
+            <h4>Why Does Developer Mode Show "Stored: False"?</h4>
+            <p>When you inspect <code>department_id</code> on <code>hr.employee</code> in Developer Mode, it shows "Stored: False" because:</p>
+            <ul>
+                <li>The field is accessed through <code>_inherits</code> delegation via <code>version_id</code></li>
+                <li><code>version_id</code> itself is computed (not stored)</li>
+                <li>So from <code>hr.employee</code>'s direct perspective, it appears non-stored</li>
+            </ul>
+            <p><strong>But Group By still works</strong> because of the <code>_field_to_sql</code> override that redirects SQL queries through <code>current_version_id</code> - which IS stored!</p>
+            <p style="margin-top: 10px;"><strong>Lesson:</strong> Developer Mode shows the "direct" storage status. Behind the scenes, Odoo may have special handling that makes searching/grouping work anyway!</p>
         </div>
 
         <h4>Why This Matters for Consultants</h4>
