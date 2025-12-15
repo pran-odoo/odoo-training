@@ -4408,9 +4408,9 @@ body.dark-mode .toggle-track {
     --line-height-content: 1.6;
 }
 
-.main-content p,
-.main-content li,
-.main-content td {
+.container p,
+.container li,
+.container td {
     line-height: var(--line-height-content);
 }
 
@@ -4448,23 +4448,23 @@ body.code-theme-high-contrast pre {
 }
 
 /* Link Underline Styles */
-body.links-always .main-content a {
+body.links-always .container a:not(.toc a):not([class]) {
     text-decoration: underline;
 }
 
-body.links-hover .main-content a {
+body.links-hover .container a:not(.toc a):not([class]) {
     text-decoration: none;
 }
 
-body.links-hover .main-content a:hover {
+body.links-hover .container a:not(.toc a):not([class]):hover {
     text-decoration: underline;
 }
 
-body.links-never .main-content a {
+body.links-never .container a:not(.toc a):not([class]) {
     text-decoration: none;
 }
 
-body.links-never .main-content a:hover {
+body.links-never .container a:not(.toc a):not([class]):hover {
     text-decoration: none;
 }
 
@@ -4478,8 +4478,8 @@ body.links-never .main-content a:hover {
         width: var(--sidebar-width);
     }
 
-    .main-content {
-        margin-left: var(--sidebar-width);
+    body {
+        padding-left: var(--sidebar-width);
     }
 }
 
@@ -4522,20 +4522,23 @@ body.high-contrast *:focus {
     outline-offset: 2px !important;
 }
 
-body.high-contrast .nav-link.active {
+body.high-contrast .sidebar a.active {
     border-left-width: 4px;
 }
 
 /* Animation Preferences */
+body.animations-reduced,
 body.animations-reduced * {
     transition-duration: 0.01ms !important;
     animation-duration: 0.01ms !important;
 }
 
-body.animations-reduced html {
+html:has(body.animations-reduced),
+html:has(body.animations-none) {
     scroll-behavior: auto !important;
 }
 
+body.animations-none,
 body.animations-none *,
 body.animations-none *::before,
 body.animations-none *::after {
@@ -4543,12 +4546,12 @@ body.animations-none *::after {
     animation: none !important;
 }
 
-body.animations-none html {
-    scroll-behavior: auto !important;
-}
-
 /* Respect system preference for reduced motion as fallback */
 @media (prefers-reduced-motion: reduce) {
+    html {
+        scroll-behavior: auto !important;
+    }
+    body.animations-normal,
     body.animations-normal * {
         transition-duration: 0.01ms !important;
         animation-duration: 0.01ms !important;
