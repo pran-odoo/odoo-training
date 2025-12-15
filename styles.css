@@ -673,106 +673,103 @@ body.dark-mode .container {
 }
 
 body.dark-mode h1 {
-    color: #ffffff;
-    text-shadow: 0 0 30px rgba(159, 122, 234, 0.3);
+    color: #f1f5f9;
 }
 
 body.dark-mode h2 {
-    color: #ffffff;
-    border-bottom: 2px solid var(--primary);
+    color: #f1f5f9;
+    border-bottom-color: var(--primary);
 }
 
 body.dark-mode h3 {
-    background: linear-gradient(135deg, rgba(159, 122, 234, 0.15), rgba(99, 179, 237, 0.1));
-    color: #ffffff;
-    border-left: 3px solid var(--primary);
+    background: rgba(255, 255, 255, 0.04);
+    color: #f1f5f9;
 }
 
 body.dark-mode h4,
 body.dark-mode strong {
-    color: #ffffff;
+    color: #f1f5f9;
 }
 
 body.dark-mode p,
 body.dark-mode li {
-    color: #e2e8f0;
+    color: #cbd5e1;
 }
 
 body.dark-mode td {
-    color: #e2e8f0;
+    color: #cbd5e1;
     border-color: var(--border);
 }
 
 body.dark-mode table {
-    box-shadow: var(--shadow-lg);
+    box-shadow: var(--shadow-md);
     border: 1px solid var(--border);
 }
 
 body.dark-mode th {
-    background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+    background: var(--primary);
     color: #ffffff;
 }
 
 body.dark-mode tr:nth-child(even) {
-    background: rgba(159, 122, 234, 0.05);
+    background: rgba(255, 255, 255, 0.02);
 }
 
 body.dark-mode tr:hover {
-    background: rgba(159, 122, 234, 0.12);
+    background: rgba(255, 255, 255, 0.05);
 }
 
 body.dark-mode .toc {
-    background: linear-gradient(135deg, rgba(159, 122, 234, 0.08), rgba(99, 179, 237, 0.05));
+    background: rgba(255, 255, 255, 0.02);
     border: 1px solid var(--border);
 }
 
 body.dark-mode .toc a {
-    color: #d6bcfa;
+    color: #c4b5fd;
 }
 
 body.dark-mode .toc a:hover {
-    color: #e9d8fd;
-    background: rgba(159, 122, 234, 0.15);
+    color: #ddd6fe;
+    background: rgba(255, 255, 255, 0.05);
 }
 
 body.dark-mode code {
-    background: rgba(159, 122, 234, 0.2);
-    color: #e9d8fd;
-    border: 1px solid rgba(159, 122, 234, 0.3);
+    background: rgba(255, 255, 255, 0.08);
+    color: #c4b5fd;
 }
 
 body.dark-mode pre {
-    background: #1a1b26;
+    background: #1e1e2e;
     border: 1px solid var(--border);
 }
 
 body.dark-mode .critical-box {
-    background: linear-gradient(135deg, rgba(252, 129, 129, 0.15), rgba(252, 129, 129, 0.05));
+    background: rgba(252, 129, 129, 0.06);
     border-left-color: var(--error);
 }
 
 body.dark-mode .technical-box {
-    background: linear-gradient(135deg, rgba(99, 179, 237, 0.15), rgba(99, 179, 237, 0.05));
+    background: rgba(99, 179, 237, 0.06);
     border-left-color: var(--info);
 }
 
 body.dark-mode .foundation-box {
-    background: linear-gradient(135deg, rgba(159, 122, 234, 0.15), rgba(159, 122, 234, 0.05));
+    background: rgba(159, 122, 234, 0.06);
     border-left-color: var(--primary);
 }
 
 body.dark-mode .success-box {
-    background: linear-gradient(135deg, rgba(72, 187, 120, 0.15), rgba(72, 187, 120, 0.05));
+    background: rgba(72, 187, 120, 0.06);
     border-left-color: var(--success);
 }
 
 body.dark-mode .warning-box {
-    background: linear-gradient(135deg, rgba(236, 201, 75, 0.15), rgba(236, 201, 75, 0.05));
+    background: rgba(236, 201, 75, 0.06);
     border-left-color: var(--warning);
 }
 
 body.dark-mode .info-box {
-    background: linear-gradient(135deg, rgba(99, 179, 237, 0.15), rgba(99, 179, 237, 0.05));
+    background: rgba(99, 179, 237, 0.06);
     border-left-color: var(--info);
 }
 
@@ -780,23 +777,23 @@ body.dark-mode .mechanism-box,
 body.dark-mode .analogy-box,
 body.dark-mode .odoo-box,
 body.dark-mode .example-box {
-    background: linear-gradient(135deg, rgba(159, 122, 234, 0.1), rgba(99, 179, 237, 0.05));
+    background: rgba(255, 255, 255, 0.02);
     border: 1px solid var(--border);
 }
 
 body.dark-mode .diagram {
-    background: linear-gradient(135deg, rgba(159, 122, 234, 0.1), rgba(99, 179, 237, 0.05));
-    border: 2px solid var(--primary);
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid var(--border);
 }
 
 body.dark-mode .comparison-card.good {
-    background: linear-gradient(135deg, rgba(72, 187, 120, 0.2), rgba(72, 187, 120, 0.05));
-    border-color: var(--success);
+    background: rgba(72, 187, 120, 0.08);
+    border-color: rgba(72, 187, 120, 0.3);
 }
 
 body.dark-mode .comparison-card.bad {
-    background: linear-gradient(135deg, rgba(252, 129, 129, 0.2), rgba(252, 129, 129, 0.05));
-    border-color: var(--error);
+    background: rgba(252, 129, 129, 0.08);
+    border-color: rgba(252, 129, 129, 0.3);
 }
 
 body.dark-mode a:not(.nav-link):not(.toc a) {
