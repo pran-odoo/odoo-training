@@ -4421,37 +4421,36 @@ body.dark-mode .toggle-track {
     line-height: var(--line-height-content);
 }
 
-/* Code Theme Variants */
+/* Code Theme Variants - use !important to override dark-mode defaults */
 body.code-theme-dark pre,
 body.code-theme-dark code {
-    background: #1e1e2e;
-    color: #cdd6f4;
+    background: #1e1e2e !important;
+    color: #cdd6f4 !important;
 }
 
 body.code-theme-dark pre {
-    border-color: #313244;
+    border-color: #313244 !important;
 }
 
 body.code-theme-light pre,
 body.code-theme-light code {
-    background: #f8f9fa;
-    color: #1e293b;
-    border-color: #e2e8f0;
+    background: #f8f9fa !important;
+    color: #1e293b !important;
 }
 
 body.code-theme-light pre {
-    border: 1px solid #e2e8f0;
+    border: 1px solid #e2e8f0 !important;
 }
 
 body.code-theme-high-contrast pre,
 body.code-theme-high-contrast code {
-    background: #000;
-    color: #0f0;
-    border-color: #0f0;
+    background: #000 !important;
+    color: #0f0 !important;
+    border-color: #0f0 !important;
 }
 
 body.code-theme-high-contrast pre {
-    border: 2px solid #0f0;
+    border: 2px solid #0f0 !important;
 }
 
 /* Link Underline Styles */
