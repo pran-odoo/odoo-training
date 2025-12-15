@@ -1449,6 +1449,21 @@ body.dark-mode .odoo-box code {
 }
 
 /* ==================== TABLES ==================== */
+/* Table wrapper for horizontal scroll on mobile */
+.table-wrapper {
+    width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    margin: 20px 0;
+    border-radius: 10px;
+    /* Scroll hint gradient on right */
+    background: linear-gradient(to right, transparent 95%, rgba(113, 75, 103, 0.1) 100%);
+}
+
+.table-wrapper table {
+    margin: 0;
+}
+
 table {
     width: 100%;
     border-collapse: collapse;
@@ -1456,8 +1471,6 @@ table {
     font-size: 14px;
     border-radius: 10px;
     overflow: hidden;
-    overflow-x: auto;
-    -webkit-overflow-scrolling: touch;
     contain: layout style;
 }
 
@@ -1793,6 +1806,50 @@ body.dark-mode .badge-enterprise {
         font-size: 13px;
         padding: 6px 0;
     }
+
+    /* Ensure adequate tap targets on links in content */
+    .container a {
+        padding: 2px 0;
+    }
+
+    /* Settings panel improvements for mobile */
+    .settings-content {
+        padding-bottom: 80px; /* Extra padding for safe area on iOS */
+    }
+
+    /* Better spacing for nested lists on mobile */
+    ul ul, ol ol, ul ol, ol ul {
+        margin: 8px 0;
+        padding-left: 20px;
+    }
+
+    /* Scroll indicator for tables */
+    .table-wrapper {
+        position: relative;
+    }
+
+    .table-wrapper::after {
+        content: '→';
+        position: absolute;
+        right: 8px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: var(--primary);
+        opacity: 0.5;
+        font-size: 18px;
+        pointer-events: none;
+        animation: scrollHint 1.5s ease-in-out infinite;
+    }
+
+    @keyframes scrollHint {
+        0%, 100% { opacity: 0.3; transform: translateY(-50%) translateX(0); }
+        50% { opacity: 0.6; transform: translateY(-50%) translateX(5px); }
+    }
+
+    /* Hide scroll hint once user has scrolled */
+    .table-wrapper.scrolled::after {
+        display: none;
+    }
 }
 
 /* ==================== TABLET OPTIMIZATIONS (640px - 1023px) ==================== */
@@ -1846,6 +1903,24 @@ body.dark-mode .badge-enterprise {
     .toolbar-btn {
         min-width: 48px;
         min-height: 48px;
+    }
+
+    /* Show copy button always on touch devices (no hover) */
+    .copy-btn {
+        opacity: 0.7;
+        min-width: 44px;
+        min-height: 44px;
+        padding: 10px;
+    }
+
+    .copy-btn:active {
+        opacity: 1;
+        background: rgba(255, 255, 255, 0.2);
+    }
+
+    /* Larger code font on touch for readability */
+    pre, code {
+        font-size: 13px;
     }
 }
 
@@ -3307,6 +3382,35 @@ body.dark-mode .command-palette {
 
 body.dark-mode .command-palette-input-wrapper {
     background: var(--bg-primary);
+}
+
+/* Mobile command palette - full width bottom sheet style */
+@media (max-width: 640px) {
+    .command-palette {
+        top: auto;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        width: 100%;
+        max-width: 100%;
+        max-height: 85vh;
+        border-radius: var(--radius-xl) var(--radius-xl) 0 0;
+        transform: translateY(100%);
+    }
+
+    .command-palette.active {
+        transform: translateY(0);
+    }
+
+    .command-palette-footer {
+        padding-bottom: calc(var(--space-4) + env(safe-area-inset-bottom, 0px));
+    }
+
+    /* Larger touch targets for results */
+    .command-palette-item {
+        padding: var(--space-4);
+        min-height: 56px;
+    }
 }
 
 /* Reduced motion */
