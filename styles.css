@@ -4024,6 +4024,13 @@ body.dark-mode .glossary-popover.below::after {
     z-index: 1100;
 }
 
+/* On desktop, account for sidebar offset when centering */
+@media (min-width: 769px) {
+    .settings-panel {
+        left: calc(50% + var(--sidebar-width) / 2);
+    }
+}
+
 .settings-panel.open {
     opacity: 1;
     visibility: visible;
