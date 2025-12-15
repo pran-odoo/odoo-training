@@ -1728,6 +1728,523 @@
             <p>With Properties, each project can have its own custom fields, and all tasks in that project inherit them!</p>
         </div>
 
+        <h3>Common Field Attributes</h3>
+        <p>Every field in Odoo can have attributes that control its behavior. Understanding these is crucial for functional consultants.</p>
+
+        <table>
+            <tr>
+                <th>Attribute</th>
+                <th>What It Does</th>
+                <th>Example</th>
+                <th>Functional Impact</th>
+            </tr>
+            <tr>
+                <td><strong>string</strong></td>
+                <td>Label shown to users</td>
+                <td>string="Customer Name"</td>
+                <td>What appears on forms/lists</td>
+            </tr>
+            <tr>
+                <td><strong>required</strong></td>
+                <td>Field must have a value</td>
+                <td>required=True</td>
+                <td>Can't save record without it</td>
+            </tr>
+            <tr>
+                <td><strong>readonly</strong></td>
+                <td>Can't be edited by users</td>
+                <td>readonly=True</td>
+                <td>Display only, no editing</td>
+            </tr>
+            <tr>
+                <td><strong>default</strong></td>
+                <td>Pre-filled value for new records</td>
+                <td>default="draft"</td>
+                <td>New records start with this value</td>
+            </tr>
+            <tr>
+                <td><strong>help</strong></td>
+                <td>Tooltip text on hover</td>
+                <td>help="Enter customer's full name"</td>
+                <td>Shows info icon with explanation</td>
+            </tr>
+            <tr>
+                <td><strong>copy</strong></td>
+                <td>Include when duplicating record</td>
+                <td>copy=False</td>
+                <td>Reference numbers shouldn't copy</td>
+            </tr>
+            <tr>
+                <td><strong>index</strong></td>
+                <td>Create database index</td>
+                <td>index=True</td>
+                <td>Faster searches on this field</td>
+            </tr>
+            <tr>
+                <td><strong>tracking</strong></td>
+                <td>Log changes in chatter</td>
+                <td>tracking=True</td>
+                <td>Shows "Status: Draft → Confirmed"</td>
+            </tr>
+            <tr>
+                <td><strong>groups</strong></td>
+                <td>Restrict field visibility</td>
+                <td>groups="base.group_system"</td>
+                <td>Only admins see this field</td>
+            </tr>
+        </table>
+
+        <div class="warning-box">
+            <h4>Required vs Default - Common Confusion</h4>
+            <ul>
+                <li><strong>required=True</strong>: User MUST provide a value (even if there's a default)</li>
+                <li><strong>default=value</strong>: Pre-fills the field, but user can leave it empty (unless also required)</li>
+                <li><strong>Both together</strong>: Field is pre-filled AND mandatory</li>
+            </ul>
+            <p><strong>Example:</strong> Sale Order state has <code>default='draft'</code> and <code>required=True</code> - it always starts as draft and must have a state.</p>
+        </div>
+
+        <h3>Field Sizes and Limits</h3>
+
+        <div class="technical-box">
+            <h4>Important Size Constraints</h4>
+            <table>
+                <tr>
+                    <th>Field Type</th>
+                    <th>Default Limit</th>
+                    <th>Can Customize?</th>
+                    <th>Notes</th>
+                </tr>
+                <tr>
+                    <td>Char</td>
+                    <td>No limit (was 256)</td>
+                    <td>Yes, via size=N</td>
+                    <td>Since Odoo 12, no default limit</td>
+                </tr>
+                <tr>
+                    <td>Text</td>
+                    <td>Unlimited</td>
+                    <td>No</td>
+                    <td>Use for long content</td>
+                </tr>
+                <tr>
+                    <td>Integer</td>
+                    <td>-2B to +2B</td>
+                    <td>No</td>
+                    <td>32-bit signed integer</td>
+                </tr>
+                <tr>
+                    <td>Float</td>
+                    <td>~15 digits precision</td>
+                    <td>Yes, via digits</td>
+                    <td>digits=(16, 2) = 16 total, 2 decimal</td>
+                </tr>
+                <tr>
+                    <td>Monetary</td>
+                    <td>Currency-dependent</td>
+                    <td>Auto</td>
+                    <td>Uses currency's decimal places</td>
+                </tr>
+                <tr>
+                    <td>Binary</td>
+                    <td>~1GB (PostgreSQL)</td>
+                    <td>No</td>
+                    <td>Large files stored externally</td>
+                </tr>
+                <tr>
+                    <td>Image</td>
+                    <td>Auto-resized</td>
+                    <td>Yes</td>
+                    <td>max_width, max_height attributes</td>
+                </tr>
+            </table>
+        </div>
+
+        <h3>Practical Examples by Business Scenario</h3>
+
+        <div class="example-box">
+            <h4>Scenario: Product Catalog</h4>
+            <table>
+                <tr>
+                    <th>Field Name</th>
+                    <th>Type</th>
+                    <th>Why This Type?</th>
+                </tr>
+                <tr>
+                    <td>name</td>
+                    <td>Char</td>
+                    <td>Short product name, single line</td>
+                </tr>
+                <tr>
+                    <td>description_sale</td>
+                    <td>Text</td>
+                    <td>Long description for quotes</td>
+                </tr>
+                <tr>
+                    <td>list_price</td>
+                    <td>Float</td>
+                    <td>Price without currency formatting</td>
+                </tr>
+                <tr>
+                    <td>standard_price</td>
+                    <td>Float</td>
+                    <td>Cost price (company_dependent)</td>
+                </tr>
+                <tr>
+                    <td>qty_available</td>
+                    <td>Float</td>
+                    <td>Stock can be fractional (0.5 kg)</td>
+                </tr>
+                <tr>
+                    <td>active</td>
+                    <td>Boolean</td>
+                    <td>Archive/unarchive products</td>
+                </tr>
+                <tr>
+                    <td>type</td>
+                    <td>Selection</td>
+                    <td>Consumable/Service/Storable</td>
+                </tr>
+                <tr>
+                    <td>image_1920</td>
+                    <td>Image</td>
+                    <td>Product photo with auto-resize</td>
+                </tr>
+                <tr>
+                    <td>barcode</td>
+                    <td>Char</td>
+                    <td>EAN/UPC code, indexed for scanning</td>
+                </tr>
+            </table>
+        </div>
+
+        <div class="example-box">
+            <h4>Scenario: HR Employee</h4>
+            <table>
+                <tr>
+                    <th>Field Name</th>
+                    <th>Type</th>
+                    <th>Why This Type?</th>
+                </tr>
+                <tr>
+                    <td>name</td>
+                    <td>Char</td>
+                    <td>Employee's full name</td>
+                </tr>
+                <tr>
+                    <td>work_email</td>
+                    <td>Char</td>
+                    <td>Email with validation widget</td>
+                </tr>
+                <tr>
+                    <td>birthday</td>
+                    <td>Date</td>
+                    <td>Only date needed, no time</td>
+                </tr>
+                <tr>
+                    <td>gender</td>
+                    <td>Selection</td>
+                    <td>male/female/other choices</td>
+                </tr>
+                <tr>
+                    <td>notes</td>
+                    <td>Text</td>
+                    <td>HR notes, can be lengthy</td>
+                </tr>
+                <tr>
+                    <td>certificate</td>
+                    <td>Selection</td>
+                    <td>Education level dropdown</td>
+                </tr>
+                <tr>
+                    <td>resume_line_ids</td>
+                    <td>One2many</td>
+                    <td>Multiple resume entries</td>
+                </tr>
+                <tr>
+                    <td>image_1920</td>
+                    <td>Image</td>
+                    <td>Employee photo</td>
+                </tr>
+            </table>
+        </div>
+
+        <h3>Float Precision - The Decimal Problem</h3>
+
+        <div class="critical-box">
+            <h4>Why Float Precision Matters</h4>
+            <p>Float fields can cause unexpected rounding issues. Consider this:</p>
+            <pre>Unit Price: 10.00
+Quantity: 3
+Expected Total: 30.00
+Actual (with float errors): 29.999999999997</pre>
+            <p><strong>Solution:</strong> Use the <code>digits</code> attribute to control precision:</p>
+            <ul>
+                <li><code>digits=(16, 2)</code> = 16 total digits, 2 after decimal (standard for prices)</li>
+                <li><code>digits='Product Price'</code> = Uses named precision from settings</li>
+                <li><code>digits='Product Unit of Measure'</code> = Higher precision for quantities</li>
+            </ul>
+        </div>
+
+        <div class="mechanism-box">
+            <h4>Named Decimal Precisions in Odoo</h4>
+            <table>
+                <tr>
+                    <th>Precision Name</th>
+                    <th>Default Digits</th>
+                    <th>Used For</th>
+                </tr>
+                <tr>
+                    <td>Product Price</td>
+                    <td>2</td>
+                    <td>Prices, unit costs</td>
+                </tr>
+                <tr>
+                    <td>Product Unit of Measure</td>
+                    <td>5</td>
+                    <td>Quantities (allows 0.00001)</td>
+                </tr>
+                <tr>
+                    <td>Discount</td>
+                    <td>2</td>
+                    <td>Percentage discounts</td>
+                </tr>
+                <tr>
+                    <td>Stock Weight</td>
+                    <td>2</td>
+                    <td>Product weights</td>
+                </tr>
+            </table>
+            <p><strong>Tip:</strong> These can be configured in Settings → Technical → Database Structure → Decimal Accuracy</p>
+        </div>
+
+        <h3>Date and Datetime - Timezone Handling</h3>
+
+        <div class="warning-box">
+            <h4>Critical: Timezone Behavior</h4>
+            <table>
+                <tr>
+                    <th>Field Type</th>
+                    <th>Storage</th>
+                    <th>Display</th>
+                </tr>
+                <tr>
+                    <td><strong>Date</strong></td>
+                    <td>Stored as-is (no timezone)</td>
+                    <td>Shows same date everywhere</td>
+                </tr>
+                <tr>
+                    <td><strong>Datetime</strong></td>
+                    <td>Stored in UTC</td>
+                    <td>Converted to user's timezone</td>
+                </tr>
+            </table>
+            <p><strong>Example Problem:</strong> A meeting scheduled at "2024-01-15 10:00" in India (UTC+5:30) is stored as "2024-01-15 04:30" UTC. A user in New York (UTC-5) sees it as "2024-01-14 23:30"!</p>
+            <p><strong>Solution:</strong> Use Date for deadlines/birthdays, Datetime for appointments/timestamps.</p>
+        </div>
+
+        <h3>Selection Fields - Best Practices</h3>
+
+        <div class="foundation-box">
+            <h4>Selection Field Structure</h4>
+            <p>Selection fields have a list of (key, label) pairs:</p>
+            <pre>state = fields.Selection([
+    ('draft', 'Draft'),
+    ('confirmed', 'Confirmed'),
+    ('done', 'Done'),
+    ('cancel', 'Cancelled'),
+], default='draft')</pre>
+            <p><strong>Key Rules:</strong></p>
+            <ul>
+                <li><strong>Keys</strong>: lowercase, no spaces, use underscores (stored in DB)</li>
+                <li><strong>Labels</strong>: Human-readable, translatable (shown to users)</li>
+                <li>Keys can't be changed after data exists (would lose data!)</li>
+                <li>Labels can be changed anytime (just UI text)</li>
+            </ul>
+        </div>
+
+        <div class="success-box">
+            <h4>Adding Options to Existing Selection Fields</h4>
+            <p>You can extend selection fields using <code>selection_add</code>:</p>
+            <pre># Original field has: draft, confirmed, done
+# Your module adds: on_hold
+
+state = fields.Selection(
+    selection_add=[('on_hold', 'On Hold')],
+    ondelete={'on_hold': 'set default'}
+)</pre>
+            <p><strong>ondelete</strong> tells Odoo what to do if the module is uninstalled - set records to default state.</p>
+        </div>
+
+        <h3>Binary and Image Fields</h3>
+
+        <div class="technical-box">
+            <h4>Binary vs Image - When to Use Which</h4>
+            <table>
+                <tr>
+                    <th>Use Binary For</th>
+                    <th>Use Image For</th>
+                </tr>
+                <tr>
+                    <td>PDF documents</td>
+                    <td>Product photos</td>
+                </tr>
+                <tr>
+                    <td>Excel files</td>
+                    <td>Employee avatars</td>
+                </tr>
+                <tr>
+                    <td>Any non-image file</td>
+                    <td>Company logos</td>
+                </tr>
+                <tr>
+                    <td>Images that shouldn't be resized</td>
+                    <td>Any image that needs thumbnails</td>
+                </tr>
+            </table>
+        </div>
+
+        <div class="mechanism-box">
+            <h4>Image Field Auto-Resize</h4>
+            <p>Image fields automatically create multiple sizes:</p>
+            <ul>
+                <li><code>image_1920</code> - Original/large (max 1920px)</li>
+                <li><code>image_1024</code> - Medium (max 1024px)</li>
+                <li><code>image_512</code> - Small (max 512px)</li>
+                <li><code>image_256</code> - Thumbnail (max 256px)</li>
+                <li><code>image_128</code> - Icon (max 128px)</li>
+            </ul>
+            <p><strong>Performance Tip:</strong> Always use the smallest size needed. Don't load image_1920 for a list view thumbnail!</p>
+        </div>
+
+        <h3>Field Type Decision Matrix</h3>
+
+        <div class="info-box">
+            <h4>Quick Reference: Which Field Type to Use?</h4>
+            <table>
+                <tr>
+                    <th>I need to store...</th>
+                    <th>Use This Type</th>
+                    <th>Not This</th>
+                </tr>
+                <tr>
+                    <td>A name or title</td>
+                    <td><strong>Char</strong></td>
+                    <td>Text (overkill)</td>
+                </tr>
+                <tr>
+                    <td>A description or notes</td>
+                    <td><strong>Text</strong></td>
+                    <td>Char (too limited)</td>
+                </tr>
+                <tr>
+                    <td>A price with currency</td>
+                    <td><strong>Monetary</strong></td>
+                    <td>Float (loses currency)</td>
+                </tr>
+                <tr>
+                    <td>A percentage</td>
+                    <td><strong>Float</strong></td>
+                    <td>Integer (no decimals)</td>
+                </tr>
+                <tr>
+                    <td>A count or quantity (whole)</td>
+                    <td><strong>Integer</strong></td>
+                    <td>Float (unnecessary)</td>
+                </tr>
+                <tr>
+                    <td>A quantity (can be partial)</td>
+                    <td><strong>Float</strong></td>
+                    <td>Integer (can't do 0.5)</td>
+                </tr>
+                <tr>
+                    <td>A yes/no choice</td>
+                    <td><strong>Boolean</strong></td>
+                    <td>Selection (overkill)</td>
+                </tr>
+                <tr>
+                    <td>A status with 3+ options</td>
+                    <td><strong>Selection</strong></td>
+                    <td>Char (no validation)</td>
+                </tr>
+                <tr>
+                    <td>A birthday</td>
+                    <td><strong>Date</strong></td>
+                    <td>Datetime (has TZ issues)</td>
+                </tr>
+                <tr>
+                    <td>An appointment time</td>
+                    <td><strong>Datetime</strong></td>
+                    <td>Date (loses time)</td>
+                </tr>
+                <tr>
+                    <td>A document attachment</td>
+                    <td><strong>Binary</strong></td>
+                    <td>Char (can't store files)</td>
+                </tr>
+                <tr>
+                    <td>A photo/logo</td>
+                    <td><strong>Image</strong></td>
+                    <td>Binary (no auto-resize)</td>
+                </tr>
+                <tr>
+                    <td>Rich formatted text</td>
+                    <td><strong>Html</strong></td>
+                    <td>Text (loses formatting)</td>
+                </tr>
+            </table>
+        </div>
+
+        <h3>Common Mistakes with Field Types</h3>
+
+        <div class="comparison-grid">
+            <div class="comparison-card bad">
+                <h4>❌ Wrong Approach</h4>
+                <p><strong>Using Char for prices:</strong></p>
+                <pre>price = fields.Char()</pre>
+                <p>Problem: Can't calculate, sort, or format properly. "100" comes before "20" alphabetically!</p>
+            </div>
+            <div class="comparison-card good">
+                <h4>✅ Correct Approach</h4>
+                <p><strong>Using Monetary for prices:</strong></p>
+                <pre>price = fields.Monetary(
+    currency_field='currency_id'
+)</pre>
+                <p>Benefit: Proper calculations, sorting, currency symbols.</p>
+            </div>
+        </div>
+
+        <div class="comparison-grid">
+            <div class="comparison-card bad">
+                <h4>❌ Wrong Approach</h4>
+                <p><strong>Using Text for emails:</strong></p>
+                <pre>email = fields.Text()</pre>
+                <p>Problem: Multi-line input, no email validation, wastes space.</p>
+            </div>
+            <div class="comparison-card good">
+                <h4>✅ Correct Approach</h4>
+                <p><strong>Using Char with email widget:</strong></p>
+                <pre>email = fields.Char()
+# In view: widget="email"</pre>
+                <p>Benefit: Single line, clickable mailto link, proper validation.</p>
+            </div>
+        </div>
+
+        <div class="comparison-grid">
+            <div class="comparison-card bad">
+                <h4>❌ Wrong Approach</h4>
+                <p><strong>Datetime for deadlines:</strong></p>
+                <pre>deadline = fields.Datetime()</pre>
+                <p>Problem: "Due Jan 15" might show as "Due Jan 14" in different timezones!</p>
+            </div>
+            <div class="comparison-card good">
+                <h4>✅ Correct Approach</h4>
+                <p><strong>Date for deadlines:</strong></p>
+                <pre>deadline = fields.Date()</pre>
+                <p>Benefit: "Due Jan 15" is Jan 15 everywhere in the world.</p>
+            </div>
+        </div>
+
         <!-- ==================== SECTION 4: RELATIONSHIPS ==================== -->
         <h2 id="relationships">3. Relationships - Many2one, One2many, Many2many</h2>
 
@@ -1975,6 +2492,253 @@
             </table>
         </div>
 
+        <h3>What Happens When You Delete a Linked Record?</h3>
+
+        <div class="critical-box">
+            <h4>The ondelete Behavior</h4>
+            <p>When you try to delete a customer who has orders, what should happen? This is controlled by the <code>ondelete</code> setting on Many2one fields.</p>
+            <table>
+                <tr>
+                    <th>Behavior</th>
+                    <th>What Happens</th>
+                    <th>Real Example</th>
+                </tr>
+                <tr>
+                    <td><strong>Restrict</strong></td>
+                    <td>Block deletion - shows error</td>
+                    <td>"Cannot delete customer: they have 5 invoices"</td>
+                </tr>
+                <tr>
+                    <td><strong>Set Null</strong></td>
+                    <td>Clear the link, keep the record</td>
+                    <td>Order stays but customer field becomes empty</td>
+                </tr>
+                <tr>
+                    <td><strong>Cascade</strong></td>
+                    <td>Delete everything linked</td>
+                    <td>Delete order → all order lines also deleted</td>
+                </tr>
+            </table>
+        </div>
+
+        <div class="analogy-box">
+            <h4>Real-World Analogy</h4>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-top: 15px;">
+                <div style="padding: 15px; background: rgba(239, 68, 68, 0.1); border-radius: 8px;">
+                    <strong>Restrict</strong>
+                    <p style="font-size: 14px; margin-top: 8px;">Like a bank account - can't close the bank if customers have money there</p>
+                </div>
+                <div style="padding: 15px; background: rgba(59, 130, 246, 0.1); border-radius: 8px;">
+                    <strong>Set Null</strong>
+                    <p style="font-size: 14px; margin-top: 8px;">Employee leaves company - their records stay but employer field is cleared</p>
+                </div>
+                <div style="padding: 15px; background: rgba(245, 158, 11, 0.1); border-radius: 8px;">
+                    <strong>Cascade</strong>
+                    <p style="font-size: 14px; margin-top: 8px;">Delete a department - all positions in it are also eliminated</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="warning-box">
+            <h4>Why You See "Cannot Delete" Errors</h4>
+            <p>When Odoo blocks a deletion with "cannot delete because other records reference it", it means the relationship uses <code>ondelete='restrict'</code>. You must first:</p>
+            <ul>
+                <li>Archive the linked records, OR</li>
+                <li>Delete the linked records first, OR</li>
+                <li>Reassign them to another record</li>
+            </ul>
+        </div>
+
+        <h3>Why Can't I Group By Some Fields?</h3>
+
+        <div class="mechanism-box">
+            <h4>One2many Fields Are Virtual</h4>
+            <p>One2many fields don't actually exist in the database - they're calculated on-the-fly by looking at the reverse relationship. This means:</p>
+            <ul>
+                <li><strong>Cannot Group By:</strong> "Group orders by order lines" doesn't make sense</li>
+                <li><strong>Cannot Filter Directly:</strong> Use the child model instead</li>
+                <li><strong>Cannot Export:</strong> Export from the line model, not the parent</li>
+            </ul>
+        </div>
+
+        <div class="info-box">
+            <h4>Workaround: Filter Through Child Model</h4>
+            <p>Instead of trying to filter orders by product on the order line:</p>
+            <ul>
+                <li><strong>Wrong approach:</strong> Search orders where order_line contains product X</li>
+                <li><strong>Right approach:</strong> Search order lines for product X, then look at their orders</li>
+            </ul>
+            <p>In the UI, use the <strong>order line list view</strong> and group by Order to see the same data.</p>
+        </div>
+
+        <h3>Understanding Related Fields</h3>
+
+        <div class="technical-box">
+            <h4>What Are Related Fields?</h4>
+            <p>A <strong>related field</strong> displays information from a linked record directly on the current form.</p>
+            <p><strong>Example:</strong> On a Sales Order, you see the customer's country - but you're not storing country on the order, you're "pulling" it from the customer record.</p>
+        </div>
+
+        <div class="success-box">
+            <h4>Common Related Fields You See Daily</h4>
+            <table>
+                <tr>
+                    <th>Where You See It</th>
+                    <th>What It Shows</th>
+                    <th>Where It Comes From</th>
+                </tr>
+                <tr>
+                    <td>Sales Order</td>
+                    <td>Customer's delivery address</td>
+                    <td>partner_shipping_id → street, city, country</td>
+                </tr>
+                <tr>
+                    <td>Invoice Line</td>
+                    <td>Invoice Status (Draft/Posted)</td>
+                    <td>move_id → state</td>
+                </tr>
+                <tr>
+                    <td>Stock Move</td>
+                    <td>Customer on the transfer</td>
+                    <td>picking_id → partner_id</td>
+                </tr>
+                <tr>
+                    <td>Employee Form</td>
+                    <td>Department Manager</td>
+                    <td>department_id → manager_id</td>
+                </tr>
+            </table>
+        </div>
+
+        <div class="warning-box">
+            <h4>Related Fields: Stored vs Not Stored</h4>
+            <p>By default, related fields are <strong>not stored</strong> - they're read live from the linked record. This means:</p>
+            <ul>
+                <li><strong>Not Stored:</strong> Always shows current value, but can't filter/group by it</li>
+                <li><strong>Stored:</strong> Can filter/group, but might be outdated if source changes</li>
+            </ul>
+            <p>If you can't group by a field that seems like it should work, check if it's a non-stored related field.</p>
+        </div>
+
+        <h3>Relationship Decision Guide</h3>
+
+        <div class="info-box">
+            <h4>Which Relationship Do I Need?</h4>
+            <table>
+                <tr>
+                    <th>Business Need</th>
+                    <th>Relationship Type</th>
+                    <th>Example</th>
+                </tr>
+                <tr>
+                    <td>Link to one other record (dropdown selection)</td>
+                    <td><strong>Many2one</strong></td>
+                    <td>Order → Customer</td>
+                </tr>
+                <tr>
+                    <td>Show all linked items as a list</td>
+                    <td><strong>One2many</strong></td>
+                    <td>Customer form showing all their orders</td>
+                </tr>
+                <tr>
+                    <td>Tag or categorize with multiple options</td>
+                    <td><strong>Many2many</strong></td>
+                    <td>Product ↔ Multiple categories</td>
+                </tr>
+                <tr>
+                    <td>Display info from linked record (read-only)</td>
+                    <td><strong>Related field</strong></td>
+                    <td>Show customer's country on order</td>
+                </tr>
+            </table>
+        </div>
+
+        <h3>Common Business Patterns</h3>
+
+        <div class="analogy-box">
+            <h4>Pattern 1: Document with Lines</h4>
+            <p>Almost every business document in Odoo follows this structure:</p>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 15px;">
+                <div>
+                    <strong>Header (Parent)</strong>
+                    <ul>
+                        <li>Sales Order</li>
+                        <li>Purchase Order</li>
+                        <li>Invoice</li>
+                        <li>Delivery Order</li>
+                    </ul>
+                </div>
+                <div>
+                    <strong>Lines (Children)</strong>
+                    <ul>
+                        <li>Sales Order Lines</li>
+                        <li>Purchase Order Lines</li>
+                        <li>Invoice Lines</li>
+                        <li>Stock Moves</li>
+                    </ul>
+                </div>
+            </div>
+            <p style="margin-top: 15px;">The header "owns" the lines. Delete an order → lines are deleted too.</p>
+        </div>
+
+        <div class="analogy-box">
+            <h4>Pattern 2: Hierarchies</h4>
+            <p>Some models have parent-child relationships within themselves:</p>
+            <ul>
+                <li><strong>Product Categories:</strong> Electronics > Computers > Laptops</li>
+                <li><strong>Departments:</strong> Sales > Europe > France</li>
+                <li><strong>Chart of Accounts:</strong> Assets > Current Assets > Bank</li>
+                <li><strong>Locations:</strong> Warehouse > Shelf A > Bin 1</li>
+            </ul>
+            <p>These use a <code>parent_id</code> field pointing to the same model.</p>
+        </div>
+
+        <div class="analogy-box">
+            <h4>Pattern 3: Tagging / Categorization</h4>
+            <p>When something can belong to multiple categories simultaneously:</p>
+            <ul>
+                <li><strong>CRM Leads:</strong> Multiple tags (Hot Lead, VIP, Trade Show)</li>
+                <li><strong>Products:</strong> Multiple website categories</li>
+                <li><strong>Contacts:</strong> Multiple partner categories (Supplier, Reseller)</li>
+            </ul>
+            <p>These use Many2many relationships displayed as colored tags in the UI.</p>
+        </div>
+
+        <h3>Product Template vs Product Variant</h3>
+
+        <div class="critical-box">
+            <h4>A Special Relationship You Must Understand</h4>
+            <p>This confuses many consultants: <code>product.template</code> and <code>product.product</code> are two different models!</p>
+            <table>
+                <tr>
+                    <th>Model</th>
+                    <th>What It Is</th>
+                    <th>Example</th>
+                </tr>
+                <tr>
+                    <td><code>product.template</code></td>
+                    <td>The "master" product with shared info</td>
+                    <td>"T-Shirt" with name, description, category</td>
+                </tr>
+                <tr>
+                    <td><code>product.product</code></td>
+                    <td>A specific variant with unique attributes</td>
+                    <td>"T-Shirt, Size M, Blue" with its own barcode & price</td>
+                </tr>
+            </table>
+            <p style="margin-top: 15px;"><strong>Key insight:</strong> Sales orders use <code>product.product</code> (variant), but the product form edits <code>product.template</code>.</p>
+        </div>
+
+        <div class="info-box">
+            <h4>Similarly: Users and Partners</h4>
+            <p><code>res.users</code> (login accounts) "inherits" from <code>res.partner</code> (contacts). Every user IS a contact with additional login capabilities. This is why:</p>
+            <ul>
+                <li>Creating a user automatically creates a contact</li>
+                <li>User's name, email, phone come from their partner record</li>
+                <li>You can message a user through the contact system</li>
+            </ul>
+        </div>
+
         <!-- ==================== SECTION 5: STORAGE ==================== -->
         <h2 id="storage">4. Field Storage - store=True vs store=False</h2>
 
@@ -2054,6 +2818,146 @@
                 <li><strong>If store=True:</strong> Stored in database. Can group "Invoices by Total Amount" in reports. Must be recalculated when lines change.</li>
             </ul>
             <p><strong>Odoo's Choice:</strong> <code>amount_total</code> is stored (store=True) so you can use it in reports!</p>
+        </div>
+
+        <h3>Which Fields Are NOT Stored?</h3>
+
+        <div class="info-box">
+            <h4>Fields That Don't Live in the Database</h4>
+            <table>
+                <tr>
+                    <th>Field Type</th>
+                    <th>Why Not Stored</th>
+                    <th>Example</th>
+                </tr>
+                <tr>
+                    <td><strong>One2many</strong></td>
+                    <td>Virtual - reads from child records</td>
+                    <td>Order lines on a sales order</td>
+                </tr>
+                <tr>
+                    <td><strong>Computed fields</strong> (default)</td>
+                    <td>Calculated fresh each time</td>
+                    <td>Employee age, days until deadline</td>
+                </tr>
+                <tr>
+                    <td><strong>Related fields</strong> (default)</td>
+                    <td>Reads from linked record</td>
+                    <td>Customer's country shown on order</td>
+                </tr>
+            </table>
+        </div>
+
+        <h3>Why You Can't Group By Some Fields</h3>
+
+        <div class="critical-box">
+            <h4>The Group By Limitation</h4>
+            <p>If you try to "Group By" a non-stored field in reports or list views, you'll get an error or no results. This happens because:</p>
+            <ul>
+                <li>Group By uses SQL, which needs a real database column</li>
+                <li>Non-stored fields don't have database columns</li>
+                <li>Odoo can't GROUP BY something that doesn't exist in the table</li>
+            </ul>
+        </div>
+
+        <div class="warning-box">
+            <h4>Common Frustration: "Why can't I group by this field?"</h4>
+            <p>If you're trying to group records by a field and it doesn't work, check if it's:</p>
+            <ul>
+                <li>A computed field without <code>store=True</code></li>
+                <li>A related field without <code>store=True</code></li>
+                <li>A One2many field (never works for grouping)</li>
+            </ul>
+            <p><strong>Solution:</strong> Ask a developer to make the field stored, or group by a different field.</p>
+        </div>
+
+        <h3>Real Examples: Stored vs Not Stored</h3>
+
+        <div class="success-box">
+            <h4>Why These Choices Were Made in Odoo</h4>
+            <table>
+                <tr>
+                    <th>Field</th>
+                    <th>Stored?</th>
+                    <th>Why?</th>
+                </tr>
+                <tr>
+                    <td>Invoice Total (<code>amount_total</code>)</td>
+                    <td><strong>Yes</strong></td>
+                    <td>Finance needs to filter/group invoices by amount</td>
+                </tr>
+                <tr>
+                    <td>Employee Age</td>
+                    <td><strong>No</strong></td>
+                    <td>Changes every day - would need daily recalculation</td>
+                </tr>
+                <tr>
+                    <td>Order Margin %</td>
+                    <td><strong>Yes</strong></td>
+                    <td>Sales managers filter "orders with margin > 20%"</td>
+                </tr>
+                <tr>
+                    <td>Stock Quantity</td>
+                    <td><strong>No</strong></td>
+                    <td>Different per warehouse - can't store one value</td>
+                </tr>
+                <tr>
+                    <td>Customer Country on Order</td>
+                    <td><strong>Depends</strong></td>
+                    <td>Not stored if just for display; stored if used in reports</td>
+                </tr>
+            </table>
+        </div>
+
+        <h3>Fields That Change Based on Who's Viewing</h3>
+
+        <div class="mechanism-box">
+            <h4>Context-Dependent Fields Can't Be Stored</h4>
+            <p>Some fields show different values depending on:</p>
+            <ul>
+                <li><strong>Current user:</strong> "My Tasks" shows different tasks per user</li>
+                <li><strong>Current company:</strong> Product price varies by company</li>
+                <li><strong>Selected warehouse:</strong> Stock quantity varies by location</li>
+            </ul>
+            <p>These fields CAN'T be stored because there's no single "right" value - it depends on context.</p>
+        </div>
+
+        <div class="analogy-box">
+            <h4>Example: Why Stock Quantity Isn't Stored</h4>
+            <p>A product might have:</p>
+            <ul>
+                <li>50 units in Paris warehouse</li>
+                <li>120 units in London warehouse</li>
+                <li>0 units in New York warehouse</li>
+            </ul>
+            <p>If you stored "qty_available = 50", users in London would see wrong data. So it's computed each time based on which warehouse the user is viewing.</p>
+        </div>
+
+        <h3>When Stored Fields Don't Update</h3>
+
+        <div class="warning-box">
+            <h4>The "Stale Data" Problem</h4>
+            <p>Stored computed fields can sometimes show outdated values. This happens when:</p>
+            <ul>
+                <li>The "trigger" fields weren't defined correctly by the developer</li>
+                <li>Data was imported/modified bypassing normal Odoo flows</li>
+                <li>A bug prevents recalculation</li>
+            </ul>
+            <p><strong>Quick fix:</strong> Edit and save the record to trigger recalculation. For bulk fixes, ask a developer to run a recomputation.</p>
+        </div>
+
+        <h3>Storage Decision Quick Reference</h3>
+
+        <div class="info-box">
+            <h4>When Would a Field Need to Be Stored?</h4>
+            <ol>
+                <li><strong>You need to Group By it</strong> → Must be stored</li>
+                <li><strong>You need to filter/search by it frequently</strong> → Should be stored (faster)</li>
+                <li><strong>It's used in reports/dashboards</strong> → Usually needs to be stored</li>
+                <li><strong>It changes based on current date</strong> → Should NOT be stored</li>
+                <li><strong>It changes based on current user</strong> → Cannot be stored</li>
+                <li><strong>It varies by warehouse/company</strong> → Cannot be stored</li>
+            </ol>
         </div>
 
         <!-- ==================== SECTION 6: COMPUTED FIELDS ==================== -->
@@ -2239,6 +3143,282 @@
                     <td>Just for display, don't need to search by it</td>
                 </tr>
             </table>
+        </div>
+
+        <h3>What Are Computed Fields?</h3>
+
+        <div class="analogy-box">
+            <h4>Think of Excel Formulas</h4>
+            <p>A computed field is like an <strong>Excel formula cell</strong>. You don't type a value - instead, it <strong>automatically calculates</strong> based on other fields.</p>
+            <ul>
+                <li><strong>Sale Order Line Subtotal</strong> = Quantity × Unit Price - Discount</li>
+                <li><strong>Invoice Total</strong> = Sum of all line subtotals + taxes</li>
+                <li><strong>Employee Age</strong> = Today's date - Birthday</li>
+                <li><strong>Project Progress %</strong> = Completed tasks ÷ Total tasks × 100</li>
+            </ul>
+            <p>When you change the source fields, the computed field updates automatically!</p>
+        </div>
+
+        <h3>Common Computed Fields You Use Every Day</h3>
+
+        <div class="info-box">
+            <table>
+                <tr>
+                    <th>Module</th>
+                    <th>Computed Field</th>
+                    <th>What It Calculates</th>
+                </tr>
+                <tr>
+                    <td>Sales</td>
+                    <td>Amount Total</td>
+                    <td>Sum of all order lines + taxes</td>
+                </tr>
+                <tr>
+                    <td>Sales</td>
+                    <td>Delivery Status</td>
+                    <td>Checks if all shipments are done</td>
+                </tr>
+                <tr>
+                    <td>Inventory</td>
+                    <td>Quantity On Hand</td>
+                    <td>Sum of stock in all locations</td>
+                </tr>
+                <tr>
+                    <td>Project</td>
+                    <td>Task Count</td>
+                    <td>Number of tasks in project</td>
+                </tr>
+                <tr>
+                    <td>HR</td>
+                    <td>Length of Service</td>
+                    <td>Today - Hire Date</td>
+                </tr>
+                <tr>
+                    <td>Accounting</td>
+                    <td>Amount Due</td>
+                    <td>Total - Amount Paid</td>
+                </tr>
+                <tr>
+                    <td>Products</td>
+                    <td>Display Name</td>
+                    <td>[Internal Ref] Product Name (Variant)</td>
+                </tr>
+            </table>
+        </div>
+
+        <h3>Why Some Computed Fields Don't Update</h3>
+
+        <div class="warning-box">
+            <h4>The "Dependencies" Problem</h4>
+            <p>Every computed field has a list of fields it "watches" for changes. This is called <code>@api.depends</code>.</p>
+            <p><strong>If a field changes that isn't in the depends list, the computed field won't update!</strong></p>
+        </div>
+
+        <div class="analogy-box">
+            <h4>Real Example</h4>
+            <p>Imagine a computed field "Customer Country" on Sales Order that shows the customer's country:</p>
+            <pre><code>@api.depends('partner_id.country_id')
+def _compute_customer_country(self):</code></pre>
+            <p>This field watches <code>partner_id.country_id</code>. So:</p>
+            <ul>
+                <li>✓ Change the customer → Field updates</li>
+                <li>✓ Change the customer's country → Field updates</li>
+                <li>✗ Change the customer's city → Field does NOT update (city isn't watched)</li>
+            </ul>
+        </div>
+
+        <div class="mechanism-box">
+            <h4>What To Do When a Computed Field Doesn't Update</h4>
+            <ol>
+                <li><strong>Save the record</strong> - Sometimes fields update only on save</li>
+                <li><strong>Refresh the page</strong> - Browser cache might show old values</li>
+                <li><strong>Check the source fields</strong> - Make sure you changed the right field</li>
+                <li><strong>Report to developer</strong> - If it still doesn't work, the depends list may need fixing</li>
+            </ol>
+        </div>
+
+        <h3>Stored vs Not Stored Computed Fields</h3>
+
+        <div class="info-box">
+            <h4>Two Types of Computed Fields</h4>
+            <table>
+                <tr>
+                    <th>Type</th>
+                    <th>Stored</th>
+                    <th>Not Stored</th>
+                </tr>
+                <tr>
+                    <td><strong>Where value lives</strong></td>
+                    <td>In the database</td>
+                    <td>Calculated on-the-fly</td>
+                </tr>
+                <tr>
+                    <td><strong>When it updates</strong></td>
+                    <td>When source fields change</td>
+                    <td>Every time you view it</td>
+                </tr>
+                <tr>
+                    <td><strong>Can filter/group by?</strong></td>
+                    <td>Yes</td>
+                    <td>No</td>
+                </tr>
+                <tr>
+                    <td><strong>Performance</strong></td>
+                    <td>Fast to read</td>
+                    <td>Slower (must calculate)</td>
+                </tr>
+                <tr>
+                    <td><strong>Example</strong></td>
+                    <td>Invoice Total</td>
+                    <td>Product Available Qty</td>
+                </tr>
+            </table>
+        </div>
+
+        <div class="warning-box">
+            <h4>Why Can't I Group By This Field?</h4>
+            <p>If you try to add a computed field to "Group By" in filters and it doesn't appear, it's because:</p>
+            <ul>
+                <li>The field is <strong>not stored</strong> in the database</li>
+                <li>Database can't GROUP BY something that doesn't exist in a column</li>
+            </ul>
+            <p><strong>Solution:</strong> Ask your developer to add <code>store=True</code> to the field definition.</p>
+        </div>
+
+        <h3>Context-Dependent Fields - Same Product, Different Values</h3>
+
+        <div class="analogy-box">
+            <h4>The "Quantity Available" Mystery</h4>
+            <p>Have you ever noticed that the same product shows different quantities depending on where you look?</p>
+            <ul>
+                <li>In <strong>Warehouse A</strong>: "Laptop" shows 50 units available</li>
+                <li>In <strong>Warehouse B</strong>: "Laptop" shows 30 units available</li>
+                <li>In <strong>Product form</strong>: "Laptop" shows 80 units (total)</li>
+            </ul>
+            <p>This is because <code>qty_available</code> is a <strong>context-dependent</strong> computed field!</p>
+        </div>
+
+        <div class="mechanism-box">
+            <h4>How Context Works</h4>
+            <p>When you open a product from different places, Odoo passes different <strong>context</strong>:</p>
+            <ul>
+                <li>From Warehouse A screen → context includes <code>{'warehouse': 'WH-A'}</code></li>
+                <li>From Company X → context includes <code>{'company': 'Company X'}</code></li>
+                <li>From a specific date report → context includes <code>{'date': '2024-01-15'}</code></li>
+            </ul>
+            <p>The computed field uses this context to show the <strong>relevant</strong> value.</p>
+        </div>
+
+        <div class="warning-box">
+            <h4>Context-Dependent Fields Cannot Be Stored</h4>
+            <p>These fields are NEVER stored in the database because:</p>
+            <ul>
+                <li>The value changes based on who's viewing and from where</li>
+                <li>You can't store 50 different values for 50 different warehouses in one column</li>
+            </ul>
+            <p>This is why you can't filter or group by "Quantity Available" - it's always calculated fresh.</p>
+        </div>
+
+        <h3>Editable Computed Fields (Inverse)</h3>
+
+        <div class="analogy-box">
+            <h4>Two-Way Sync</h4>
+            <p>Some computed fields let you <strong>edit them</strong>, and the change flows back to the source:</p>
+            <ul>
+                <li><strong>Margin %</strong> - Computed from cost and price. Edit the margin → price updates!</li>
+                <li><strong>Total with Tax</strong> - Edit the total → quantity adjusts to match</li>
+            </ul>
+            <p>This is called an <strong>inverse</strong> - the field works both directions.</p>
+        </div>
+
+        <div class="info-box">
+            <h4>How to Recognize Editable Computed Fields</h4>
+            <ul>
+                <li>The field appears <strong>editable</strong> (not grayed out)</li>
+                <li>You can type in it, and other fields change automatically</li>
+                <li>Common in pricing, quantities, and percentage calculations</li>
+            </ul>
+        </div>
+
+        <h3>Common Computed Field Issues for Consultants</h3>
+
+        <div class="warning-box">
+            <h4>Troubleshooting Guide</h4>
+            <table>
+                <tr>
+                    <th>Problem</th>
+                    <th>Likely Cause</th>
+                    <th>What To Check</th>
+                </tr>
+                <tr>
+                    <td>Field shows 0 or empty</td>
+                    <td>Source fields are empty</td>
+                    <td>Check if required source fields have values</td>
+                </tr>
+                <tr>
+                    <td>Field doesn't update after change</td>
+                    <td>Changed field not in depends</td>
+                    <td>Try saving the record first</td>
+                </tr>
+                <tr>
+                    <td>Field shows wrong value</td>
+                    <td>Stale cached data</td>
+                    <td>Refresh page, clear browser cache</td>
+                </tr>
+                <tr>
+                    <td>Different users see different values</td>
+                    <td>Context-dependent field</td>
+                    <td>Check if users have different company/warehouse settings</td>
+                </tr>
+                <tr>
+                    <td>Can't filter/group by the field</td>
+                    <td>Field is not stored</td>
+                    <td>Ask developer to add <code>store=True</code></td>
+                </tr>
+                <tr>
+                    <td>Field is very slow to load</td>
+                    <td>Heavy computation</td>
+                    <td>Developer may need to optimize or store it</td>
+                </tr>
+            </table>
+        </div>
+
+        <h3>When to Ask Developer for Changes</h3>
+
+        <div class="info-box">
+            <h4>Request: "Please store this computed field"</h4>
+            <p>Ask for <code>store=True</code> when:</p>
+            <ul>
+                <li>You need to <strong>filter or group by</strong> the field in list views</li>
+                <li>The field is <strong>slow to load</strong> because calculation is complex</li>
+                <li>You need the field in <strong>reports</strong> that query the database directly</li>
+                <li>You want to <strong>export</strong> the field to Excel with correct values</li>
+            </ul>
+        </div>
+
+        <div class="info-box">
+            <h4>Request: "Please add X to the depends list"</h4>
+            <p>Ask for additional dependencies when:</p>
+            <ul>
+                <li>Changing a field doesn't trigger the expected recalculation</li>
+                <li>You have to manually save/refresh to see updated values</li>
+            </ul>
+        </div>
+
+        <div class="mechanism-box">
+            <h4>Code Reference for Developers</h4>
+            <p>When reporting issues to developers, here's the key information they need:</p>
+            <pre><code># Basic computed field structure
+field_name = fields.Float(
+    compute='_compute_field_name',  # Method name
+    store=True,                      # Save to database (optional)
+)
+
+@api.depends('source_field', 'related_id.field')  # What triggers recalculation
+def _compute_field_name(self):
+    for record in self:
+        record.field_name = ...  # Calculation logic</code></pre>
+            <p>Tell them: "The field <code>X</code> doesn't update when I change <code>Y</code>. Please check the <code>@api.depends</code>."</p>
         </div>
 
         <!-- ==================== SECTION 7: RELATED FIELDS ==================== -->
@@ -2499,6 +3679,340 @@
                 <li>Progress bars</li>
                 <li>Quick create within columns</li>
             </ul>
+        </div>
+
+        <h3>Understanding Form View Structure</h3>
+
+        <div class="analogy-box">
+            <h4>Form View Anatomy - What You See on Screen</h4>
+            <p>Every form view in Odoo follows a consistent structure. Understanding this helps you communicate with developers:</p>
+            <ul>
+                <li><strong>Header Bar</strong> - Status pipeline and action buttons at the top</li>
+                <li><strong>Title Area</strong> - Usually has an image/avatar and the main name field</li>
+                <li><strong>Field Groups</strong> - Fields organized in columns (usually 2 columns)</li>
+                <li><strong>Tabs (Notebook)</strong> - Additional sections organized as tabs</li>
+                <li><strong>Chatter</strong> - Messages, notes, and scheduled activities at the bottom</li>
+            </ul>
+        </div>
+
+        <div class="info-box">
+            <h4>Form View Elements - What They're Called in XML</h4>
+            <table>
+                <tr>
+                    <th>What You See</th>
+                    <th>XML Element</th>
+                    <th>Purpose</th>
+                </tr>
+                <tr>
+                    <td>Status bar with stages</td>
+                    <td><code>&lt;header&gt;</code></td>
+                    <td>Workflow buttons and status</td>
+                </tr>
+                <tr>
+                    <td>White card area</td>
+                    <td><code>&lt;sheet&gt;</code></td>
+                    <td>Main content container</td>
+                </tr>
+                <tr>
+                    <td>Fields in columns</td>
+                    <td><code>&lt;group&gt;</code></td>
+                    <td>Organizes fields side-by-side</td>
+                </tr>
+                <tr>
+                    <td>Tabs at bottom</td>
+                    <td><code>&lt;notebook&gt;</code> + <code>&lt;page&gt;</code></td>
+                    <td>Tabbed sections</td>
+                </tr>
+                <tr>
+                    <td>Message/activity panel</td>
+                    <td><code>&lt;chatter&gt;</code></td>
+                    <td>Communication history</td>
+                </tr>
+            </table>
+        </div>
+
+        <h3>Understanding List View Features</h3>
+
+        <div class="mechanism-box">
+            <h4>List View Features You Can Request</h4>
+            <p>When asking a developer to modify a list view, here's what's possible:</p>
+            <ul>
+                <li><strong>Row colors</strong> - Highlight rows based on conditions (red for overdue, green for done)</li>
+                <li><strong>Default sorting</strong> - Which column to sort by when first loading</li>
+                <li><strong>Inline editing</strong> - Edit directly in the list without opening form</li>
+                <li><strong>Column totals</strong> - Show sum or average at the bottom</li>
+                <li><strong>Optional columns</strong> - Let users show/hide certain columns</li>
+            </ul>
+        </div>
+
+        <div class="warning-box">
+            <h4>Row Color Options (Decorations)</h4>
+            <table>
+                <tr>
+                    <th>Color</th>
+                    <th>Attribute Name</th>
+                    <th>Typical Use</th>
+                </tr>
+                <tr>
+                    <td style="background: #d4edda; padding: 5px;">Green</td>
+                    <td><code>decoration-success</code></td>
+                    <td>Completed, positive</td>
+                </tr>
+                <tr>
+                    <td style="background: #cce5ff; padding: 5px;">Blue</td>
+                    <td><code>decoration-info</code></td>
+                    <td>Draft, information</td>
+                </tr>
+                <tr>
+                    <td style="background: #fff3cd; padding: 5px;">Orange</td>
+                    <td><code>decoration-warning</code></td>
+                    <td>Attention needed</td>
+                </tr>
+                <tr>
+                    <td style="background: #f8d7da; padding: 5px;">Red</td>
+                    <td><code>decoration-danger</code></td>
+                    <td>Error, cancelled, negative</td>
+                </tr>
+                <tr>
+                    <td style="background: #e9ecef; padding: 5px;">Gray</td>
+                    <td><code>decoration-muted</code></td>
+                    <td>Inactive, archived</td>
+                </tr>
+            </table>
+            <p style="margin-top: 10px;">Example: "Make overdue invoices red" → Developer adds: <code>decoration-danger="date_due &lt; today"</code></p>
+        </div>
+
+        <h3>Understanding Kanban Views</h3>
+
+        <div class="analogy-box">
+            <h4>Kanban = Cards in Columns</h4>
+            <p>Think of a Kanban view like a <strong>Trello board</strong> or <strong>sticky notes on a whiteboard</strong>:</p>
+            <ul>
+                <li>Each <strong>column</strong> represents a stage (New, In Progress, Done)</li>
+                <li>Each <strong>card</strong> is a record (a task, a lead, an opportunity)</li>
+                <li><strong>Drag and drop</strong> moves records between stages</li>
+            </ul>
+        </div>
+
+        <div class="info-box">
+            <h4>Kanban Features to Know</h4>
+            <table>
+                <tr>
+                    <th>Feature</th>
+                    <th>What It Does</th>
+                    <th>Example</th>
+                </tr>
+                <tr>
+                    <td>Quick Create</td>
+                    <td>Add new record without leaving kanban</td>
+                    <td>"+" button at top of column</td>
+                </tr>
+                <tr>
+                    <td>Progress Bar</td>
+                    <td>Shows status at column header</td>
+                    <td>Green/yellow/red indicator per column</td>
+                </tr>
+                <tr>
+                    <td>Card Colors</td>
+                    <td>Color-code cards by priority/status</td>
+                    <td>Click the colored dot on card</td>
+                </tr>
+                <tr>
+                    <td>Group By</td>
+                    <td>What field creates the columns</td>
+                    <td>stage_id, user_id, priority</td>
+                </tr>
+            </table>
+        </div>
+
+        <h3>Understanding Search Views</h3>
+
+        <div class="mechanism-box">
+            <h4>What Search Views Control</h4>
+            <p>The search view defines what appears in the search bar area:</p>
+            <ul>
+                <li><strong>Search fields</strong> - Which fields you can type to search</li>
+                <li><strong>Predefined Filters</strong> - Quick filter buttons (My Records, This Month, etc.)</li>
+                <li><strong>Group By options</strong> - How to group records in list/kanban</li>
+                <li><strong>Search Panel</strong> - Left sidebar with clickable filters (if enabled)</li>
+            </ul>
+        </div>
+
+        <div class="info-box">
+            <h4>Search View Elements</h4>
+            <table>
+                <tr>
+                    <th>What You See</th>
+                    <th>XML Element</th>
+                    <th>Purpose</th>
+                </tr>
+                <tr>
+                    <td>Searchable fields in dropdown</td>
+                    <td><code>&lt;field&gt;</code></td>
+                    <td>Fields you can search by</td>
+                </tr>
+                <tr>
+                    <td>Filter buttons</td>
+                    <td><code>&lt;filter&gt;</code></td>
+                    <td>Predefined filter conditions</td>
+                </tr>
+                <tr>
+                    <td>Group By dropdown</td>
+                    <td><code>&lt;group&gt;</code></td>
+                    <td>Grouping options</td>
+                </tr>
+                <tr>
+                    <td>Left sidebar filters</td>
+                    <td><code>&lt;searchpanel&gt;</code></td>
+                    <td>Clickable category filters</td>
+                </tr>
+            </table>
+        </div>
+
+        <h3>View Inheritance - Extending Existing Views</h3>
+
+        <div class="critical-box">
+            <h4>How Odoo Customizations Work</h4>
+            <p>Instead of replacing the entire view, Odoo lets you <strong>inherit and modify</strong> specific parts. This is why custom modules don't break when you upgrade Odoo.</p>
+        </div>
+
+        <div class="analogy-box">
+            <h4>Think of It Like Editing a Document</h4>
+            <p>View inheritance is like Track Changes in Word:</p>
+            <ul>
+                <li><strong>Add after</strong> - Insert new content after a specific paragraph</li>
+                <li><strong>Add before</strong> - Insert new content before a specific paragraph</li>
+                <li><strong>Replace</strong> - Delete something and put something else in its place</li>
+                <li><strong>Modify attributes</strong> - Change properties (like making a field required)</li>
+            </ul>
+        </div>
+
+        <div class="info-box">
+            <h4>What You Can Ask Developers To Do</h4>
+            <table>
+                <tr>
+                    <th>Request</th>
+                    <th>Technical Term</th>
+                    <th>Example</th>
+                </tr>
+                <tr>
+                    <td>"Add a field after Phone"</td>
+                    <td><code>position="after"</code></td>
+                    <td>Add Mobile 2 field after Phone</td>
+                </tr>
+                <tr>
+                    <td>"Add a field before Email"</td>
+                    <td><code>position="before"</code></td>
+                    <td>Add Preferred Contact Method before Email</td>
+                </tr>
+                <tr>
+                    <td>"Remove this field"</td>
+                    <td><code>position="replace"</code> (empty)</td>
+                    <td>Remove the Job Position field</td>
+                </tr>
+                <tr>
+                    <td>"Make this field required"</td>
+                    <td><code>position="attributes"</code></td>
+                    <td>Make VAT number required</td>
+                </tr>
+                <tr>
+                    <td>"Add a new tab"</td>
+                    <td><code>position="inside"</code> on notebook</td>
+                    <td>Add "Custom Data" tab to partner form</td>
+                </tr>
+            </table>
+        </div>
+
+        <h3>Conditional Visibility - Show/Hide Fields</h3>
+
+        <div class="mechanism-box">
+            <h4>Fields Can Appear or Disappear Based on Conditions</h4>
+            <p>This is called "dynamic visibility" - fields show/hide based on other field values:</p>
+            <ul>
+                <li><strong>Discount Reason</strong> - Only shows when Discount > 0</li>
+                <li><strong>Shipping Address</strong> - Only shows when "Ship to different address" is checked</li>
+                <li><strong>Manufacturing Tab</strong> - Only shows for products of type "Storable"</li>
+                <li><strong>Confirm Button</strong> - Only shows when status is "Draft"</li>
+            </ul>
+        </div>
+
+        <div class="warning-box">
+            <h4>Odoo 17+ Changed How This Works</h4>
+            <p>If you're looking at old code or documentation:</p>
+            <table>
+                <tr>
+                    <th>Odoo 16 and earlier</th>
+                    <th>Odoo 17+</th>
+                </tr>
+                <tr>
+                    <td><code>attrs="{'invisible': [('state', '!=', 'draft')]}"</code></td>
+                    <td><code>invisible="state != 'draft'"</code></td>
+                </tr>
+            </table>
+            <p>The new syntax is simpler and more readable.</p>
+        </div>
+
+        <h3>View Priority - When Multiple Modules Modify the Same View</h3>
+
+        <div class="info-box">
+            <h4>How Odoo Decides Which Modifications Apply</h4>
+            <p>When multiple modules modify the same view:</p>
+            <ul>
+                <li>Each view has a <strong>priority number</strong> (default is 16)</li>
+                <li><strong>Lower number = higher priority</strong> (applied first)</li>
+                <li>If same priority, module dependency order determines sequence</li>
+            </ul>
+            <p><strong>Why this matters:</strong> If your customization seems to be "undone" by another module, it might be a priority issue.</p>
+        </div>
+
+        <h3>Common View Issues for Consultants</h3>
+
+        <div class="warning-box">
+            <h4>Troubleshooting View Problems</h4>
+            <table>
+                <tr>
+                    <th>Problem</th>
+                    <th>Likely Cause</th>
+                    <th>What to Check</th>
+                </tr>
+                <tr>
+                    <td>Field appears but shouldn't</td>
+                    <td>Invisible condition not working</td>
+                    <td>Check if the condition field has a value</td>
+                </tr>
+                <tr>
+                    <td>Custom field not showing</td>
+                    <td>View inheritance issue</td>
+                    <td>Was module upgraded? Check view in debug mode</td>
+                </tr>
+                <tr>
+                    <td>Can't group by a field</td>
+                    <td>Field is not stored</td>
+                    <td>Ask developer to add <code>store=True</code></td>
+                </tr>
+                <tr>
+                    <td>View loads slowly</td>
+                    <td>Too many unstored computed fields</td>
+                    <td>Consider storing frequently-used computed fields</td>
+                </tr>
+                <tr>
+                    <td>Filter doesn't work</td>
+                    <td>Domain syntax error</td>
+                    <td>Check domain filter in debug mode</td>
+                </tr>
+            </table>
+        </div>
+
+        <div class="success-box">
+            <h4>How to Find Field/View Names (Developer Mode)</h4>
+            <ol>
+                <li>Go to <strong>Settings → Activate Developer Mode</strong></li>
+                <li>Open the form you want to investigate</li>
+                <li>Click the <strong>bug icon</strong> in the top menu</li>
+                <li>Select <strong>Edit View: Form</strong> to see the view XML</li>
+                <li>Or hover over a field and click the <strong>debug icon</strong> to see field technical name</li>
+            </ol>
+            <p>This helps you communicate precise field/view names to developers.</p>
         </div>
 
         <!-- ==================== SECTION 10: WIDGETS ==================== -->
