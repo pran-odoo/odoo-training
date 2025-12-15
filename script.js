@@ -2073,25 +2073,25 @@ function initGlossary() {
 
     // Event delegation for glossary terms
     document.addEventListener('mouseenter', function(e) {
-        if (e.target.classList.contains('glossary-term')) {
+        if (e.target && e.target.classList && e.target.classList.contains('glossary-term')) {
             showPopover(e.target.dataset.term, e.target);
         }
     }, true);
 
     document.addEventListener('mouseleave', function(e) {
-        if (e.target.classList.contains('glossary-term')) {
+        if (e.target && e.target.classList && e.target.classList.contains('glossary-term')) {
             hidePopover();
         }
     }, true);
 
     document.addEventListener('focusin', function(e) {
-        if (e.target.classList.contains('glossary-term')) {
+        if (e.target && e.target.classList && e.target.classList.contains('glossary-term')) {
             showPopover(e.target.dataset.term, e.target);
         }
     });
 
     document.addEventListener('focusout', function(e) {
-        if (e.target.classList.contains('glossary-term')) {
+        if (e.target && e.target.classList && e.target.classList.contains('glossary-term')) {
             hidePopover();
         }
     });
