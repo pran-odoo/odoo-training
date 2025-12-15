@@ -2618,5 +2618,28 @@ function addCopyButtons() {
 // Run on load
 addCopyButtons();
 
+// Wrap tables for mobile horizontal scrolling
+function wrapTablesForMobile() {
+    const tables = document.querySelectorAll('.container table:not(.table-wrapper table)');
+    tables.forEach(table => {
+        // Skip if already wrapped
+        if (table.parentElement.classList.contains('table-wrapper')) return;
+
+        const wrapper = document.createElement('div');
+        wrapper.className = 'table-wrapper';
+        table.parentNode.insertBefore(wrapper, table);
+        wrapper.appendChild(table);
+
+        // Hide scroll hint once user scrolls
+        wrapper.addEventListener('scroll', function() {
+            if (this.scrollLeft > 10) {
+                this.classList.add('scrolled');
+            }
+        }, { passive: true });
+    });
+}
+
+wrapTablesForMobile();
+
 init();
 });
