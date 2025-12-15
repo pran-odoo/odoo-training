@@ -1302,6 +1302,20 @@ pre code {
     -webkit-user-select: text;
 }
 
+/* Code block text selection - lighter highlight so text stays visible */
+pre::selection,
+pre *::selection,
+code::selection {
+    background: rgba(167, 139, 250, 0.5) !important;
+    color: #fff !important;
+}
+
+pre::-moz-selection,
+pre *::-moz-selection,
+code::-moz-selection {
+    background: rgba(167, 139, 250, 0.5) !important;
+    color: #fff !important;
+}
 
 /* Pre blocks inside colored boxes - ensure dark background */
 .critical-box pre,
