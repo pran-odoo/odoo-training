@@ -2641,5 +2641,363 @@ function wrapTablesForMobile() {
 
 wrapTablesForMobile();
 
+// ==================== SYNTAX HIGHLIGHTING ====================
+/**
+ * Lightweight syntax highlighter for Python and XML code blocks.
+ * No external dependencies - pure vanilla JS.
+ */
+const SyntaxHighlighter = {
+    // Python language patterns
+    python: {
+        patterns: [
+            // Comments (must come first to avoid matching # in strings)
+            { regex: /(#.*)$/gm, className: 'sh-comment' },
+            // Triple-quoted strings (multiline)
+            { regex: /("""[\s\S]*?"""|'''[\s\S]*?''')/g, className: 'sh-string' },
+            // Regular strings
+            { regex: /("(?:[^"\\]|\\.)*"|'(?:[^'\\]|\\.)*')/g, className: 'sh-string' },
+            // Decorators
+            { regex: /(@\w+)/g, className: 'sh-decorator' },
+            // Keywords
+            { regex: /\b(def|class|if|elif|else|for|while|try|except|finally|with|as|import|from|return|yield|raise|pass|break|continue|and|or|not|in|is|lambda|None|True|False|async|await|global|nonlocal|assert)\b/g, className: 'sh-keyword' },
+            // Built-in functions
+            { regex: /\b(print|len|range|str|int|float|list|dict|tuple|set|bool|type|isinstance|hasattr|getattr|setattr|super|self|cls)\b/g, className: 'sh-builtin' },
+            // Odoo-specific
+            { regex: /\b(fields|models|api|_name|_description|_inherit|_inherits|_order|_rec_name|_sql_constraints|compute|inverse|search|store|readonly|required|default|string|help|comodel_name|inverse_name|relation|domain|context|ondelete|tracking|copy|index|Many2one|One2many|Many2many|Char|Text|Html|Integer|Float|Boolean|Date|Datetime|Binary|Selection|Reference|Monetary|Image|Command|Domain)\b/g, className: 'sh-field' },
+            // Class names (after class keyword)
+            { regex: /\bclass\s+(\w+)/g, replacement: 'class <span class="sh-class">$1</span>' },
+            // Function names (after def keyword)
+            { regex: /\bdef\s+(\w+)/g, replacement: 'def <span class="sh-function">$1</span>' },
+            // Numbers
+            { regex: /\b(\d+\.?\d*)\b/g, className: 'sh-number' },
+            // self parameter
+            { regex: /\b(self)\b/g, className: 'sh-self' },
+            // Operators
+            { regex: /([+\-*/%=<>!&|^~]+)/g, className: 'sh-operator' },
+        ]
+    },
+
+    // XML language patterns
+    xml: {
+        patterns: [
+            // Comments
+            { regex: /(&lt;!--[\s\S]*?--&gt;|<!--[\s\S]*?-->)/g, className: 'sh-comment' },
+            // CDATA sections
+            { regex: /(&lt;!\[CDATA\[[\s\S]*?\]\]&gt;)/g, className: 'sh-string' },
+            // Attribute values (must come before tag detection)
+            { regex: /=("(?:[^"\\]|\\.)*"|'(?:[^'\\]|\\.)*')/g, replacement: '=<span class="sh-attr-value">$1</span>' },
+            // Attribute names
+            { regex: /\s(\w+(?::\w+)?)\s*=/g, replacement: ' <span class="sh-attribute">$1</span>=' },
+            // Closing tags
+            { regex: /(&lt;\/)([\w:-]+)(&gt;)/g, replacement: '$1<span class="sh-tag">$2</span>$3' },
+            // Self-closing tags
+            { regex: /(&lt;)([\w:-]+)([^&]*?)(\/&gt;)/g, replacement: '$1<span class="sh-tag">$2</span>$3$4' },
+            // Opening tags
+            { regex: /(&lt;)([\w:-]+)/g, replacement: '$1<span class="sh-tag">$2</span>' },
+            // Namespace prefixes
+            { regex: /\b(odoo|data|record|field|template|t-|xpath)\b/g, className: 'sh-namespace' },
+        ]
+    },
+
+    /**
+     * Escape HTML entities to prevent XSS and display issues
+     */
+    escapeHtml(text) {
+        const div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
+    },
+
+    /**
+     * Detect language from code content
+     */
+    detectLanguage(code) {
+        const pythonIndicators = [
+            /\bdef\s+\w+\s*\(/,
+            /\bclass\s+\w+/,
+            /\bimport\s+\w+/,
+            /\bfrom\s+\w+\s+import/,
+            /@api\./,
+            /fields\.\w+/,
+            /self\./,
+        ];
+
+        const xmlIndicators = [
+            /<\?xml/,
+            /<odoo>/,
+            /<record/,
+            /<field/,
+            /<template/,
+            /<\/\w+>/,
+            /xmlns/,
+        ];
+
+        const pythonScore = pythonIndicators.filter(r => r.test(code)).length;
+        const xmlScore = xmlIndicators.filter(r => r.test(code)).length;
+
+        if (pythonScore > xmlScore) return 'python';
+        if (xmlScore > pythonScore) return 'xml';
+        if (pythonScore > 0) return 'python';
+        if (xmlScore > 0) return 'xml';
+        return null;
+    },
+
+    /**
+     * Apply syntax highlighting to code
+     */
+    highlight(code, language) {
+        if (!language || !this[language]) return this.escapeHtml(code);
+
+        // For XML, escape HTML first
+        let highlighted = language === 'xml' ? this.escapeHtml(code) : code;
+
+        const patterns = this[language].patterns;
+
+        // Apply each pattern
+        for (const pattern of patterns) {
+            if (pattern.replacement) {
+                highlighted = highlighted.replace(pattern.regex, pattern.replacement);
+            } else if (pattern.className) {
+                highlighted = highlighted.replace(pattern.regex, (match) => {
+                    // Don't highlight if already inside a span
+                    return `<span class="${pattern.className}">${match}</span>`;
+                });
+            }
+        }
+
+        // For Python, escape any remaining HTML (but preserve our spans)
+        if (language === 'python') {
+            // This is tricky - we need to escape HTML but preserve our highlighting spans
+            // We'll mark our spans with a unique marker, escape, then restore
+            const marker = '___SPAN___';
+            const spans = [];
+            highlighted = highlighted.replace(/<span class="sh-[^"]+">([^<]*)<\/span>/g, (match) => {
+                spans.push(match);
+                return marker + (spans.length - 1) + marker;
+            });
+            highlighted = this.escapeHtml(highlighted);
+            highlighted = highlighted.replace(new RegExp(marker + '(\\d+)' + marker, 'g'), (_, idx) => spans[parseInt(idx)]);
+        }
+
+        return highlighted;
+    },
+
+    /**
+     * Initialize syntax highlighting for all code blocks
+     */
+    init() {
+        const codeBlocks = document.querySelectorAll('pre code');
+
+        codeBlocks.forEach(codeElement => {
+            const pre = codeElement.parentElement;
+
+            // Skip if already highlighted
+            if (pre.dataset.highlighted === 'true') return;
+
+            const originalCode = codeElement.textContent;
+            const language = this.detectLanguage(originalCode);
+
+            if (language) {
+                codeElement.innerHTML = this.highlight(originalCode, language);
+                pre.dataset.language = language;
+                pre.dataset.highlighted = 'true';
+            }
+        });
+    }
+};
+
+// ==================== INTERACTIVE DIAGRAMS ====================
+/**
+ * Makes diagram boxes clickable to highlight related elements.
+ * Supports relationship highlighting and tooltips.
+ */
+const InteractiveDiagrams = {
+    /**
+     * Define relationships between diagram elements
+     * Key: box text content (lowercase), Value: array of related box texts
+     */
+    relationships: {
+        // Many2one relationships
+        'sale order': ['customer', 'partner', 'salesperson', 'warehouse', 'pricelist'],
+        'sale order #1': ['customer: acme corp', 'acme corp'],
+        'sale order #2': ['customer: acme corp', 'acme corp'],
+        'sale order #3': ['customer: beta inc', 'beta inc'],
+        'customer: acme corp': ['sale order #1', 'sale order #2'],
+        'customer: beta inc': ['sale order #3'],
+        'acme corp': ['sale order #1', 'sale order #2'],
+        'beta inc': ['sale order #3'],
+
+        // Model relationships
+        'sale.order': ['res.partner', 'product.product', 'account.move', 'stock.picking', 'mail.thread', 'crm.lead', 'project.task'],
+        'account.move': ['res.partner', 'mail.thread', 'sale.order'],
+        'project.task': ['mail.thread', 'res.users', 'project.project'],
+        'crm.lead': ['res.partner', 'mail.thread', 'crm.stage'],
+        'mail.thread': ['sale.order', 'account.move', 'project.task', 'crm.lead'],
+        'res.partner': ['sale.order', 'account.move', 'crm.lead'],
+
+        // Many2one visual
+        'many2one': ['one2many', 'n : 1', '1 : n'],
+        'one2many': ['many2one', '1 : n', 'n : 1'],
+
+        // Odoo architecture
+        'javascript frontend (owl)': ['python backend', 'json-rpc / http'],
+        'python backend': ['javascript frontend (owl)', 'postgresql database', 'orm'],
+        'postgresql database': ['python backend', 'orm'],
+        'owl components': ['web client', 'widgets', 'actions'],
+        'odoo orm': ['models', 'fields', 'methods'],
+    },
+
+    /**
+     * Get related boxes for a given box
+     */
+    getRelated(boxText) {
+        const normalized = boxText.toLowerCase().trim();
+        return this.relationships[normalized] || [];
+    },
+
+    /**
+     * Initialize interactive diagrams
+     */
+    init() {
+        const diagrams = document.querySelectorAll('.diagram');
+
+        diagrams.forEach(diagram => {
+            const boxes = diagram.querySelectorAll('.diagram-box');
+
+            // Skip diagrams with no boxes or only one box
+            if (boxes.length < 2) return;
+
+            // Add interactive class
+            diagram.classList.add('diagram-interactive');
+
+            // Add reset button
+            const resetBtn = document.createElement('button');
+            resetBtn.className = 'diagram-reset';
+            resetBtn.textContent = 'Reset view';
+            resetBtn.setAttribute('aria-label', 'Reset diagram highlighting');
+            diagram.appendChild(resetBtn);
+
+            // Make boxes focusable for accessibility
+            boxes.forEach(box => {
+                box.setAttribute('tabindex', '0');
+                box.setAttribute('role', 'button');
+            });
+
+            // Handle box clicks
+            boxes.forEach(box => {
+                const handleActivate = (e) => {
+                    e.stopPropagation();
+                    this.highlightRelated(diagram, box);
+                };
+
+                box.addEventListener('click', handleActivate);
+                box.addEventListener('keydown', (e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault();
+                        handleActivate(e);
+                    }
+                });
+            });
+
+            // Reset button handler
+            resetBtn.addEventListener('click', () => {
+                this.resetDiagram(diagram);
+            });
+
+            // Click outside to reset
+            document.addEventListener('click', (e) => {
+                if (!diagram.contains(e.target)) {
+                    this.resetDiagram(diagram);
+                }
+            });
+        });
+    },
+
+    /**
+     * Highlight related elements in a diagram
+     */
+    highlightRelated(diagram, clickedBox) {
+        const boxes = diagram.querySelectorAll('.diagram-box');
+        const arrows = diagram.querySelectorAll('.arrow, .arrow-down');
+        const clickedText = clickedBox.textContent.toLowerCase().trim();
+        const relatedTexts = this.getRelated(clickedText);
+
+        // Mark diagram as having a selection
+        diagram.classList.add('has-selection');
+
+        // Reset all first
+        boxes.forEach(box => {
+            box.classList.remove('highlighted', 'dimmed');
+        });
+        arrows.forEach(arrow => {
+            arrow.classList.remove('highlighted', 'dimmed');
+        });
+
+        // Highlight clicked box
+        clickedBox.classList.add('highlighted');
+
+        // Find and highlight related boxes
+        let hasRelated = false;
+        boxes.forEach(box => {
+            if (box === clickedBox) return;
+
+            const boxText = box.textContent.toLowerCase().trim();
+            const isRelated = relatedTexts.some(related =>
+                boxText.includes(related) || related.includes(boxText)
+            );
+
+            if (isRelated) {
+                box.classList.add('highlighted');
+                hasRelated = true;
+            } else {
+                box.classList.add('dimmed');
+            }
+        });
+
+        // If no relationships found, just highlight clicked box without dimming others
+        if (!hasRelated) {
+            boxes.forEach(box => {
+                box.classList.remove('dimmed');
+            });
+        } else {
+            // Highlight arrows between highlighted boxes
+            arrows.forEach(arrow => {
+                const prev = arrow.previousElementSibling;
+                const next = arrow.nextElementSibling;
+
+                const prevHighlighted = prev && prev.classList.contains('highlighted');
+                const nextHighlighted = next && next.classList.contains('highlighted');
+
+                if (prevHighlighted || nextHighlighted) {
+                    arrow.classList.add('highlighted');
+                } else {
+                    arrow.classList.add('dimmed');
+                }
+            });
+        }
+    },
+
+    /**
+     * Reset diagram to default state
+     */
+    resetDiagram(diagram) {
+        diagram.classList.remove('has-selection');
+
+        const boxes = diagram.querySelectorAll('.diagram-box');
+        const arrows = diagram.querySelectorAll('.arrow, .arrow-down');
+
+        boxes.forEach(box => {
+            box.classList.remove('highlighted', 'dimmed');
+        });
+        arrows.forEach(arrow => {
+            arrow.classList.remove('highlighted', 'dimmed');
+        });
+    }
+};
+
+// Initialize syntax highlighting and interactive diagrams
+SyntaxHighlighter.init();
+InteractiveDiagrams.init();
+
 init();
 });
