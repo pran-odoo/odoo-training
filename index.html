@@ -3,9 +3,17 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; style-src 'self' 'unsafe-inline'; script-src 'self'; img-src 'self' data:;">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; style-src 'self' 'unsafe-inline'; script-src 'self' https://www.googletagmanager.com https://www.google-analytics.com; img-src 'self' data: https://www.google-analytics.com https://www.googletagmanager.com; connect-src 'self' https://www.google-analytics.com https://analytics.google.com https://region1.google-analytics.com;">
     <meta name="description" content="Odoo Conceptual Training - Learn Odoo models, fields, views, domains, and more">
     <meta name="theme-color" content="#714B67">
+    <!-- Google Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-D44SL82HW1"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'G-D44SL82HW1');
+    </script>
     <!-- PWA Meta Tags -->
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
@@ -2245,6 +2253,96 @@ state = fields.Selection(
             </div>
         </div>
 
+        <h3>Test Your Knowledge - Field Types</h3>
+        <div class="quiz-container">
+            <div class="quiz-card" data-correct="b">
+                <div class="quiz-header">
+                    <div class="quiz-number">Q1</div>
+                    <div class="quiz-question">Which field type should you use for a product price?</div>
+                </div>
+                <div class="quiz-options">
+                    <div class="quiz-option" data-option="a">
+                        <div class="quiz-option-letter">A</div>
+                        <div class="quiz-option-text">Float</div>
+                    </div>
+                    <div class="quiz-option" data-option="b">
+                        <div class="quiz-option-letter">B</div>
+                        <div class="quiz-option-text">Monetary (with currency_id)</div>
+                    </div>
+                    <div class="quiz-option" data-option="c">
+                        <div class="quiz-option-letter">C</div>
+                        <div class="quiz-option-text">Integer</div>
+                    </div>
+                    <div class="quiz-option" data-option="d">
+                        <div class="quiz-option-letter">D</div>
+                        <div class="quiz-option-text">Char</div>
+                    </div>
+                </div>
+                <div class="quiz-answer">
+                    <div class="quiz-answer-label">Correct Answer: B</div>
+                    <div class="quiz-explanation">Monetary fields handle currency formatting, rounding rules, and multi-currency calculations automatically. Float would lose precision and not show currency symbols.</div>
+                </div>
+            </div>
+
+            <div class="quiz-card" data-correct="c">
+                <div class="quiz-header">
+                    <div class="quiz-number">Q2</div>
+                    <div class="quiz-question">A task deadline should be the same date regardless of user timezone. Which field type?</div>
+                </div>
+                <div class="quiz-options">
+                    <div class="quiz-option" data-option="a">
+                        <div class="quiz-option-letter">A</div>
+                        <div class="quiz-option-text">Datetime</div>
+                    </div>
+                    <div class="quiz-option" data-option="b">
+                        <div class="quiz-option-letter">B</div>
+                        <div class="quiz-option-text">Char with date format</div>
+                    </div>
+                    <div class="quiz-option" data-option="c">
+                        <div class="quiz-option-letter">C</div>
+                        <div class="quiz-option-text">Date</div>
+                    </div>
+                    <div class="quiz-option" data-option="d">
+                        <div class="quiz-option-letter">D</div>
+                        <div class="quiz-option-text">Integer (Unix timestamp)</div>
+                    </div>
+                </div>
+                <div class="quiz-answer">
+                    <div class="quiz-answer-label">Correct Answer: C</div>
+                    <div class="quiz-explanation">Date fields store only the date without time, so "Jan 15" is Jan 15 for everyone. Datetime would shift based on timezone.</div>
+                </div>
+            </div>
+
+            <div class="quiz-card" data-correct="a">
+                <div class="quiz-header">
+                    <div class="quiz-number">Q3</div>
+                    <div class="quiz-question">What's the key difference between Html and Text field types?</div>
+                </div>
+                <div class="quiz-options">
+                    <div class="quiz-option" data-option="a">
+                        <div class="quiz-option-letter">A</div>
+                        <div class="quiz-option-text">Html allows rich formatting and is sanitized; Text is plain text</div>
+                    </div>
+                    <div class="quiz-option" data-option="b">
+                        <div class="quiz-option-letter">B</div>
+                        <div class="quiz-option-text">Text can be longer than Html</div>
+                    </div>
+                    <div class="quiz-option" data-option="c">
+                        <div class="quiz-option-letter">C</div>
+                        <div class="quiz-option-text">Html is stored in a separate table</div>
+                    </div>
+                    <div class="quiz-option" data-option="d">
+                        <div class="quiz-option-letter">D</div>
+                        <div class="quiz-option-text">There is no practical difference</div>
+                    </div>
+                </div>
+                <div class="quiz-answer">
+                    <div class="quiz-answer-label">Correct Answer: A</div>
+                    <div class="quiz-explanation">Html fields provide a rich text editor and sanitize content to prevent XSS attacks. Text is for multi-line plain text like notes or descriptions.</div>
+                </div>
+            </div>
+        </div>
+
         <!-- ==================== SECTION 4: RELATIONSHIPS ==================== -->
         <h2 id="relationships">3. Relationships - Many2one, One2many, Many2many</h2>
 
@@ -2737,6 +2835,96 @@ state = fields.Selection(
                 <li>User's name, email, phone come from their partner record</li>
                 <li>You can message a user through the contact system</li>
             </ul>
+        </div>
+
+        <h3>Test Your Knowledge - Relationships</h3>
+        <div class="quiz-container">
+            <div class="quiz-card" data-correct="b">
+                <div class="quiz-header">
+                    <div class="quiz-number">Q1</div>
+                    <div class="quiz-question">A Sales Order has many Order Lines. What relationship types are used?</div>
+                </div>
+                <div class="quiz-options">
+                    <div class="quiz-option" data-option="a">
+                        <div class="quiz-option-letter">A</div>
+                        <div class="quiz-option-text">Many2many on both sides</div>
+                    </div>
+                    <div class="quiz-option" data-option="b">
+                        <div class="quiz-option-letter">B</div>
+                        <div class="quiz-option-text">One2many on Order, Many2one on Line</div>
+                    </div>
+                    <div class="quiz-option" data-option="c">
+                        <div class="quiz-option-letter">C</div>
+                        <div class="quiz-option-text">Many2one on both sides</div>
+                    </div>
+                    <div class="quiz-option" data-option="d">
+                        <div class="quiz-option-letter">D</div>
+                        <div class="quiz-option-text">One2many on both sides</div>
+                    </div>
+                </div>
+                <div class="quiz-answer">
+                    <div class="quiz-answer-label">Correct Answer: B</div>
+                    <div class="quiz-explanation">One2many (parent) + Many2one (child) is the standard pattern. The line stores the order_id (Many2one), and the order has a One2many pointing back.</div>
+                </div>
+            </div>
+
+            <div class="quiz-card" data-correct="c">
+                <div class="quiz-header">
+                    <div class="quiz-number">Q2</div>
+                    <div class="quiz-question">Which relationship type creates an actual column in the database?</div>
+                </div>
+                <div class="quiz-options">
+                    <div class="quiz-option" data-option="a">
+                        <div class="quiz-option-letter">A</div>
+                        <div class="quiz-option-text">One2many</div>
+                    </div>
+                    <div class="quiz-option" data-option="b">
+                        <div class="quiz-option-letter">B</div>
+                        <div class="quiz-option-text">Many2many (creates a separate table)</div>
+                    </div>
+                    <div class="quiz-option" data-option="c">
+                        <div class="quiz-option-letter">C</div>
+                        <div class="quiz-option-text">Many2one</div>
+                    </div>
+                    <div class="quiz-option" data-option="d">
+                        <div class="quiz-option-letter">D</div>
+                        <div class="quiz-option-text">All of them create columns</div>
+                    </div>
+                </div>
+                <div class="quiz-answer">
+                    <div class="quiz-answer-label">Correct Answer: C</div>
+                    <div class="quiz-explanation">Many2one stores the foreign key ID in the table. One2many is virtual (reads from the other side). Many2many uses a separate junction table, not a column.</div>
+                </div>
+            </div>
+
+            <div class="quiz-card" data-correct="a">
+                <div class="quiz-header">
+                    <div class="quiz-number">Q3</div>
+                    <div class="quiz-question">Products can have multiple tags, and tags can be on multiple products. What relationship type?</div>
+                </div>
+                <div class="quiz-options">
+                    <div class="quiz-option" data-option="a">
+                        <div class="quiz-option-letter">A</div>
+                        <div class="quiz-option-text">Many2many</div>
+                    </div>
+                    <div class="quiz-option" data-option="b">
+                        <div class="quiz-option-letter">B</div>
+                        <div class="quiz-option-text">One2many</div>
+                    </div>
+                    <div class="quiz-option" data-option="c">
+                        <div class="quiz-option-letter">C</div>
+                        <div class="quiz-option-text">Many2one</div>
+                    </div>
+                    <div class="quiz-option" data-option="d">
+                        <div class="quiz-option-letter">D</div>
+                        <div class="quiz-option-text">Two separate One2many fields</div>
+                    </div>
+                </div>
+                <div class="quiz-answer">
+                    <div class="quiz-answer-label">Correct Answer: A</div>
+                    <div class="quiz-explanation">Many2many is for "many on both sides" relationships. Odoo creates a junction table (like product_tag_rel) to store the connections.</div>
+                </div>
+            </div>
         </div>
 
         <!-- ==================== SECTION 5: STORAGE ==================== -->
@@ -3282,6 +3470,67 @@ state = fields.Selection(
             </ol>
         </div>
 
+        <h3>Test Your Knowledge - Field Storage</h3>
+        <div class="quiz-container">
+            <div class="quiz-card" data-correct="b">
+                <div class="quiz-header">
+                    <div class="quiz-number">Q1</div>
+                    <div class="quiz-question">You want to "Group By" a computed field in a report. What must be true?</div>
+                </div>
+                <div class="quiz-options">
+                    <div class="quiz-option" data-option="a">
+                        <div class="quiz-option-letter">A</div>
+                        <div class="quiz-option-text">The field must have a default value</div>
+                    </div>
+                    <div class="quiz-option" data-option="b">
+                        <div class="quiz-option-letter">B</div>
+                        <div class="quiz-option-text">The field must have store=True</div>
+                    </div>
+                    <div class="quiz-option" data-option="c">
+                        <div class="quiz-option-letter">C</div>
+                        <div class="quiz-option-text">The field must be a Selection type</div>
+                    </div>
+                    <div class="quiz-option" data-option="d">
+                        <div class="quiz-option-letter">D</div>
+                        <div class="quiz-option-text">You can Group By any computed field</div>
+                    </div>
+                </div>
+                <div class="quiz-answer">
+                    <div class="quiz-answer-label">Correct Answer: B</div>
+                    <div class="quiz-explanation">Group By uses SQL which needs real database columns. Only stored fields (store=True) create columns that SQL can GROUP BY.</div>
+                </div>
+            </div>
+
+            <div class="quiz-card" data-correct="a">
+                <div class="quiz-header">
+                    <div class="quiz-number">Q2</div>
+                    <div class="quiz-question">Which field type is NEVER stored in the database?</div>
+                </div>
+                <div class="quiz-options">
+                    <div class="quiz-option" data-option="a">
+                        <div class="quiz-option-letter">A</div>
+                        <div class="quiz-option-text">One2many</div>
+                    </div>
+                    <div class="quiz-option" data-option="b">
+                        <div class="quiz-option-letter">B</div>
+                        <div class="quiz-option-text">Many2one</div>
+                    </div>
+                    <div class="quiz-option" data-option="c">
+                        <div class="quiz-option-letter">C</div>
+                        <div class="quiz-option-text">Selection</div>
+                    </div>
+                    <div class="quiz-option" data-option="d">
+                        <div class="quiz-option-letter">D</div>
+                        <div class="quiz-option-text">Char</div>
+                    </div>
+                </div>
+                <div class="quiz-answer">
+                    <div class="quiz-answer-label">Correct Answer: A</div>
+                    <div class="quiz-explanation">One2many is always virtual - it reads data from the Many2one field on the other model. It doesn't create a column because the relationship is stored on the child side.</div>
+                </div>
+            </div>
+        </div>
+
         <!-- ==================== SECTION 6: COMPUTED FIELDS ==================== -->
         <h2 id="computed">5. Computed Fields Explained</h2>
 
@@ -3741,6 +3990,61 @@ def _compute_field_name(self):
     for record in self:
         record.field_name = ...  # Calculation logic</code></pre>
             <p>Tell them: "The field <code>X</code> doesn't update when I change <code>Y</code>. Please check the <code>@api.depends</code>."</p>
+        </div>
+
+        <div class="quiz-container">
+            <h3>Test Your Knowledge: Computed Fields</h3>
+
+            <div class="quiz-card" data-correct="b">
+                <div class="quiz-header">
+                    <div class="quiz-number">Q1</div>
+                    <div class="quiz-question">A computed field shows the correct total on the form, but when you try to "Group By" this field in a list view, the option is not available. What is the most likely cause?</div>
+                </div>
+                <div class="quiz-options">
+                    <div class="quiz-option" data-option="a">The field has a bug in the calculation</div>
+                    <div class="quiz-option" data-option="b">The field is not stored in the database (store=False)</div>
+                    <div class="quiz-option" data-option="c">You don't have access rights to group by this field</div>
+                    <div class="quiz-option" data-option="d">The field type doesn't support grouping</div>
+                </div>
+                <div class="quiz-answer">
+                    <div class="quiz-answer-label">Correct Answer: B</div>
+                    <div class="quiz-explanation">Group By requires the field to exist as a column in the database. Computed fields with <code>store=False</code> are calculated on-the-fly and have no database column, so PostgreSQL cannot group by them. Ask the developer to add <code>store=True</code>.</div>
+                </div>
+            </div>
+
+            <div class="quiz-card" data-correct="c">
+                <div class="quiz-header">
+                    <div class="quiz-number">Q2</div>
+                    <div class="quiz-question">You change a product's unit price on a Sales Order line, but the "Subtotal" field doesn't update immediately. You have to save the record first. What should you tell the developer?</div>
+                </div>
+                <div class="quiz-options">
+                    <div class="quiz-option" data-option="a">"The Subtotal field needs store=True"</div>
+                    <div class="quiz-option" data-option="b">"The Subtotal field needs a different widget"</div>
+                    <div class="quiz-option" data-option="c">"The @api.depends might be missing 'price_unit' as a trigger"</div>
+                    <div class="quiz-option" data-option="d">"The Subtotal field should be a related field instead"</div>
+                </div>
+                <div class="quiz-answer">
+                    <div class="quiz-answer-label">Correct Answer: C</div>
+                    <div class="quiz-explanation">The <code>@api.depends</code> decorator tells Odoo which fields should trigger recalculation. If changing 'price_unit' doesn't update Subtotal immediately, it's likely that 'price_unit' is not listed in the depends. This is independent of whether the field is stored.</div>
+                </div>
+            </div>
+
+            <div class="quiz-card" data-correct="a">
+                <div class="quiz-header">
+                    <div class="quiz-number">Q3</div>
+                    <div class="quiz-question">What is the key difference between a computed field with <code>inverse</code> method and a regular (non-inverse) computed field?</div>
+                </div>
+                <div class="quiz-options">
+                    <div class="quiz-option" data-option="a">Inverse computed fields can be edited by users; regular computed fields are read-only</div>
+                    <div class="quiz-option" data-option="b">Inverse computed fields are always stored; regular computed fields are never stored</div>
+                    <div class="quiz-option" data-option="c">Inverse computed fields are faster to calculate</div>
+                    <div class="quiz-option" data-option="d">Inverse computed fields can only be Float type</div>
+                </div>
+                <div class="quiz-answer">
+                    <div class="quiz-answer-label">Correct Answer: A</div>
+                    <div class="quiz-explanation">An inverse method allows a computed field to be editable. When a user changes the value, the inverse method runs to update the source fields accordingly. For example, editing a "Total with Tax" field could update the "Subtotal" field via the inverse method.</div>
+                </div>
+            </div>
         </div>
 
         <!-- ==================== SECTION 7: RELATED FIELDS ==================== -->
@@ -4337,6 +4641,61 @@ def _compute_field_name(self):
             <p>This helps you communicate precise field/view names to developers.</p>
         </div>
 
+        <div class="quiz-container">
+            <h3>Test Your Knowledge: Views</h3>
+
+            <div class="quiz-card" data-correct="b">
+                <div class="quiz-header">
+                    <div class="quiz-number">Q1</div>
+                    <div class="quiz-question">A user complains they can see a "Credit Limit" field on the Customer form but not in the Customer list view. The field exists on the model. What's the most likely explanation?</div>
+                </div>
+                <div class="quiz-options">
+                    <div class="quiz-option" data-option="a">The field has access rights restrictions</div>
+                    <div class="quiz-option" data-option="b">The field is included in the Form view XML but not in the Tree view XML</div>
+                    <div class="quiz-option" data-option="c">List views cannot display monetary fields</div>
+                    <div class="quiz-option" data-option="d">The field is a computed field</div>
+                </div>
+                <div class="quiz-answer">
+                    <div class="quiz-answer-label">Correct Answer: B</div>
+                    <div class="quiz-explanation">Each view type (Form, Tree/List, Kanban, etc.) has its own XML definition that specifies which fields to display. A field can exist in one view but not another. The field existing on the model only means it CAN be displayed - the view XML determines IF it's displayed.</div>
+                </div>
+            </div>
+
+            <div class="quiz-card" data-correct="c">
+                <div class="quiz-header">
+                    <div class="quiz-number">Q2</div>
+                    <div class="quiz-question">You want to see Sales Orders displayed as visual cards with customer photos, organized in columns by sales stage. Which view type should you request?</div>
+                </div>
+                <div class="quiz-options">
+                    <div class="quiz-option" data-option="a">List/Tree View with grouping</div>
+                    <div class="quiz-option" data-option="b">Form View with notebook tabs</div>
+                    <div class="quiz-option" data-option="c">Kanban View</div>
+                    <div class="quiz-option" data-option="d">Pivot View</div>
+                </div>
+                <div class="quiz-answer">
+                    <div class="quiz-answer-label">Correct Answer: C</div>
+                    <div class="quiz-explanation">Kanban views display records as cards that can be organized into columns (typically by a stage or status field). They're ideal for visual pipeline management and can include images, progress bars, and key information at a glance.</div>
+                </div>
+            </div>
+
+            <div class="quiz-card" data-correct="d">
+                <div class="quiz-header">
+                    <div class="quiz-number">Q3</div>
+                    <div class="quiz-question">What is the purpose of the <code>invisible</code> attribute in a view XML definition?</div>
+                </div>
+                <div class="quiz-options">
+                    <div class="quiz-option" data-option="a">It deletes the field from the database</div>
+                    <div class="quiz-option" data-option="b">It removes access rights from the field</div>
+                    <div class="quiz-option" data-option="c">It makes the field read-only</div>
+                    <div class="quiz-option" data-option="d">It hides the field from display (conditionally or always)</div>
+                </div>
+                <div class="quiz-answer">
+                    <div class="quiz-answer-label">Correct Answer: D</div>
+                    <div class="quiz-explanation">The <code>invisible</code> attribute controls whether a field is shown in the UI. It can be set to "1" (always hidden) or use a condition like <code>invisible="state != 'draft'"</code> to show/hide based on other field values. The field still exists and stores data - it's just not displayed.</div>
+                </div>
+            </div>
+        </div>
+
         <!-- ==================== SECTION 10: WIDGETS ==================== -->
         <h2 id="widgets">9. Widgets - Display vs Data Storage</h2>
 
@@ -4722,6 +5081,61 @@ def _compute_field_name(self):
                 <li>✗ API responses are NOT affected</li>
             </ul>
             <p>Widgets are purely a <strong>presentation layer</strong> concern.</p>
+        </div>
+
+        <div class="quiz-container">
+            <h3>Test Your Knowledge: Widgets</h3>
+
+            <div class="quiz-card" data-correct="c">
+                <div class="quiz-header">
+                    <div class="quiz-number">Q1</div>
+                    <div class="quiz-question">You change a Selection field from displaying as a dropdown to displaying as radio buttons (using <code>widget="radio"</code>). What happens to existing data in that field?</div>
+                </div>
+                <div class="quiz-options">
+                    <div class="quiz-option" data-option="a">All existing data is cleared and must be re-entered</div>
+                    <div class="quiz-option" data-option="b">The data is converted to a new format in the database</div>
+                    <div class="quiz-option" data-option="c">Nothing - the stored data remains exactly the same, only the display changes</div>
+                    <div class="quiz-option" data-option="d">The field becomes read-only</div>
+                </div>
+                <div class="quiz-answer">
+                    <div class="quiz-answer-label">Correct Answer: C</div>
+                    <div class="quiz-explanation">Widgets only affect how data is displayed in the UI - they never modify the underlying data storage. Changing from dropdown to radio buttons is purely cosmetic. The database stores the same selection value regardless of which widget presents it.</div>
+                </div>
+            </div>
+
+            <div class="quiz-card" data-correct="b">
+                <div class="quiz-header">
+                    <div class="quiz-number">Q2</div>
+                    <div class="quiz-question">A user wants to see the Sales Order "Status" field displayed as a clickable pipeline in the form header (showing Quotation → Sales Order → Locked). Which widget should be used?</div>
+                </div>
+                <div class="quiz-options">
+                    <div class="quiz-option" data-option="a">widget="badge"</div>
+                    <div class="quiz-option" data-option="b">widget="statusbar"</div>
+                    <div class="quiz-option" data-option="c">widget="selection"</div>
+                    <div class="quiz-option" data-option="d">widget="priority"</div>
+                </div>
+                <div class="quiz-answer">
+                    <div class="quiz-answer-label">Correct Answer: B</div>
+                    <div class="quiz-explanation">The <code>statusbar</code> widget displays selection/many2one fields as a horizontal pipeline of stages. Users can click on stages to change the status. It's commonly used in form headers to show workflow progression like Quotation → Sales Order.</div>
+                </div>
+            </div>
+
+            <div class="quiz-card" data-correct="a">
+                <div class="quiz-header">
+                    <div class="quiz-number">Q3</div>
+                    <div class="quiz-question">What widget would you use to display a Char field as clickable tags where users can add multiple comma-separated values?</div>
+                </div>
+                <div class="quiz-options">
+                    <div class="quiz-option" data-option="a">widget="many2many_tags"</div>
+                    <div class="quiz-option" data-option="b">widget="text"</div>
+                    <div class="quiz-option" data-option="c">widget="char"</div>
+                    <div class="quiz-option" data-option="d">widget="selection"</div>
+                </div>
+                <div class="quiz-answer">
+                    <div class="quiz-answer-label">Correct Answer: A</div>
+                    <div class="quiz-explanation">The <code>many2many_tags</code> widget displays records as colorful, removable tags. While typically used with Many2many fields to show related records, it provides the tag-style visual that makes multi-value selection intuitive and visual.</div>
+                </div>
+            </div>
         </div>
 
         <!-- ==================== SECTION 11: DOMAINS ==================== -->
@@ -5387,6 +5801,61 @@ odoo.rpc('/web/dataset/search_read', {
             <p><strong>Limitation:</strong> Studio's domain builder handles simple cases well, but for complex OR logic or dynamic domains, you may need to edit the domain text directly.</p>
         </div>
 
+        <div class="quiz-container">
+            <h3>Test Your Knowledge: Domains</h3>
+
+            <div class="quiz-card" data-correct="b">
+                <div class="quiz-header">
+                    <div class="quiz-number">Q1</div>
+                    <div class="quiz-question">You want to filter Sales Orders to show only those that are EITHER in "Sales Order" status OR have a total amount greater than $10,000. Which domain is correct?</div>
+                </div>
+                <div class="quiz-options">
+                    <div class="quiz-option" data-option="a"><code>[('state', '=', 'sale'), ('amount_total', '>', 10000)]</code></div>
+                    <div class="quiz-option" data-option="b"><code>['|', ('state', '=', 'sale'), ('amount_total', '>', 10000)]</code></div>
+                    <div class="quiz-option" data-option="c"><code>[('state', '=', 'sale'), '|', ('amount_total', '>', 10000)]</code></div>
+                    <div class="quiz-option" data-option="d"><code>[('state', '=', 'sale') | ('amount_total', '>', 10000)]</code></div>
+                </div>
+                <div class="quiz-answer">
+                    <div class="quiz-answer-label">Correct Answer: B</div>
+                    <div class="quiz-explanation">Odoo uses Polish (prefix) notation for OR operators. The <code>'|'</code> must come BEFORE the two conditions it joins. Without the <code>'|'</code> prefix, conditions are implicitly ANDed together. Option A would show orders that are BOTH in sale status AND over $10,000.</div>
+                </div>
+            </div>
+
+            <div class="quiz-card" data-correct="d">
+                <div class="quiz-header">
+                    <div class="quiz-number">Q2</div>
+                    <div class="quiz-question">On a Sales Order form, you want the "Warehouse" dropdown to only show warehouses belonging to the same company as the order. What type of domain variable would you use?</div>
+                </div>
+                <div class="quiz-options">
+                    <div class="quiz-option" data-option="a"><code>[('company_id', '=', self.company_id.id)]</code></div>
+                    <div class="quiz-option" data-option="b"><code>[('company_id', '=', context.get('company_id'))]</code></div>
+                    <div class="quiz-option" data-option="c"><code>[('company_id', '=', uid)]</code></div>
+                    <div class="quiz-option" data-option="d"><code>[('company_id', '=', company_id)]</code></div>
+                </div>
+                <div class="quiz-answer">
+                    <div class="quiz-answer-label">Correct Answer: D</div>
+                    <div class="quiz-explanation">In view domains, you can reference other fields on the same record directly by their field name. <code>company_id</code> refers to the company selected on the current Sales Order form. This creates a dynamic domain that changes as the user changes the company field.</div>
+                </div>
+            </div>
+
+            <div class="quiz-card" data-correct="c">
+                <div class="quiz-header">
+                    <div class="quiz-number">Q3</div>
+                    <div class="quiz-question">What does the domain operator <code>'ilike'</code> do compared to <code>'='</code>?</div>
+                </div>
+                <div class="quiz-options">
+                    <div class="quiz-option" data-option="a">It matches the exact value, but case-sensitive</div>
+                    <div class="quiz-option" data-option="b">It matches only integer values</div>
+                    <div class="quiz-option" data-option="c">It performs a case-insensitive partial match (contains)</div>
+                    <div class="quiz-option" data-option="d">It matches the value at the beginning of the field only</div>
+                </div>
+                <div class="quiz-answer">
+                    <div class="quiz-answer-label">Correct Answer: C</div>
+                    <div class="quiz-explanation">The <code>'ilike'</code> operator performs a case-insensitive pattern match. <code>[('name', 'ilike', 'john')]</code> will match "John Smith", "JOHN DOE", and "johnny". The <code>'='</code> operator requires an exact match. Use <code>'like'</code> for case-sensitive partial matching.</div>
+                </div>
+            </div>
+        </div>
+
         <!-- ==================== SECTION 12: FIELD PROPERTIES ==================== -->
         <h2 id="properties">11. Field Properties</h2>
 
@@ -6041,6 +6510,61 @@ odoo.rpc('/web/dataset/search_read', {
             <p>Done! No coding required for standard permission setups.</p>
         </div>
 
+        <div class="quiz-container">
+            <h3>Test Your Knowledge: Access Rights</h3>
+
+            <div class="quiz-card" data-correct="b">
+                <div class="quiz-header">
+                    <div class="quiz-number">Q1</div>
+                    <div class="quiz-question">A salesperson can see Sales Orders in the menu, but only sees their own orders - not orders from other salespeople. Which security mechanism is causing this behavior?</div>
+                </div>
+                <div class="quiz-options">
+                    <div class="quiz-option" data-option="a">Model Access Rights (ir.model.access) - they lack Read permission</div>
+                    <div class="quiz-option" data-option="b">Record Rules (ir.rule) - a domain filters to only their records</div>
+                    <div class="quiz-option" data-option="c">Field-level groups attribute - certain fields are restricted</div>
+                    <div class="quiz-option" data-option="d">Menu access rights - the menu is partially hidden</div>
+                </div>
+                <div class="quiz-answer">
+                    <div class="quiz-answer-label">Correct Answer: B</div>
+                    <div class="quiz-explanation">Record Rules use domains to filter WHICH records a user can see. A rule like <code>[('user_id', '=', user.id)]</code> restricts users to only their own records. Model Access Rights control IF you can see the model at all (the menu would be hidden if they lacked access).</div>
+                </div>
+            </div>
+
+            <div class="quiz-card" data-correct="c">
+                <div class="quiz-header">
+                    <div class="quiz-number">Q2</div>
+                    <div class="quiz-question">A user reports they can see a Customer form but the "Credit Limit" field is completely invisible to them, while managers can see it. What's controlling this?</div>
+                </div>
+                <div class="quiz-options">
+                    <div class="quiz-option" data-option="a">Record Rules restricting which customers they can see</div>
+                    <div class="quiz-option" data-option="b">Model Access Rights denying them read access</div>
+                    <div class="quiz-option" data-option="c">The field has a groups="..." attribute restricting visibility to certain groups</div>
+                    <div class="quiz-option" data-option="d">A domain on the field hiding it</div>
+                </div>
+                <div class="quiz-answer">
+                    <div class="quiz-answer-label">Correct Answer: C</div>
+                    <div class="quiz-explanation">The <code>groups</code> attribute on a field definition controls which user groups can see that specific field. For example, <code>groups="account.group_account_manager"</code> would make the field visible only to accounting managers. This is field-level security, separate from model or record access.</div>
+                </div>
+            </div>
+
+            <div class="quiz-card" data-correct="a">
+                <div class="quiz-header">
+                    <div class="quiz-number">Q3</div>
+                    <div class="quiz-question">A new user complains they don't see the "Manufacturing" menu at all. What's the FIRST thing you should check?</div>
+                </div>
+                <div class="quiz-options">
+                    <div class="quiz-option" data-option="a">Whether they're assigned to a Manufacturing user group</div>
+                    <div class="quiz-option" data-option="b">Whether there are Record Rules blocking manufacturing orders</div>
+                    <div class="quiz-option" data-option="c">Whether the Manufacturing app is installed</div>
+                    <div class="quiz-option" data-option="d">Whether the fields have invisible="1" in the view</div>
+                </div>
+                <div class="quiz-answer">
+                    <div class="quiz-answer-label">Correct Answer: A</div>
+                    <div class="quiz-explanation">Menus are linked to user groups. If a user doesn't see a menu, they're likely not in any group that has access to it. Check Settings → Users → select user → look for Manufacturing permission checkboxes. Model Access Rights (tied to groups) control menu visibility.</div>
+                </div>
+            </div>
+        </div>
+
         <!-- ==================== SECTION 14: WORKFLOWS ==================== -->
         <h2 id="workflows">13. Workflows & Status Management</h2>
 
@@ -6229,6 +6753,61 @@ odoo.rpc('/web/dataset/search_read', {
                 <li>Configure action: Send email, create record, update field, etc.</li>
             </ol>
             <p><strong>Example:</strong> Send email to manager when quotation amount exceeds $50,000 and gets confirmed.</p>
+        </div>
+
+        <div class="quiz-container">
+            <h3>Test Your Knowledge: Workflows</h3>
+
+            <div class="quiz-card" data-correct="d">
+                <div class="quiz-header">
+                    <div class="quiz-number">Q1</div>
+                    <div class="quiz-question">A user asks: "I accidentally confirmed a Sales Order and now I can't change the customer. Why?" What's the best explanation?</div>
+                </div>
+                <div class="quiz-options">
+                    <div class="quiz-option" data-option="a">The customer field has readonly=True in the field definition</div>
+                    <div class="quiz-option" data-option="b">They don't have permission to edit customers</div>
+                    <div class="quiz-option" data-option="c">There's a bug in the Sales module</div>
+                    <div class="quiz-option" data-option="d">Once confirmed, the state change triggered downstream documents (delivery, invoice) linked to that customer - changing it would break the chain</div>
+                </div>
+                <div class="quiz-answer">
+                    <div class="quiz-answer-label">Correct Answer: D</div>
+                    <div class="quiz-explanation">State transitions trigger business logic - confirming a Sales Order creates delivery orders, reserves stock, and may create invoices. All these documents reference the original customer. Allowing customer changes would create data inconsistency. Fields become readonly in certain states to protect data integrity.</div>
+                </div>
+            </div>
+
+            <div class="quiz-card" data-correct="b">
+                <div class="quiz-header">
+                    <div class="quiz-number">Q2</div>
+                    <div class="quiz-question">What's the key difference between "State" (Selection field) and "Stage" (Many2one field) in Odoo workflows?</div>
+                </div>
+                <div class="quiz-options">
+                    <div class="quiz-option" data-option="a">States are faster to query than Stages</div>
+                    <div class="quiz-option" data-option="b">States are fixed in code; Stages are user-configurable records</div>
+                    <div class="quiz-option" data-option="c">Stages can only be used in CRM</div>
+                    <div class="quiz-option" data-option="d">States are displayed as a statusbar; Stages are dropdowns</div>
+                </div>
+                <div class="quiz-answer">
+                    <div class="quiz-answer-label">Correct Answer: B</div>
+                    <div class="quiz-explanation">States are Selection fields with fixed values defined in code (e.g., draft/posted/cancel for invoices) - changing them requires development. Stages are Many2one relationships to a separate model, so users can add, remove, or reorder stages (e.g., CRM pipeline stages) without code changes.</div>
+                </div>
+            </div>
+
+            <div class="quiz-card" data-correct="c">
+                <div class="quiz-header">
+                    <div class="quiz-number">Q3</div>
+                    <div class="quiz-question">You want to automatically send an email to the warehouse team whenever a Sales Order is confirmed. Where would you configure this without writing code?</div>
+                </div>
+                <div class="quiz-options">
+                    <div class="quiz-option" data-option="a">Settings → Technical → Email Templates</div>
+                    <div class="quiz-option" data-option="b">Settings → Technical → Scheduled Actions</div>
+                    <div class="quiz-option" data-option="c">Settings → Technical → Automated Actions (with trigger "On Update")</div>
+                    <div class="quiz-option" data-option="d">Sales → Configuration → Settings</div>
+                </div>
+                <div class="quiz-answer">
+                    <div class="quiz-answer-label">Correct Answer: C</div>
+                    <div class="quiz-explanation">Automated Actions let you trigger actions based on record events. Set trigger to "On Update", use Before/After Update Domains to detect state change from 'draft' to 'sale', then configure a "Send Email" action. Scheduled Actions are for time-based recurring tasks, not event-driven automation.</div>
+                </div>
+            </div>
         </div>
 
         <!-- ==================== SECTION 14: ACTIONS ==================== -->
