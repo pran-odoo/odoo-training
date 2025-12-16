@@ -781,14 +781,7 @@ body.dark-mode .example-box {
     border: 1px solid var(--border);
 }
 
-body.dark-mode .diagram {
-    background: #1e1e2e;
-    border-color: var(--border-dark);
-}
-
-body.dark-mode .diagram pre {
-    color: #a0aec0 !important;
-}
+/* Dark mode diagram - see consolidated styles in DIAGRAMS section */
 
 body.dark-mode .comparison-card.good {
     background: rgba(72, 187, 120, 0.08);
@@ -1649,7 +1642,7 @@ strong {
 /* ASCII art diagrams - inherit diagram background, not code block background */
 .diagram pre {
     background: transparent !important;
-    color: var(--text-primary) !important;
+    color: #1e293b !important;
     border: none !important;
     padding: 0 !important;
     margin: 0 !important;
@@ -1664,9 +1657,18 @@ strong {
     color: inherit !important;
 }
 
-/* Dark mode: ASCII diagrams should use light text on dark background */
+/* Dark mode diagrams */
+body.dark-mode .diagram {
+    background: var(--bg-card) !important;
+    border-color: var(--primary-light);
+}
+
 body.dark-mode .diagram pre {
-    color: #e2e8f0 !important;
+    color: #94a3b8 !important;
+}
+
+body.dark-mode .diagram pre code {
+    color: inherit !important;
 }
 
 .diagram-box {
