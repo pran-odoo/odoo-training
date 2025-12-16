@@ -2644,157 +2644,320 @@ wrapTablesForMobile();
 // ==================== SYNTAX HIGHLIGHTING ====================
 /**
  * Lightweight syntax highlighter for Python and XML code blocks.
+ * Uses a tokenizer approach to avoid nested span issues.
  * No external dependencies - pure vanilla JS.
  */
 const SyntaxHighlighter = {
-    // Python language patterns
-    python: {
-        patterns: [
-            // Comments (must come first to avoid matching # in strings)
-            { regex: /(#.*)$/gm, className: 'sh-comment' },
-            // Triple-quoted strings (multiline)
-            { regex: /("""[\s\S]*?"""|'''[\s\S]*?''')/g, className: 'sh-string' },
-            // Regular strings
-            { regex: /("(?:[^"\\]|\\.)*"|'(?:[^'\\]|\\.)*')/g, className: 'sh-string' },
-            // Decorators
-            { regex: /(@\w+)/g, className: 'sh-decorator' },
-            // Keywords
-            { regex: /\b(def|class|if|elif|else|for|while|try|except|finally|with|as|import|from|return|yield|raise|pass|break|continue|and|or|not|in|is|lambda|None|True|False|async|await|global|nonlocal|assert)\b/g, className: 'sh-keyword' },
-            // Built-in functions
-            { regex: /\b(print|len|range|str|int|float|list|dict|tuple|set|bool|type|isinstance|hasattr|getattr|setattr|super|self|cls)\b/g, className: 'sh-builtin' },
-            // Odoo-specific
-            { regex: /\b(fields|models|api|_name|_description|_inherit|_inherits|_order|_rec_name|_sql_constraints|compute|inverse|search|store|readonly|required|default|string|help|comodel_name|inverse_name|relation|domain|context|ondelete|tracking|copy|index|Many2one|One2many|Many2many|Char|Text|Html|Integer|Float|Boolean|Date|Datetime|Binary|Selection|Reference|Monetary|Image|Command|Domain)\b/g, className: 'sh-field' },
-            // Class names (after class keyword)
-            { regex: /\bclass\s+(\w+)/g, replacement: 'class <span class="sh-class">$1</span>' },
-            // Function names (after def keyword)
-            { regex: /\bdef\s+(\w+)/g, replacement: 'def <span class="sh-function">$1</span>' },
-            // Numbers
-            { regex: /\b(\d+\.?\d*)\b/g, className: 'sh-number' },
-            // self parameter
-            { regex: /\b(self)\b/g, className: 'sh-self' },
-            // Operators
-            { regex: /([+\-*/%=<>!&|^~]+)/g, className: 'sh-operator' },
-        ]
-    },
-
-    // XML language patterns
-    xml: {
-        patterns: [
-            // Comments
-            { regex: /(&lt;!--[\s\S]*?--&gt;|<!--[\s\S]*?-->)/g, className: 'sh-comment' },
-            // CDATA sections
-            { regex: /(&lt;!\[CDATA\[[\s\S]*?\]\]&gt;)/g, className: 'sh-string' },
-            // Attribute values (must come before tag detection)
-            { regex: /=("(?:[^"\\]|\\.)*"|'(?:[^'\\]|\\.)*')/g, replacement: '=<span class="sh-attr-value">$1</span>' },
-            // Attribute names
-            { regex: /\s(\w+(?::\w+)?)\s*=/g, replacement: ' <span class="sh-attribute">$1</span>=' },
-            // Closing tags
-            { regex: /(&lt;\/)([\w:-]+)(&gt;)/g, replacement: '$1<span class="sh-tag">$2</span>$3' },
-            // Self-closing tags
-            { regex: /(&lt;)([\w:-]+)([^&]*?)(\/&gt;)/g, replacement: '$1<span class="sh-tag">$2</span>$3$4' },
-            // Opening tags
-            { regex: /(&lt;)([\w:-]+)/g, replacement: '$1<span class="sh-tag">$2</span>' },
-            // Namespace prefixes
-            { regex: /\b(odoo|data|record|field|template|t-|xpath)\b/g, className: 'sh-namespace' },
-        ]
+    /**
+     * Escape HTML entities
+     */
+    escapeHtml(text) {
+        return text
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;');
     },
 
     /**
-     * Escape HTML entities to prevent XSS and display issues
+     * Check if code is ASCII art (box drawing characters)
      */
-    escapeHtml(text) {
-        const div = document.createElement('div');
-        div.textContent = text;
-        return div.innerHTML;
+    isAsciiArt(code) {
+        const asciiArtChars = /[┌┐└┘│─┬┴├┤┼▼▲◄►═║╔╗╚╝╠╣╬]/;
+        const boxDrawingCount = (code.match(/[┌┐└┘│─═║╔╗╚╝]/g) || []).length;
+        return asciiArtChars.test(code) && boxDrawingCount > 10;
     },
 
     /**
      * Detect language from code content
      */
     detectLanguage(code) {
+        // Skip ASCII art diagrams
+        if (this.isAsciiArt(code)) return null;
+
         const pythonIndicators = [
             /\bdef\s+\w+\s*\(/,
-            /\bclass\s+\w+/,
-            /\bimport\s+\w+/,
-            /\bfrom\s+\w+\s+import/,
-            /@api\./,
-            /fields\.\w+/,
-            /self\./,
+            /\bclass\s+\w+.*:/,
+            /^\s*import\s+\w+/m,
+            /^\s*from\s+\w+\s+import/m,
+            /@api\.\w+/,
+            /fields\.\w+\(/,
+            /self\.\w+/,
+            /_name\s*=/,
+            /_inherit\s*=/,
         ];
 
         const xmlIndicators = [
             /<\?xml/,
-            /<odoo>/,
-            /<record/,
-            /<field/,
-            /<template/,
+            /<odoo\b/,
+            /<record\b/,
+            /<field\s+name=/,
+            /<template\b/,
             /<\/\w+>/,
-            /xmlns/,
+            /xmlns[:=]/,
+            /<data\b/,
+            /<menuitem\b/,
         ];
 
         const pythonScore = pythonIndicators.filter(r => r.test(code)).length;
         const xmlScore = xmlIndicators.filter(r => r.test(code)).length;
 
-        if (pythonScore > xmlScore) return 'python';
-        if (xmlScore > pythonScore) return 'xml';
-        if (pythonScore > 0) return 'python';
-        if (xmlScore > 0) return 'xml';
+        if (pythonScore > xmlScore && pythonScore >= 2) return 'python';
+        if (xmlScore > pythonScore && xmlScore >= 2) return 'xml';
+        if (pythonScore >= 2) return 'python';
+        if (xmlScore >= 2) return 'xml';
         return null;
+    },
+
+    /**
+     * Tokenize and highlight Python code
+     */
+    highlightPython(code) {
+        const escaped = this.escapeHtml(code);
+        let result = '';
+
+        // Keywords that should be highlighted
+        const keywords = /^(def|class|if|elif|else|for|while|try|except|finally|with|as|import|from|return|yield|raise|pass|break|continue|and|or|not|in|is|lambda|None|True|False|async|await|global|nonlocal|assert)$/;
+        const builtins = /^(print|len|range|str|int|float|list|dict|tuple|set|bool|type|isinstance|hasattr|getattr|setattr|super|enumerate|zip|map|filter|sorted|reversed|any|all|min|max|sum|abs|round|open|input)$/;
+        const odooKeywords = /^(fields|models|api|Command|Domain)$/;
+        const odooFields = /^(Many2one|One2many|Many2many|Char|Text|Html|Integer|Float|Boolean|Date|Datetime|Binary|Selection|Reference|Monetary|Image)$/;
+        const odooAttrs = /^(_name|_description|_inherit|_inherits|_order|_rec_name|_sql_constraints|compute|inverse|search|store|readonly|required|default|string|help|comodel_name|inverse_name|relation|domain|context|ondelete|tracking|copy|index)$/;
+
+        // Process character by character with lookahead
+        let i = 0;
+        while (i < escaped.length) {
+            const char = escaped[i];
+            const rest = escaped.slice(i);
+
+            // Comments
+            if (char === '#') {
+                const endOfLine = escaped.indexOf('\n', i);
+                const comment = endOfLine === -1 ? escaped.slice(i) : escaped.slice(i, endOfLine);
+                result += `<span class="sh-comment">${comment}</span>`;
+                i += comment.length;
+                continue;
+            }
+
+            // Triple-quoted strings
+            if (rest.startsWith('"""') || rest.startsWith("'''")) {
+                const quote = rest.slice(0, 3);
+                const endIdx = escaped.indexOf(quote, i + 3);
+                if (endIdx !== -1) {
+                    const str = escaped.slice(i, endIdx + 3);
+                    result += `<span class="sh-string">${str}</span>`;
+                    i = endIdx + 3;
+                    continue;
+                }
+            }
+
+            // Regular strings
+            if (char === '"' || char === "'") {
+                let j = i + 1;
+                while (j < escaped.length) {
+                    if (escaped[j] === '\\') {
+                        j += 2; // Skip escaped character
+                    } else if (escaped[j] === char) {
+                        j++;
+                        break;
+                    } else {
+                        j++;
+                    }
+                }
+                const str = escaped.slice(i, j);
+                result += `<span class="sh-string">${str}</span>`;
+                i = j;
+                continue;
+            }
+
+            // Decorators
+            if (char === '@' && /[a-zA-Z_]/.test(escaped[i + 1] || '')) {
+                let j = i + 1;
+                while (j < escaped.length && /[\w.]/.test(escaped[j])) j++;
+                const decorator = escaped.slice(i, j);
+                result += `<span class="sh-decorator">${decorator}</span>`;
+                i = j;
+                continue;
+            }
+
+            // Identifiers and keywords
+            if (/[a-zA-Z_]/.test(char)) {
+                let j = i;
+                while (j < escaped.length && /[\w]/.test(escaped[j])) j++;
+                const word = escaped.slice(i, j);
+
+                // Check what comes before for context (is this a function/class name?)
+                const isDefName = result.endsWith('<span class="sh-keyword">def</span> ') || result.endsWith('<span class="sh-keyword">def</span>  ');
+                const isClassName = result.endsWith('<span class="sh-keyword">class</span> ') || result.endsWith('<span class="sh-keyword">class</span>  ');
+
+                if (isDefName) {
+                    result += `<span class="sh-function">${word}</span>`;
+                } else if (isClassName) {
+                    result += `<span class="sh-class">${word}</span>`;
+                } else if (word === 'self' || word === 'cls') {
+                    result += `<span class="sh-self">${word}</span>`;
+                } else if (keywords.test(word)) {
+                    result += `<span class="sh-keyword">${word}</span>`;
+                } else if (builtins.test(word)) {
+                    result += `<span class="sh-builtin">${word}</span>`;
+                } else if (odooKeywords.test(word)) {
+                    result += `<span class="sh-keyword">${word}</span>`;
+                } else if (odooFields.test(word)) {
+                    result += `<span class="sh-field">${word}</span>`;
+                } else if (odooAttrs.test(word)) {
+                    result += `<span class="sh-field">${word}</span>`;
+                } else {
+                    result += word;
+                }
+                i = j;
+                continue;
+            }
+
+            // Numbers
+            if (/\d/.test(char)) {
+                let j = i;
+                while (j < escaped.length && /[\d.]/.test(escaped[j])) j++;
+                const num = escaped.slice(i, j);
+                result += `<span class="sh-number">${num}</span>`;
+                i = j;
+                continue;
+            }
+
+            // Everything else (operators, punctuation, whitespace)
+            result += char;
+            i++;
+        }
+
+        return result;
+    },
+
+    /**
+     * Tokenize and highlight XML code
+     */
+    highlightXml(code) {
+        const escaped = this.escapeHtml(code);
+        let result = '';
+        let i = 0;
+
+        while (i < escaped.length) {
+            const rest = escaped.slice(i);
+
+            // Comments: &lt;!-- ... --&gt;
+            if (rest.startsWith('&lt;!--')) {
+                const endIdx = escaped.indexOf('--&gt;', i);
+                if (endIdx !== -1) {
+                    const comment = escaped.slice(i, endIdx + 6);
+                    result += `<span class="sh-comment">${comment}</span>`;
+                    i = endIdx + 6;
+                    continue;
+                }
+            }
+
+            // Tags: &lt;tagname or &lt;/tagname
+            if (rest.startsWith('&lt;')) {
+                const isClosing = rest.startsWith('&lt;/');
+                const tagStart = isClosing ? 5 : 4;
+
+                // Find tag name
+                let j = i + tagStart;
+                while (j < escaped.length && /[\w:-]/.test(escaped[j])) j++;
+                const tagName = escaped.slice(i + tagStart, j);
+
+                if (tagName) {
+                    result += escaped.slice(i, i + tagStart);
+                    result += `<span class="sh-tag">${tagName}</span>`;
+                    i = j;
+
+                    // Parse attributes until &gt; or /&gt;
+                    while (i < escaped.length) {
+                        const attrRest = escaped.slice(i);
+
+                        // End of tag
+                        if (attrRest.startsWith('&gt;') || attrRest.startsWith('/&gt;')) {
+                            const endTag = attrRest.startsWith('/&gt;') ? '/&gt;' : '&gt;';
+                            result += endTag;
+                            i += endTag.length;
+                            break;
+                        }
+
+                        // Whitespace
+                        if (/\s/.test(escaped[i])) {
+                            result += escaped[i];
+                            i++;
+                            continue;
+                        }
+
+                        // Attribute name
+                        if (/[\w:-]/.test(escaped[i])) {
+                            let k = i;
+                            while (k < escaped.length && /[\w:-]/.test(escaped[k])) k++;
+                            const attrName = escaped.slice(i, k);
+                            result += `<span class="sh-attribute">${attrName}</span>`;
+                            i = k;
+
+                            // = sign
+                            if (escaped[i] === '=') {
+                                result += '=';
+                                i++;
+
+                                // Attribute value
+                                if (escaped[i] === '"' || escaped[i] === "'") {
+                                    const quote = escaped[i];
+                                    let m = i + 1;
+                                    while (m < escaped.length && escaped[m] !== quote) m++;
+                                    const attrValue = escaped.slice(i, m + 1);
+                                    result += `<span class="sh-attr-value">${attrValue}</span>`;
+                                    i = m + 1;
+                                }
+                            }
+                            continue;
+                        }
+
+                        // Other characters in tag
+                        result += escaped[i];
+                        i++;
+                    }
+                    continue;
+                }
+            }
+
+            // Regular text
+            result += escaped[i];
+            i++;
+        }
+
+        return result;
     },
 
     /**
      * Apply syntax highlighting to code
      */
     highlight(code, language) {
-        if (!language || !this[language]) return this.escapeHtml(code);
-
-        // For XML, escape HTML first
-        let highlighted = language === 'xml' ? this.escapeHtml(code) : code;
-
-        const patterns = this[language].patterns;
-
-        // Apply each pattern
-        for (const pattern of patterns) {
-            if (pattern.replacement) {
-                highlighted = highlighted.replace(pattern.regex, pattern.replacement);
-            } else if (pattern.className) {
-                highlighted = highlighted.replace(pattern.regex, (match) => {
-                    // Don't highlight if already inside a span
-                    return `<span class="${pattern.className}">${match}</span>`;
-                });
-            }
-        }
-
-        // For Python, escape any remaining HTML (but preserve our spans)
         if (language === 'python') {
-            // This is tricky - we need to escape HTML but preserve our highlighting spans
-            // We'll mark our spans with a unique marker, escape, then restore
-            const marker = '___SPAN___';
-            const spans = [];
-            highlighted = highlighted.replace(/<span class="sh-[^"]+">([^<]*)<\/span>/g, (match) => {
-                spans.push(match);
-                return marker + (spans.length - 1) + marker;
-            });
-            highlighted = this.escapeHtml(highlighted);
-            highlighted = highlighted.replace(new RegExp(marker + '(\\d+)' + marker, 'g'), (_, idx) => spans[parseInt(idx)]);
+            return this.highlightPython(code);
+        } else if (language === 'xml') {
+            return this.highlightXml(code);
         }
-
-        return highlighted;
+        return this.escapeHtml(code);
     },
 
     /**
      * Initialize syntax highlighting for all code blocks
      */
     init() {
-        const codeBlocks = document.querySelectorAll('pre code');
+        // Select pre > code but exclude those inside .diagram
+        const codeBlocks = document.querySelectorAll('pre:not(.diagram pre) code');
 
         codeBlocks.forEach(codeElement => {
             const pre = codeElement.parentElement;
 
-            // Skip if already highlighted
+            // Skip if already highlighted or inside a diagram
             if (pre.dataset.highlighted === 'true') return;
+            if (pre.closest('.diagram')) return;
 
             const originalCode = codeElement.textContent;
+
+            // Skip ASCII art
+            if (this.isAsciiArt(originalCode)) return;
+
             const language = this.detectLanguage(originalCode);
 
             if (language) {
