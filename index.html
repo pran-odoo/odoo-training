@@ -9012,16 +9012,9 @@ Content-Type: text/xml
         <!-- ==================== SECTION 24: CONSTRAINTS ==================== -->
         <h2 id="constraints">25. Constraints - Data Validation Rules</h2>
 
-        <div class="success-box">
-            <h4>The Error That Saved Your Day</h4>
-            <p>You're importing 1,000 products and suddenly: <em>"Barcode must be unique."</em></p>
-            <p>Frustrating? Yes. But imagine if Odoo had let those duplicates through - you'd have inventory chaos, wrong products shipped, angry customers.</p>
-            <p>Constraints are Odoo's quality control. When you see a validation error, thank it - it just prevented a bigger problem.</p>
-        </div>
-
         <div class="info-box">
             <h4>What Are Constraints?</h4>
-            <p>Constraints are rules that enforce data integrity. They're like bouncers at a club - they check if your data meets certain conditions before letting it in. If data doesn't meet the rules, Odoo shows an error and prevents saving.</p>
+            <p>Constraints are validation rules that prevent bad data from being saved. When you see an error like <em>"Barcode must be unique"</em> during a product import, that's a constraint blocking duplicate barcodes before they cause inventory problems.</p>
         </div>
 
         <h3>Why Constraints Exist</h3>
