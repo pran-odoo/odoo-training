@@ -782,8 +782,12 @@ body.dark-mode .example-box {
 }
 
 body.dark-mode .diagram {
-    background: rgba(255, 255, 255, 0.02);
-    border: 1px solid var(--border);
+    background: #1e1e2e;
+    border-color: var(--border-dark);
+}
+
+body.dark-mode .diagram pre {
+    color: #a0aec0 !important;
 }
 
 body.dark-mode .comparison-card.good {
