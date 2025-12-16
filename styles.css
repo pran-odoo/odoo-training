@@ -743,6 +743,12 @@ body.dark-mode pre {
     border: 1px solid var(--border);
 }
 
+/* Override for diagram pre - must come after generic pre rule */
+body.dark-mode .diagram pre {
+    background: transparent !important;
+    border: none !important;
+}
+
 body.dark-mode .critical-box {
     background: rgba(252, 129, 129, 0.06);
     border-left-color: var(--error);
