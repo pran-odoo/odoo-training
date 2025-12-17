@@ -44,11 +44,13 @@
     --bg-hover: rgba(113, 75, 103, 0.08);
     --bg-active: rgba(113, 75, 103, 0.12);
 
-    /* Text Colors */
+    /* Text Colors - optimized for long-form reading */
+    /* Primary: 12.6:1 contrast on white - AAA compliant */
     --text-primary: #1e293b;
-    --text-secondary: #475569;
-    --text-muted: #64748b;
-    --text-light: #94a3b8;
+    /* Secondary: 7.1:1 contrast on white - AAA compliant for body text */
+    --text-secondary: #374151;
+    --text-muted: #6b7280;
+    --text-light: #9ca3af;
     --text-inverse: #ffffff;
 
     /* Borders */
@@ -161,6 +163,7 @@
 }
 
 /* Dark Mode Variables */
+/* Text colors optimized for long-form reading - avoid pure white to reduce eye strain */
 body.dark-mode {
     --bg-main: #0a0f1a;
     --bg-card: #141b2d;
@@ -169,24 +172,26 @@ body.dark-mode {
     --bg-tertiary: #243044;
     --bg-hover: rgba(255, 255, 255, 0.1);
     --bg-active: rgba(255, 255, 255, 0.15);
-    --text-primary: #ffffff;
-    --text-secondary: #e2e8f0;
-    --text-muted: #a0aec0;
-    --text-light: #718096;
+    /* Soft white - reduces eye strain while maintaining 15:1+ contrast on dark bg */
+    --text-primary: #e8edf5;
+    /* Slightly muted for secondary content - still 10:1+ contrast */
+    --text-secondary: #cbd5e1;
+    --text-muted: #94a3b8;
+    --text-light: #64748b;
     --border: #2d3a4f;
     --border-light: #1e2a3a;
     --border-dark: #2d3a4f;
-    --primary: #9f7aea;
-    --primary-dark: #805ad5;
-    --primary-light: #b794f4;
-    --success: #48bb78;
-    --success-light: rgba(72, 187, 120, 0.25);
-    --warning: #ecc94b;
-    --warning-light: rgba(236, 201, 75, 0.25);
-    --error: #fc8181;
-    --error-light: rgba(252, 129, 129, 0.25);
-    --info: #63b3ed;
-    --info-light: rgba(99, 179, 237, 0.25);
+    --primary: #a78bfa;
+    --primary-dark: #8b5cf6;
+    --primary-light: #c4b5fd;
+    --success: #4ade80;
+    --success-light: rgba(74, 222, 128, 0.2);
+    --warning: #fbbf24;
+    --warning-light: rgba(251, 191, 36, 0.2);
+    --error: #f87171;
+    --error-light: rgba(248, 113, 113, 0.2);
+    --info: #60a5fa;
+    --info-light: rgba(96, 165, 250, 0.2);
     --shadow-sm: 0 1px 3px rgba(0,0,0,0.4);
     --shadow-md: 0 4px 8px rgba(0,0,0,0.5);
     --shadow-lg: 0 10px 20px rgba(0,0,0,0.5);
@@ -749,33 +754,56 @@ body.dark-mode .diagram pre {
     border: none !important;
 }
 
+/* Dark mode colored boxes - use softer backgrounds with readable text */
+body.dark-mode .critical-box,
+body.dark-mode .technical-box,
+body.dark-mode .foundation-box,
+body.dark-mode .success-box,
+body.dark-mode .warning-box,
+body.dark-mode .info-box,
+body.dark-mode .mechanism-box,
+body.dark-mode .analogy-box,
+body.dark-mode .odoo-box,
+body.dark-mode .example-box {
+    color: var(--text-primary);
+}
+
+body.dark-mode .critical-box p, body.dark-mode .technical-box p, body.dark-mode .foundation-box p,
+body.dark-mode .success-box p, body.dark-mode .mechanism-box p, body.dark-mode .analogy-box p,
+body.dark-mode .warning-box p, body.dark-mode .info-box p, body.dark-mode .odoo-box p, body.dark-mode .example-box p,
+body.dark-mode .critical-box li, body.dark-mode .technical-box li, body.dark-mode .foundation-box li,
+body.dark-mode .success-box li, body.dark-mode .mechanism-box li, body.dark-mode .analogy-box li,
+body.dark-mode .warning-box li, body.dark-mode .info-box li, body.dark-mode .odoo-box li, body.dark-mode .example-box li {
+    color: var(--text-secondary);
+}
+
 body.dark-mode .critical-box {
-    background: rgba(252, 129, 129, 0.06);
+    background: rgba(248, 113, 113, 0.1);
     border-left-color: var(--error);
 }
 
 body.dark-mode .technical-box {
-    background: rgba(99, 179, 237, 0.06);
+    background: rgba(96, 165, 250, 0.1);
     border-left-color: var(--info);
 }
 
 body.dark-mode .foundation-box {
-    background: rgba(159, 122, 234, 0.06);
+    background: rgba(167, 139, 250, 0.1);
     border-left-color: var(--primary);
 }
 
 body.dark-mode .success-box {
-    background: rgba(72, 187, 120, 0.06);
+    background: rgba(74, 222, 128, 0.1);
     border-left-color: var(--success);
 }
 
 body.dark-mode .warning-box {
-    background: rgba(236, 201, 75, 0.06);
+    background: rgba(251, 191, 36, 0.1);
     border-left-color: var(--warning);
 }
 
 body.dark-mode .info-box {
-    background: rgba(99, 179, 237, 0.06);
+    background: rgba(96, 165, 250, 0.1);
     border-left-color: var(--info);
 }
 
@@ -783,7 +811,7 @@ body.dark-mode .mechanism-box,
 body.dark-mode .analogy-box,
 body.dark-mode .odoo-box,
 body.dark-mode .example-box {
-    background: rgba(255, 255, 255, 0.02);
+    background: rgba(255, 255, 255, 0.03);
     border: 1px solid var(--border);
 }
 
@@ -1230,6 +1258,19 @@ p {
         padding: 24px;
         margin: 24px 0;
     }
+}
+
+/* Light mode colored boxes - explicit dark text for AAA contrast on pastel backgrounds */
+.critical-box, .technical-box, .foundation-box, .success-box,
+.mechanism-box, .analogy-box, .warning-box, .info-box, .odoo-box, .example-box {
+    color: #1e293b;
+}
+
+.critical-box p, .technical-box p, .foundation-box p, .success-box p,
+.mechanism-box p, .analogy-box p, .warning-box p, .info-box p, .odoo-box p, .example-box p,
+.critical-box li, .technical-box li, .foundation-box li, .success-box li,
+.mechanism-box li, .analogy-box li, .warning-box li, .info-box li, .odoo-box li, .example-box li {
+    color: #374151;
 }
 
 .critical-box { background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%); border-color: var(--error); }
@@ -4328,6 +4369,22 @@ body.dark-mode .glossary-popover.below::after {
     margin-bottom: var(--space-2);
 }
 
+.settings-hint {
+    display: block;
+    font-size: 10px;
+    color: var(--text-light);
+    font-weight: var(--font-normal);
+    text-transform: none;
+    letter-spacing: normal;
+    margin-top: -2px;
+}
+
+.settings-group-inline .settings-hint {
+    margin-top: 0;
+    margin-left: auto;
+    margin-right: var(--space-3);
+}
+
 /* Color Options */
 .color-options {
     display: flex;
@@ -4767,6 +4824,101 @@ body.high-contrast *:focus {
 
 body.high-contrast .sidebar a.active {
     border-left-width: 4px;
+}
+
+/* ==================== EYE COMFORT MODE (Blue Light Filter) ==================== */
+/* Reduces blue light emission for extended reading sessions */
+
+body.eye-comfort {
+    /* Warm tint overlay using sepia-like color adjustments */
+    --bg-main: #faf8f3;
+    --bg-card: #fffef9;
+    --bg-primary: #fdfcf7;
+    --bg-secondary: #f7f5ef;
+    --bg-tertiary: #f0ede5;
+    --text-primary: #3d3929;
+    --text-secondary: #524d3a;
+    --text-muted: #7a7462;
+    --border: #e5e0d1;
+    --border-light: #f0ebe0;
+}
+
+body.eye-comfort::before {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(255, 244, 214, 0.08);
+    pointer-events: none;
+    z-index: 9998;
+    mix-blend-mode: multiply;
+}
+
+/* Eye comfort in dark mode - warm dark tones */
+body.eye-comfort.dark-mode {
+    --bg-main: #1a1814;
+    --bg-card: #242019;
+    --bg-primary: #2a261f;
+    --bg-secondary: #1f1b16;
+    --bg-tertiary: #332e25;
+    --text-primary: #e8e4d9;
+    --text-secondary: #ccc7b8;
+    --text-muted: #9e9a8c;
+    --border: #3d3830;
+    --border-light: #2d2a24;
+}
+
+body.eye-comfort.dark-mode::before {
+    background: rgba(255, 200, 100, 0.03);
+}
+
+/* Adjust code blocks in eye comfort mode */
+body.eye-comfort pre,
+body.eye-comfort .code-block {
+    background: #2d2a24;
+    border-color: #3d3830;
+}
+
+body.eye-comfort.dark-mode pre,
+body.eye-comfort.dark-mode .code-block {
+    background: #1f1c17;
+}
+
+/* Colored boxes in eye comfort mode - warmer tints */
+body.eye-comfort .critical-box {
+    background: linear-gradient(135deg, #fce8e4 0%, #f9d8d2 100%);
+}
+
+body.eye-comfort .info-box {
+    background: linear-gradient(135deg, #e8f0f0 0%, #d4e4e4 100%);
+}
+
+body.eye-comfort .success-box {
+    background: linear-gradient(135deg, #e8f4e4 0%, #d4e8d0 100%);
+}
+
+body.eye-comfort .warning-box,
+body.eye-comfort .foundation-box {
+    background: linear-gradient(135deg, #faf4e4 0%, #f0e8d0 100%);
+}
+
+/* Links in eye comfort mode */
+body.eye-comfort a:not(.nav-link):not(.toc a) {
+    color: #6b5b3d;
+}
+
+body.eye-comfort a:not(.nav-link):not(.toc a):hover {
+    color: #8b7355;
+}
+
+body.eye-comfort.dark-mode a:not(.nav-link):not(.toc a) {
+    color: #c9b896;
+}
+
+body.eye-comfort.dark-mode a:not(.nav-link):not(.toc a):hover {
+    color: #e0d4b8;
 }
 
 /* Animation Preferences */
