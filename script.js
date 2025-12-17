@@ -670,6 +670,21 @@ document.addEventListener('keydown', function(e) {
 
     // Press Escape to close things
     if (e.key === 'Escape') {
+        // Close command palette if open
+        if (typeof closeCommandPalette === 'function' && commandPalette && commandPalette.classList.contains('active')) {
+            closeCommandPalette();
+            return;
+        }
+        // Close settings panel if open
+        const settingsPanel = document.getElementById('settingsPanel');
+        if (settingsPanel && settingsPanel.classList.contains('open')) {
+            settingsPanel.classList.remove('open');
+            document.getElementById('settingsPanelOverlay')?.classList.remove('open');
+            settingsPanel.setAttribute('aria-hidden', 'true');
+            document.getElementById('settingsBtn')?.setAttribute('aria-expanded', 'false');
+            return;
+        }
+        // Close other UI elements
         closeMobileMenu();
         keyboardHint.classList.remove('visible');
         searchInput.blur();
