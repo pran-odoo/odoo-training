@@ -1,3 +1,18 @@
+// ==================== GOOGLE ANALYTICS (CSP-compliant) ====================
+(function() {
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    window.gtag = gtag;
+    gtag('js', new Date());
+    gtag('config', 'G-D44SL82HW1');
+
+    // Load the gtag script dynamically
+    var script = document.createElement('script');
+    script.async = true;
+    script.src = 'https://www.googletagmanager.com/gtag/js?id=G-D44SL82HW1';
+    document.head.appendChild(script);
+})();
+
 document.addEventListener('DOMContentLoaded', function() {
 // ==================== ELEMENTS ====================
 const progressBar = document.getElementById('progressBar');
