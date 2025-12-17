@@ -135,6 +135,14 @@
                         <span class="toggle-track"><span class="toggle-thumb"></span></span>
                     </button>
                 </div>
+                <!-- Eye Comfort Mode Toggle -->
+                <div class="settings-group settings-group-inline">
+                    <label class="settings-label">Eye Comfort Mode</label>
+                    <span class="settings-hint">Reduces blue light</span>
+                    <button class="settings-toggle" id="eyeComfortToggle" aria-label="Toggle eye comfort mode for reduced blue light" aria-checked="false" role="switch">
+                        <span class="toggle-track"><span class="toggle-thumb"></span></span>
+                    </button>
+                </div>
             </div>
 
             <!-- TYPOGRAPHY SECTION -->
@@ -7268,6 +7276,376 @@ odoo.rpc('/web/dataset/search_read', {
                 <li>Business rule should apply consistently to all records</li>
                 <li>Workflow needs to progress automatically</li>
             </ul>
+        </div>
+
+        <!-- OTHER ACTION TYPES REFERENCE -->
+        <h3>Other Action Types Reference (Settings > Technical > Actions)</h3>
+
+        <div class="mechanism-box">
+            <h4>Complete Action Types in Odoo</h4>
+            <p>Odoo has <strong>six distinct action types</strong> stored in the <code>ir_actions</code> table hierarchy. While Server Actions, Scheduled Actions, and Automated Actions are the most commonly configured by functional consultants, understanding all action types helps with customization and troubleshooting.</p>
+            <table>
+                <tr>
+                    <th>Action Type</th>
+                    <th>Technical Model</th>
+                    <th>Location</th>
+                    <th>Primary Use</th>
+                </tr>
+                <tr>
+                    <td><strong>Window Actions</strong></td>
+                    <td><code>ir.actions.act_window</code></td>
+                    <td>Settings > Technical > Actions > Window Actions</td>
+                    <td>Open views, navigate between records</td>
+                </tr>
+                <tr>
+                    <td><strong>Server Actions</strong></td>
+                    <td><code>ir.actions.server</code></td>
+                    <td>Settings > Technical > Actions > Server Actions</td>
+                    <td>Execute business logic, update records</td>
+                </tr>
+                <tr>
+                    <td><strong>URL Actions</strong></td>
+                    <td><code>ir.actions.act_url</code></td>
+                    <td>Settings > Technical > Actions > URL Actions</td>
+                    <td>Open external URLs or download files</td>
+                </tr>
+                <tr>
+                    <td><strong>Client Actions</strong></td>
+                    <td><code>ir.actions.client</code></td>
+                    <td>Settings > Technical > Actions > Client Actions</td>
+                    <td>Custom JS widgets, dashboards</td>
+                </tr>
+                <tr>
+                    <td><strong>Report Actions</strong></td>
+                    <td><code>ir.actions.report</code></td>
+                    <td>Settings > Technical > Actions > Reports</td>
+                    <td>Generate PDF/HTML reports</td>
+                </tr>
+                <tr>
+                    <td><strong>Scheduled Actions</strong></td>
+                    <td><code>ir.cron</code></td>
+                    <td>Settings > Technical > Automation > Scheduled Actions</td>
+                    <td>Time-based recurring tasks</td>
+                </tr>
+            </table>
+        </div>
+
+        <!-- WINDOW ACTIONS -->
+        <h4>Window Actions (ir.actions.act_window)</h4>
+
+        <div class="technical-box">
+            <h4>What Are Window Actions?</h4>
+            <p>Window Actions are the <strong>most common action type</strong> - they define how to open a model's records in the web client. Every menu item that shows a list or form view uses a Window Action.</p>
+            <p><strong>Location:</strong> Settings > Technical > Actions > Window Actions</p>
+            <p><strong>When you use them:</strong> Creating custom menus, Smart Buttons, action buttons that open related records</p>
+        </div>
+
+        <table>
+            <tr>
+                <th>Field</th>
+                <th>Purpose</th>
+                <th>Example Values</th>
+            </tr>
+            <tr>
+                <td><strong>Object (res_model)</strong></td>
+                <td>Model to display records from</td>
+                <td><code>sale.order</code>, <code>res.partner</code></td>
+            </tr>
+            <tr>
+                <td><strong>Domain</strong></td>
+                <td>Filter which records to show</td>
+                <td><code>[('state', '=', 'sale')]</code></td>
+            </tr>
+            <tr>
+                <td><strong>Context</strong></td>
+                <td>Pass values to the view</td>
+                <td><code>{'default_partner_id': active_id}</code></td>
+            </tr>
+            <tr>
+                <td><strong>View Mode</strong></td>
+                <td>Available view types (comma-separated)</td>
+                <td><code>list,form</code>, <code>kanban,list,form</code></td>
+            </tr>
+            <tr>
+                <td><strong>Target</strong></td>
+                <td>How to open the action</td>
+                <td><code>current</code> (same window), <code>new</code> (popup), <code>fullscreen</code></td>
+            </tr>
+            <tr>
+                <td><strong>Limit</strong></td>
+                <td>Records per page in list view</td>
+                <td><code>80</code> (default), <code>200</code></td>
+            </tr>
+            <tr>
+                <td><strong>View Ref</strong></td>
+                <td>Force specific view to use</td>
+                <td>Link to <code>ir.ui.view</code> record</td>
+            </tr>
+            <tr>
+                <td><strong>Search View Ref</strong></td>
+                <td>Force specific search view</td>
+                <td>Link to search <code>ir.ui.view</code></td>
+            </tr>
+            <tr>
+                <td><strong>Groups</strong></td>
+                <td>Restrict action to specific groups</td>
+                <td>Sales / Manager, etc.</td>
+            </tr>
+        </table>
+
+        <div class="example-box">
+            <h4>Example: Smart Button to Show Customer's Quotations</h4>
+            <p><strong>Scenario:</strong> On the partner form, add a button showing count of quotations that opens only draft sales orders for that customer.</p>
+            <p><strong>Window Action Settings:</strong></p>
+            <ul>
+                <li><strong>Name:</strong> Customer Quotations</li>
+                <li><strong>Object:</strong> <code>sale.order</code></li>
+                <li><strong>Domain:</strong> <code>[('partner_id', '=', active_id), ('state', '=', 'draft')]</code></li>
+                <li><strong>Context:</strong> <code>{'default_partner_id': active_id, 'search_default_my_quotation': 1}</code></li>
+                <li><strong>View Mode:</strong> <code>list,form</code></li>
+                <li><strong>Target:</strong> <code>current</code></li>
+            </ul>
+            <p><strong>Key insight:</strong> <code>active_id</code> in domain/context refers to the current record's ID when the action is triggered.</p>
+        </div>
+
+        <div class="info-box">
+            <h4>Window Action Target Options</h4>
+            <table>
+                <tr>
+                    <th>Target</th>
+                    <th>Behavior</th>
+                    <th>Use Case</th>
+                </tr>
+                <tr>
+                    <td><code>current</code></td>
+                    <td>Replace current view (default)</td>
+                    <td>Normal navigation, menu items</td>
+                </tr>
+                <tr>
+                    <td><code>new</code></td>
+                    <td>Open in modal/popup dialog</td>
+                    <td>Quick create, wizards, confirmations</td>
+                </tr>
+                <tr>
+                    <td><code>fullscreen</code></td>
+                    <td>Hide breadcrumb, full screen</td>
+                    <td>Dashboards, PoS, dedicated screens</td>
+                </tr>
+                <tr>
+                    <td><code>main</code></td>
+                    <td>Clear breadcrumb, new root action</td>
+                    <td>Starting fresh navigation stack</td>
+                </tr>
+            </table>
+        </div>
+
+        <!-- URL ACTIONS -->
+        <h4>URL Actions (ir.actions.act_url)</h4>
+
+        <div class="technical-box">
+            <h4>What Are URL Actions?</h4>
+            <p>URL Actions open a web URL - either in a new browser tab, the current window, or trigger a file download.</p>
+            <p><strong>Location:</strong> Settings > Technical > Actions > URL Actions</p>
+            <p><strong>When you use them:</strong> Links to external websites, download files, open external applications</p>
+        </div>
+
+        <table>
+            <tr>
+                <th>Field</th>
+                <th>Purpose</th>
+                <th>Example Values</th>
+            </tr>
+            <tr>
+                <td><strong>URL</strong></td>
+                <td>The URL to open (can use expressions)</td>
+                <td><code>https://google.com</code>, <code>/web/content/...</code></td>
+            </tr>
+            <tr>
+                <td><strong>Target</strong></td>
+                <td>How to open the URL</td>
+                <td><code>new</code> (new tab), <code>self</code> (same tab), <code>download</code></td>
+            </tr>
+        </table>
+
+        <div class="example-box">
+            <h4>Example: Download Product Image</h4>
+            <p><strong>Scenario:</strong> Button on product form to download the product image.</p>
+            <p><strong>URL Action Settings:</strong></p>
+            <ul>
+                <li><strong>URL:</strong> <code>/web/content/product.product/${object.id}/image_1920/product_image.png?download=true</code></li>
+                <li><strong>Target:</strong> <code>download</code></li>
+            </ul>
+        </div>
+
+        <!-- CLIENT ACTIONS -->
+        <h4>Client Actions (ir.actions.client)</h4>
+
+        <div class="technical-box">
+            <h4>What Are Client Actions?</h4>
+            <p>Client Actions trigger <strong>custom JavaScript widgets</strong> in the web client. They're used for dashboards, special screens, and custom interfaces that don't fit the standard view types.</p>
+            <p><strong>Location:</strong> Settings > Technical > Actions > Client Actions</p>
+            <p><strong>When you use them:</strong> Dashboards, custom wizards, importing tools, PoS interface</p>
+        </div>
+
+        <table>
+            <tr>
+                <th>Field</th>
+                <th>Purpose</th>
+                <th>Example Values</th>
+            </tr>
+            <tr>
+                <td><strong>Tag</strong></td>
+                <td>JavaScript widget identifier to load</td>
+                <td><code>hr_attendance_my_attendances</code>, <code>account_dashboard</code></td>
+            </tr>
+            <tr>
+                <td><strong>Target</strong></td>
+                <td>How to display the widget</td>
+                <td><code>current</code>, <code>new</code>, <code>fullscreen</code>, <code>main</code></td>
+            </tr>
+            <tr>
+                <td><strong>Context</strong></td>
+                <td>Parameters passed to the widget</td>
+                <td><code>{'show_graph': True}</code></td>
+            </tr>
+            <tr>
+                <td><strong>Params</strong></td>
+                <td>Additional JSON parameters</td>
+                <td>Widget-specific configuration</td>
+            </tr>
+        </table>
+
+        <div class="info-box">
+            <h4>Common Built-in Client Actions</h4>
+            <table>
+                <tr>
+                    <th>Tag</th>
+                    <th>Description</th>
+                    <th>Module</th>
+                </tr>
+                <tr>
+                    <td><code>hr_attendance_my_attendances</code></td>
+                    <td>Employee check-in/check-out screen</td>
+                    <td>HR Attendance</td>
+                </tr>
+                <tr>
+                    <td><code>point_of_sale.point_of_sale_main</code></td>
+                    <td>Point of Sale interface</td>
+                    <td>Point of Sale</td>
+                </tr>
+                <tr>
+                    <td><code>spreadsheet_dashboard</code></td>
+                    <td>Spreadsheet dashboard view</td>
+                    <td>Spreadsheet (Enterprise)</td>
+                </tr>
+                <tr>
+                    <td><code>account.dashboard</code></td>
+                    <td>Accounting dashboard</td>
+                    <td>Accounting</td>
+                </tr>
+                <tr>
+                    <td><code>mail.action_discuss</code></td>
+                    <td>Discuss/Chat interface</td>
+                    <td>Discuss</td>
+                </tr>
+            </table>
+            <p><strong>Note:</strong> Client Actions require JavaScript development to create custom tags. Functional consultants typically use existing client actions rather than creating new ones.</p>
+        </div>
+
+        <!-- REPORT ACTIONS -->
+        <h4>Report Actions (ir.actions.report)</h4>
+
+        <div class="technical-box">
+            <h4>What Are Report Actions?</h4>
+            <p>Report Actions generate <strong>PDF, HTML, or text reports</strong> using QWeb templates. They appear in the Print menu on forms and lists.</p>
+            <p><strong>Location:</strong> Settings > Technical > Actions > Reports</p>
+            <p><strong>When you use them:</strong> Invoices, quotations, delivery slips, custom reports</p>
+        </div>
+
+        <table>
+            <tr>
+                <th>Field</th>
+                <th>Purpose</th>
+                <th>Example Values</th>
+            </tr>
+            <tr>
+                <td><strong>Model</strong></td>
+                <td>Model the report applies to</td>
+                <td><code>sale.order</code>, <code>account.move</code></td>
+            </tr>
+            <tr>
+                <td><strong>Report Type</strong></td>
+                <td>Output format</td>
+                <td><code>qweb-pdf</code>, <code>qweb-html</code>, <code>qweb-text</code></td>
+            </tr>
+            <tr>
+                <td><strong>Template Name</strong></td>
+                <td>QWeb template to render</td>
+                <td><code>sale.report_saleorder</code></td>
+            </tr>
+            <tr>
+                <td><strong>Paper Format</strong></td>
+                <td>Page size and margins</td>
+                <td>A4, Letter, Custom format</td>
+            </tr>
+            <tr>
+                <td><strong>Printed Report Name</strong></td>
+                <td>Downloaded filename (Python expression)</td>
+                <td><code>'INV_%s' % object.name</code></td>
+            </tr>
+            <tr>
+                <td><strong>Attachment</strong></td>
+                <td>Save PDF as attachment (Python expression)</td>
+                <td><code>'Invoice_%s.pdf' % object.name</code></td>
+            </tr>
+            <tr>
+                <td><strong>Reload from Attachment</strong></td>
+                <td>Use cached attachment if available</td>
+                <td>Checkbox (boolean)</td>
+            </tr>
+            <tr>
+                <td><strong>Domain</strong></td>
+                <td>Only show report for matching records</td>
+                <td><code>[('state', '=', 'sale')]</code></td>
+            </tr>
+        </table>
+
+        <div class="example-box">
+            <h4>Example: Create Custom Product Label Report</h4>
+            <p><strong>Scenario:</strong> Create a report that prints product labels with barcode for selected products.</p>
+            <p><strong>Report Action Settings:</strong></p>
+            <ul>
+                <li><strong>Name:</strong> Product Label</li>
+                <li><strong>Model:</strong> <code>product.product</code></li>
+                <li><strong>Report Type:</strong> <code>qweb-pdf</code></li>
+                <li><strong>Template Name:</strong> <code>your_module.report_product_label</code></li>
+                <li><strong>Paper Format:</strong> Create custom format (e.g., 4x2 inch labels)</li>
+                <li><strong>Printed Report Name:</strong> <code>'Label_%s' % object.default_code</code></li>
+                <li>Click "Add in the 'Print' menu" to make it available</li>
+            </ul>
+            <p><strong>Note:</strong> The QWeb template must be created in XML (requires developer). Report Action just links to it.</p>
+        </div>
+
+        <div class="warning-box">
+            <h4>Report Generation Requirements</h4>
+            <ul>
+                <li><strong>PDF reports require wkhtmltopdf:</strong> This tool converts HTML to PDF. Check Settings > Technical > System Parameters for <code>report.url</code> if having issues.</li>
+                <li><strong>Minimum 2 workers:</strong> PDF generation requires at least 2 Odoo workers to avoid timeouts.</li>
+                <li><strong>Templates are QWeb XML:</strong> Creating new report templates requires XML/development knowledge.</li>
+                <li><strong>Attachment caching:</strong> Use "Reload from Attachment" for reports that don't change (e.g., posted invoices) to improve performance.</li>
+            </ul>
+        </div>
+
+        <div class="mechanism-box">
+            <h4>How Actions Connect to Menus</h4>
+            <p>All action types can be linked to menu items through <code>ir.ui.menu</code>:</p>
+            <ul>
+                <li><strong>Menu Item</strong> stores a reference to an action (any type)</li>
+                <li>When user clicks menu, Odoo loads the referenced action</li>
+                <li>Action type determines what happens (open view, run code, show dashboard, etc.)</li>
+            </ul>
+            <p><strong>Location:</strong> Settings > Technical > User Interface > Menu Items</p>
+            <p><strong>Binding to Model:</strong> Actions can also be "bound" to a model - they then appear in the Action/Print dropdown menu on that model's views. Use "Create Contextual Action" button on Server Actions or Reports.</p>
         </div>
 
         <!-- ==================== SECTION 15: INTEGRATION ==================== -->

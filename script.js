@@ -2117,6 +2117,7 @@ const DEFAULT_SETTINGS = {
     accentColor: 'purple',
     codeTheme: 'dark',
     highContrast: false,
+    eyeComfort: false,
     // Typography
     fontFamily: 'system',
     lineHeight: 'normal',
@@ -2200,6 +2201,9 @@ function applyPersonalization() {
     // Apply high contrast mode
     body.classList.toggle('high-contrast', currentSettings.highContrast === true);
 
+    // Apply eye comfort mode (blue light filter)
+    body.classList.toggle('eye-comfort', currentSettings.eyeComfort === true);
+
     // === TYPOGRAPHY ===
     // Apply font family
     const font = FONT_FAMILIES[currentSettings.fontFamily] || FONT_FAMILIES.system;
@@ -2260,6 +2264,7 @@ function updateSettingsUI() {
     updateOptionGroup('.color-option', 'color', currentSettings.accentColor);
     updateOptionGroup('.code-theme-option', 'codetheme', currentSettings.codeTheme);
     updateToggle('#highContrastToggle', currentSettings.highContrast);
+    updateToggle('#eyeComfortToggle', currentSettings.eyeComfort);
 
     // Typography
     updateOptionGroup('.font-option', 'font', currentSettings.fontFamily);
@@ -2388,6 +2393,16 @@ function initPersonalization() {
     if (highContrastToggle) {
         highContrastToggle.addEventListener('click', () => {
             currentSettings.highContrast = !currentSettings.highContrast;
+            savePersonalization();
+            applyPersonalization();
+        });
+    }
+
+    // Eye comfort toggle (blue light filter)
+    const eyeComfortToggle = document.getElementById('eyeComfortToggle');
+    if (eyeComfortToggle) {
+        eyeComfortToggle.addEventListener('click', () => {
+            currentSettings.eyeComfort = !currentSettings.eyeComfort;
             savePersonalization();
             applyPersonalization();
         });
