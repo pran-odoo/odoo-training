@@ -4843,82 +4843,220 @@ body.eye-comfort {
     --border-light: #f0ebe0;
 }
 
-body.eye-comfort::before {
+/* Eye comfort light mode only - subtle warm overlay */
+body.eye-comfort:not(.dark-mode)::before {
     content: '';
     position: fixed;
     top: 0;
     left: 0;
     right: 0;
     bottom: 0;
-    background: rgba(255, 244, 214, 0.08);
+    background: rgba(255, 244, 214, 0.06);
     pointer-events: none;
     z-index: 9998;
     mix-blend-mode: multiply;
 }
 
-/* Eye comfort in dark mode - warm dark tones */
+/* Eye comfort in dark mode - warm dark tones with good contrast */
 body.eye-comfort.dark-mode {
-    --bg-main: #1a1814;
-    --bg-card: #242019;
-    --bg-primary: #2a261f;
-    --bg-secondary: #1f1b16;
-    --bg-tertiary: #332e25;
-    --text-primary: #e8e4d9;
-    --text-secondary: #ccc7b8;
-    --text-muted: #9e9a8c;
-    --border: #3d3830;
-    --border-light: #2d2a24;
+    --bg-main: #1a1610;
+    --bg-card: #211d15;
+    --bg-primary: #282318;
+    --bg-secondary: #1c1812;
+    --bg-tertiary: #302a1e;
+    --text-primary: #ede8dc;
+    --text-secondary: #d4cfc0;
+    --text-muted: #a8a293;
+    --text-light: #7a7568;
+    --border: #3a3428;
+    --border-light: #2a261c;
 }
 
-body.eye-comfort.dark-mode::before {
-    background: rgba(255, 200, 100, 0.03);
+/* Adjust code blocks in eye comfort light mode */
+body.eye-comfort:not(.dark-mode) pre,
+body.eye-comfort:not(.dark-mode) .code-block {
+    background: #2a2518;
+    border-color: #3a3428;
+    color: #e8e4d8;
 }
 
-/* Adjust code blocks in eye comfort mode */
-body.eye-comfort pre,
-body.eye-comfort .code-block {
-    background: #2d2a24;
-    border-color: #3d3830;
-}
-
+/* Adjust code blocks in eye comfort dark mode */
 body.eye-comfort.dark-mode pre,
 body.eye-comfort.dark-mode .code-block {
-    background: #1f1c17;
+    background: #1c1810;
+    border-color: #2a261c;
+    color: #e8e4d8;
 }
 
-/* Colored boxes in eye comfort mode - warmer tints */
-body.eye-comfort .critical-box {
+/* Colored boxes in eye comfort LIGHT mode - warmer tints with dark text */
+body.eye-comfort:not(.dark-mode) .critical-box {
     background: linear-gradient(135deg, #fce8e4 0%, #f9d8d2 100%);
+    color: #3d2820;
 }
 
-body.eye-comfort .info-box {
+body.eye-comfort:not(.dark-mode) .info-box {
     background: linear-gradient(135deg, #e8f0f0 0%, #d4e4e4 100%);
+    color: #1e3030;
 }
 
-body.eye-comfort .success-box {
+body.eye-comfort:not(.dark-mode) .success-box {
     background: linear-gradient(135deg, #e8f4e4 0%, #d4e8d0 100%);
+    color: #1e3020;
 }
 
-body.eye-comfort .warning-box,
-body.eye-comfort .foundation-box {
+body.eye-comfort:not(.dark-mode) .warning-box,
+body.eye-comfort:not(.dark-mode) .foundation-box {
     background: linear-gradient(135deg, #faf4e4 0%, #f0e8d0 100%);
+    color: #3d3520;
+}
+
+body.eye-comfort:not(.dark-mode) .technical-box {
+    background: linear-gradient(135deg, #e8ecf0 0%, #d4dce4 100%);
+    color: #1e2830;
+}
+
+body.eye-comfort:not(.dark-mode) .mechanism-box {
+    background: linear-gradient(135deg, #eee8f4 0%, #dcd4e8 100%);
+    color: #281e38;
+}
+
+body.eye-comfort:not(.dark-mode) .odoo-box {
+    background: linear-gradient(135deg, #f8f0f4 0%, #ece4e8 100%);
+    color: #382830;
+}
+
+body.eye-comfort:not(.dark-mode) .example-box {
+    background: linear-gradient(135deg, #f0f8e8 0%, #e4ecd8 100%);
+    color: #283820;
+}
+
+body.eye-comfort:not(.dark-mode) .analogy-box {
+    background: linear-gradient(135deg, #f8f0f0 0%, #ece4e4 100%);
+    color: #382828;
+}
+
+/* Colored boxes in eye comfort DARK mode - dark warm backgrounds with readable text */
+body.eye-comfort.dark-mode .critical-box,
+body.eye-comfort.dark-mode .warning-box {
+    background: rgba(180, 100, 80, 0.15) !important;
+    color: var(--text-primary) !important;
+}
+
+body.eye-comfort.dark-mode .critical-box p,
+body.eye-comfort.dark-mode .critical-box li,
+body.eye-comfort.dark-mode .critical-box h4,
+body.eye-comfort.dark-mode .warning-box p,
+body.eye-comfort.dark-mode .warning-box li,
+body.eye-comfort.dark-mode .warning-box h4 {
+    color: var(--text-secondary) !important;
+}
+
+body.eye-comfort.dark-mode .info-box,
+body.eye-comfort.dark-mode .technical-box {
+    background: rgba(80, 130, 160, 0.15) !important;
+    color: var(--text-primary) !important;
+}
+
+body.eye-comfort.dark-mode .info-box p,
+body.eye-comfort.dark-mode .info-box li,
+body.eye-comfort.dark-mode .info-box h4,
+body.eye-comfort.dark-mode .technical-box p,
+body.eye-comfort.dark-mode .technical-box li,
+body.eye-comfort.dark-mode .technical-box h4 {
+    color: var(--text-secondary) !important;
+}
+
+body.eye-comfort.dark-mode .success-box,
+body.eye-comfort.dark-mode .example-box {
+    background: rgba(80, 140, 80, 0.15) !important;
+    color: var(--text-primary) !important;
+}
+
+body.eye-comfort.dark-mode .success-box p,
+body.eye-comfort.dark-mode .success-box li,
+body.eye-comfort.dark-mode .success-box h4,
+body.eye-comfort.dark-mode .example-box p,
+body.eye-comfort.dark-mode .example-box li,
+body.eye-comfort.dark-mode .example-box h4 {
+    color: var(--text-secondary) !important;
+}
+
+body.eye-comfort.dark-mode .foundation-box {
+    background: rgba(160, 140, 80, 0.15) !important;
+    color: var(--text-primary) !important;
+}
+
+body.eye-comfort.dark-mode .foundation-box p,
+body.eye-comfort.dark-mode .foundation-box li,
+body.eye-comfort.dark-mode .foundation-box h4 {
+    color: var(--text-secondary) !important;
+}
+
+body.eye-comfort.dark-mode .mechanism-box,
+body.eye-comfort.dark-mode .odoo-box {
+    background: rgba(120, 100, 140, 0.15) !important;
+    color: var(--text-primary) !important;
+}
+
+body.eye-comfort.dark-mode .mechanism-box p,
+body.eye-comfort.dark-mode .mechanism-box li,
+body.eye-comfort.dark-mode .mechanism-box h4,
+body.eye-comfort.dark-mode .odoo-box p,
+body.eye-comfort.dark-mode .odoo-box li,
+body.eye-comfort.dark-mode .odoo-box h4 {
+    color: var(--text-secondary) !important;
+}
+
+body.eye-comfort.dark-mode .analogy-box {
+    background: rgba(160, 120, 140, 0.15) !important;
+    color: var(--text-primary) !important;
+}
+
+body.eye-comfort.dark-mode .analogy-box p,
+body.eye-comfort.dark-mode .analogy-box li,
+body.eye-comfort.dark-mode .analogy-box h4 {
+    color: var(--text-secondary) !important;
 }
 
 /* Links in eye comfort mode */
-body.eye-comfort a:not(.nav-link):not(.toc a) {
+body.eye-comfort:not(.dark-mode) a:not(.nav-link):not(.toc a) {
     color: #6b5b3d;
 }
 
-body.eye-comfort a:not(.nav-link):not(.toc a):hover {
+body.eye-comfort:not(.dark-mode) a:not(.nav-link):not(.toc a):hover {
     color: #8b7355;
 }
 
 body.eye-comfort.dark-mode a:not(.nav-link):not(.toc a) {
-    color: #c9b896;
+    color: #d4c4a0;
 }
 
 body.eye-comfort.dark-mode a:not(.nav-link):not(.toc a):hover {
-    color: #e0d4b8;
+    color: #e8dcc0;
+}
+
+/* Inline code in eye comfort dark mode */
+body.eye-comfort.dark-mode code {
+    background: rgba(200, 180, 140, 0.15);
+    color: #d4c8a8;
+}
+
+/* Tables in eye comfort dark mode */
+body.eye-comfort.dark-mode th {
+    background: #302a1e !important;
+    color: var(--text-primary) !important;
+}
+
+body.eye-comfort.dark-mode td {
+    color: var(--text-secondary) !important;
+}
+
+body.eye-comfort.dark-mode tr:nth-child(even) {
+    background: rgba(255, 250, 240, 0.03);
+}
+
+body.eye-comfort.dark-mode tr:hover {
+    background: rgba(255, 250, 240, 0.06);
 }
 
 /* Animation Preferences */
