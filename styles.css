@@ -177,12 +177,12 @@ body.dark-mode {
     --bg-active: rgba(255, 255, 255, 0.12);
     /* Text: Off-white instead of pure white - ~15.8:1 contrast on #121212 */
     --text-primary: #e4e4e7;
-    /* Secondary: ~11:1 contrast on #121212 */
-    --text-secondary: #a1a1aa;
-    /* Muted: ~6:1 contrast */
-    --text-muted: #71717a;
+    /* Secondary: ~7:1 contrast on #1e1e1e */
+    --text-secondary: #a8a8b3;
+    /* Muted: ~5:1 contrast - meets WCAG AA */
+    --text-muted: #8b8b96;
     /* Light: ~4:1 contrast - decorative only */
-    --text-light: #52525b;
+    --text-light: #6b6b76;
     /* Borders - subtle separation */
     --border: #3f3f46;
     --border-light: #27272a;
