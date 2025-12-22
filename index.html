@@ -9924,6 +9924,825 @@ Content-Type: text/xml
             <p>A field can be both required AND constrained - for example, the field must exist AND be positive.</p>
         </div>
 
+        <!-- ==================== AI IN ODOO 19 ==================== -->
+        <h2 id="ai">26. AI in Odoo 19 <span class="badge badge-enterprise">Enterprise</span></h2>
+
+        <p class="intro-text">Odoo 19 introduces a <strong>revolutionary AI framework</strong> that transforms the ERP into an intelligent, LLM-powered platform. This is the most significant AI integration in Odoo's history, providing native AI features across all major applications.</p>
+
+        <div class="critical-box">
+            <h4>What's New in Odoo 19 AI</h4>
+            <p>Odoo 19 moves beyond simple IAP-based OCR to a comprehensive AI agent system with:</p>
+            <ul>
+                <li><strong>Native LLM Integration:</strong> Direct support for OpenAI (GPT-3.5 through GPT-5) and Google (Gemini 1.5/2.5)</li>
+                <li><strong>Vector Database & Semantic Search:</strong> PostgreSQL pgvector for RAG (Retrieval-Augmented Generation)</li>
+                <li><strong>AI Agents:</strong> Configurable assistants with custom knowledge sources and tool access</li>
+                <li><strong>AI-Computed Fields:</strong> Fields that auto-populate using AI inference</li>
+                <li><strong>AI in Automation:</strong> Server actions and workflows powered by LLM intelligence</li>
+                <li><strong>Cross-Module Integration:</strong> AI assistance in CRM, Documents, Knowledge, Livechat, Website, and Accounting</li>
+            </ul>
+        </div>
+
+        <h3>System Requirements</h3>
+
+        <div class="warning-box">
+            <h4>Critical Requirements for AI Features</h4>
+            <ol>
+                <li><strong>PostgreSQL with pgvector extension:</strong> Required for vector similarity search (embeddings). The module auto-checks and enables this at installation.</li>
+                <li><strong>API Keys:</strong> OpenAI API key OR Google AI API key with sufficient quota</li>
+                <li><strong>Internet Access:</strong> For API calls to LLM providers (no offline mode)</li>
+                <li><strong>Disk Space:</strong> Embeddings consume ~6KB per 1000-token chunk (1536 dimensions × 4 bytes)</li>
+            </ol>
+        </div>
+
+        <h4>Supported LLM Providers</h4>
+
+        <table>
+            <tr>
+                <th>Provider</th>
+                <th>LLM Models</th>
+                <th>Embedding Model</th>
+                <th>Best For</th>
+            </tr>
+            <tr>
+                <td><strong>OpenAI</strong></td>
+                <td>GPT-3.5 Turbo, GPT-4, GPT-4o, GPT-4.1, GPT-4.1 Mini, GPT-5, GPT-5 Mini</td>
+                <td>text-embedding-3-small (1536 dim)</td>
+                <td>Most features, best tool support</td>
+            </tr>
+            <tr>
+                <td><strong>Google</strong></td>
+                <td>Gemini 2.5 Pro, Gemini 2.5 Flash, Gemini 1.5 Pro, Gemini 1.5 Flash</td>
+                <td>gemini-embedding-001</td>
+                <td>Alternative provider, competitive pricing</td>
+            </tr>
+        </table>
+
+        <div class="info-box">
+            <h4>API Key Configuration</h4>
+            <p><strong>Path:</strong> Settings → General Settings → AI section</p>
+            <ul>
+                <li><strong>OpenAI API key:</strong> Get from <code>platform.openai.com</code></li>
+                <li><strong>Google AI API key:</strong> Get from <code>makersuite.google.com</code></li>
+            </ul>
+            <p><strong>Alternative:</strong> Environment variables <code>ODOO_AI_CHATGPT_TOKEN</code> or <code>ODOO_AI_GEMINI_TOKEN</code></p>
+        </div>
+
+        <!-- ==================== AI AGENTS ==================== -->
+        <h3>AI Agents - The Core of Odoo AI</h3>
+
+        <div class="technical-box">
+            <h4>What is an AI Agent?</h4>
+            <p>An AI Agent is a <strong>configurable AI assistant</strong> with its own personality, knowledge base, and capabilities. Each agent can:</p>
+            <ul>
+                <li>Answer questions using its knowledge sources (RAG)</li>
+                <li>Execute actions via assigned tools (server actions)</li>
+                <li>Chat with users through the Discuss interface</li>
+                <li>Handle customer queries in Livechat</li>
+                <li>Generate content for emails, documents, and more</li>
+            </ul>
+        </div>
+
+        <h4>Agent Configuration Fields</h4>
+
+        <table>
+            <tr>
+                <th>Field</th>
+                <th>Purpose</th>
+                <th>Options</th>
+            </tr>
+            <tr>
+                <td><strong>Name</strong></td>
+                <td>Display name for the agent</td>
+                <td>Free text (e.g., "Support Assistant")</td>
+            </tr>
+            <tr>
+                <td><strong>LLM Model</strong></td>
+                <td>Which AI model to use</td>
+                <td>GPT-4o (default), Gemini 2.5 Flash, etc.</td>
+            </tr>
+            <tr>
+                <td><strong>Response Style</strong></td>
+                <td>Controls AI "temperature" (creativity)</td>
+                <td>Analytical (0.2), Balanced (0.5), Creative (0.8)</td>
+            </tr>
+            <tr>
+                <td><strong>System Prompt</strong></td>
+                <td>Custom instructions for agent behavior</td>
+                <td>Free text - tells AI how to behave</td>
+            </tr>
+            <tr>
+                <td><strong>Topics</strong></td>
+                <td>Groups of instructions + tools</td>
+                <td>Natural Language Search, Information Retrieval</td>
+            </tr>
+            <tr>
+                <td><strong>Restrict to Sources</strong></td>
+                <td>Only answer from knowledge base</td>
+                <td>Boolean - prevents hallucination</td>
+            </tr>
+        </table>
+
+        <div class="example-box">
+            <h4>Example: Creating a Support Agent</h4>
+            <p><strong>Scenario:</strong> Create an AI agent to answer product support questions.</p>
+            <ol>
+                <li>Go to <strong>AI → Agents → Create</strong></li>
+                <li>Name: "Product Support Bot"</li>
+                <li>LLM Model: GPT-4o (best for complex queries)</li>
+                <li>Response Style: Analytical (factual answers)</li>
+                <li>System Prompt: "You are a helpful product support assistant. Answer questions about our products accurately. If you don't know, say so."</li>
+                <li>Enable <strong>Restrict to Sources</strong></li>
+                <li>Upload product manuals to <strong>Sources</strong> tab</li>
+            </ol>
+        </div>
+
+        <div class="odoo-box">
+            <h4>Technical: Agent Model Structure</h4>
+            <p>Model: <code>ai.agent</code> | File: <code>Enterprise/ai/models/ai_agent.py</code></p>
+            <pre style="background: #1e293b; color: #e2e8f0; padding: 16px; border-radius: 8px; font-size: 13px; overflow-x: auto;">
+<span style="color: #fbbf24;">class</span> <span style="color: #60a5fa;">AIAgent</span>(models.Model):
+    _name = <span style="color: #34d399;">'ai.agent'</span>
+
+    name = fields.Char(related=<span style="color: #34d399;">'partner_id.name'</span>)
+    llm_model = fields.Selection(default=<span style="color: #34d399;">'gpt-4o'</span>)
+    response_style = fields.Selection([
+        (<span style="color: #34d399;">'analytical'</span>, <span style="color: #34d399;">"Analytical"</span>),   <span style="color: #64748b;"># temperature: 0.2</span>
+        (<span style="color: #34d399;">'balanced'</span>, <span style="color: #34d399;">"Balanced"</span>),       <span style="color: #64748b;"># temperature: 0.5</span>
+        (<span style="color: #34d399;">'creative'</span>, <span style="color: #34d399;">"Creative"</span>),       <span style="color: #64748b;"># temperature: 0.8</span>
+    ])
+    system_prompt = fields.Text()
+    topic_ids = fields.Many2many(<span style="color: #34d399;">'ai.topic'</span>)
+    sources_ids = fields.One2many(<span style="color: #34d399;">'ai.agent.source'</span>)
+    restrict_to_sources = fields.Boolean()</pre>
+        </div>
+
+        <h4>The "Ask AI" Button (Natural Language Search)</h4>
+
+        <div class="mechanism-box">
+            <h4>How Ask AI Works</h4>
+            <p>The Ask AI feature lets users search Odoo data using natural language:</p>
+            <ol>
+                <li><strong>User types:</strong> "Show me all sales orders over $10,000 this month"</li>
+                <li><strong>AI parses:</strong> Identifies model (sale.order), filters (amount_total > 10000), date range</li>
+                <li><strong>AI builds domain:</strong> <code>[('amount_total', '>', 10000), ('date_order', '>=', '2024-12-01')]</code></li>
+                <li><strong>AI opens view:</strong> Navigates to filtered list view automatically</li>
+            </ol>
+            <p><strong>Available from:</strong> Command palette (Ctrl+K) → "Ask AI"</p>
+        </div>
+
+        <!-- ==================== RAG SOURCES ==================== -->
+        <h3>RAG Sources - Building Knowledge Bases</h3>
+
+        <div class="technical-box">
+            <h4>What is RAG?</h4>
+            <p><strong>RAG (Retrieval-Augmented Generation)</strong> allows AI agents to answer questions based on your specific documents rather than general knowledge. This prevents hallucination and ensures accurate, context-specific responses.</p>
+        </div>
+
+        <h4>Source Types</h4>
+
+        <table>
+            <tr>
+                <th>Type</th>
+                <th>Supported Formats</th>
+                <th>Use Case</th>
+            </tr>
+            <tr>
+                <td><strong>Binary (File)</strong></td>
+                <td>PDF, DOC, TXT, HTML, images</td>
+                <td>Product manuals, policies, contracts</td>
+            </tr>
+            <tr>
+                <td><strong>URL</strong></td>
+                <td>Web pages (auto-scraped)</td>
+                <td>Knowledge base articles, documentation sites</td>
+            </tr>
+            <tr>
+                <td><strong>Document</strong></td>
+                <td>Odoo Documents app files</td>
+                <td>Internal documents already in Odoo</td>
+            </tr>
+            <tr>
+                <td><strong>Knowledge Article</strong></td>
+                <td>Odoo Knowledge app articles</td>
+                <td>Wiki content, procedures</td>
+            </tr>
+        </table>
+
+        <h4>How Indexing Works</h4>
+
+        <div class="diagram">
+            <pre>
+┌─────────────────┐      ┌─────────────────┐      ┌─────────────────┐
+│  Upload File    │ ───→ │   Chunking      │ ───→ │   Embedding     │
+│  (PDF, DOC...)  │      │ (500-1000 tokens│      │ (1536-dim vector│
+└─────────────────┘      │   per chunk)    │      │   per chunk)    │
+                         └─────────────────┘      └────────┬────────┘
+                                                           │
+                                                           ▼
+┌─────────────────┐      ┌─────────────────┐      ┌─────────────────┐
+│  AI Response    │ ←─── │  Retrieve Top   │ ←─── │  Vector Search  │
+│  with Citations │      │  Similar Chunks │      │  (pgvector)     │
+└─────────────────┘      └─────────────────┘      └─────────────────┘
+            </pre>
+        </div>
+
+        <h4>Source Status Lifecycle</h4>
+
+        <table>
+            <tr>
+                <th>Status</th>
+                <th>Meaning</th>
+                <th>Action Required</th>
+            </tr>
+            <tr>
+                <td><strong>Processing</strong></td>
+                <td>Being chunked and embedded</td>
+                <td>Wait for cron job to complete</td>
+            </tr>
+            <tr>
+                <td><strong>Indexed</strong></td>
+                <td>Ready for use in RAG queries</td>
+                <td>None - source is active</td>
+            </tr>
+            <tr>
+                <td><strong>Failed</strong></td>
+                <td>Error during processing</td>
+                <td>Check error details, retry</td>
+            </tr>
+        </table>
+
+        <div class="odoo-box">
+            <h4>Technical: Vector Embedding Architecture</h4>
+            <p>Model: <code>ai.embedding</code> | Uses PostgreSQL pgvector extension</p>
+            <pre style="background: #1e293b; color: #e2e8f0; padding: 16px; border-radius: 8px; font-size: 13px; overflow-x: auto;">
+<span style="color: #64748b;"># Vector field definition (1536 dimensions for OpenAI)</span>
+embedding_vector = Vector(size=<span style="color: #f472b6;">1536</span>)
+
+<span style="color: #64748b;"># IVFFlat index for fast similarity search</span>
+_embedding_vector_idx = models.Index(
+    <span style="color: #34d399;">"USING ivfflat (embedding_vector vector_cosine_ops)"</span>
+)
+
+<span style="color: #64748b;"># SQL for similarity search (cosine distance)</span>
+<span style="color: #34d399;">"""
+SELECT id, 1 - (embedding_vector <=> %s::vector) AS similarity
+FROM ai_embedding
+ORDER BY similarity DESC
+LIMIT 5
+"""</span></pre>
+        </div>
+
+        <!-- ==================== AI FIELDS ==================== -->
+        <h3>AI Fields - Auto-Fill with AI</h3>
+
+        <div class="technical-box">
+            <h4>What are AI Fields?</h4>
+            <p>AI Fields are model fields that compute their values using AI. Instead of writing Python code or relying on user input, the field value is generated by an LLM based on a <strong>prompt template</strong>.</p>
+        </div>
+
+        <h4>Supported Field Types</h4>
+
+        <table>
+            <tr>
+                <th>Field Type</th>
+                <th>Auto-Update</th>
+                <th>Example Use Case</th>
+            </tr>
+            <tr>
+                <td><strong>Char, Text, HTML</strong></td>
+                <td>Yes (on save)</td>
+                <td>Product descriptions, summaries</td>
+            </tr>
+            <tr>
+                <td><strong>Selection</strong></td>
+                <td>Manual trigger</td>
+                <td>Priority classification, categories</td>
+            </tr>
+            <tr>
+                <td><strong>Many2one</strong></td>
+                <td>Manual trigger</td>
+                <td>Auto-assign salesperson, category</td>
+            </tr>
+            <tr>
+                <td><strong>Many2many (Tags)</strong></td>
+                <td>Manual trigger</td>
+                <td>Auto-tagging based on content</td>
+            </tr>
+            <tr>
+                <td><strong>Integer, Float, Monetary</strong></td>
+                <td>Manual trigger</td>
+                <td>Scoring, estimated values</td>
+            </tr>
+            <tr>
+                <td><strong>Date, Datetime</strong></td>
+                <td>Manual trigger</td>
+                <td>Suggested deadlines</td>
+            </tr>
+            <tr>
+                <td><strong>Boolean</strong></td>
+                <td>Manual trigger</td>
+                <td>Yes/No classification</td>
+            </tr>
+        </table>
+
+        <h4>Prompt Syntax</h4>
+
+        <div class="info-box">
+            <h4>Field Reference Syntax</h4>
+            <p>Use <code>{{field_name}}</code> to reference other fields in your prompt:</p>
+            <ul>
+                <li><code>{{name}}</code> - Current record's name</li>
+                <li><code>{{partner_id.name}}</code> - Related partner's name</li>
+                <li><code>{{order_line.product_id.name}}</code> - Products in order lines</li>
+            </ul>
+        </div>
+
+        <div class="example-box">
+            <h4>Example: AI Product Description</h4>
+            <p><strong>Scenario:</strong> Auto-generate marketing descriptions for products.</p>
+            <p><strong>Field:</strong> <code>marketing_description</code> (Text, AI-computed)</p>
+            <p><strong>Prompt:</strong></p>
+            <pre style="background: #f8fafc; padding: 12px; border-radius: 6px; border: 1px solid #e2e8f0;">Write a compelling product description for "{{name}}".
+Key features: {{description_sale}}
+Category: {{categ_id.name}}
+Keep it under 100 words, professional tone.</pre>
+            <p><strong>Result:</strong> AI generates unique descriptions based on each product's attributes.</p>
+        </div>
+
+        <div class="odoo-box">
+            <h4>Technical: Creating AI Fields in Code</h4>
+            <pre style="background: #1e293b; color: #e2e8f0; padding: 16px; border-radius: 8px; font-size: 13px; overflow-x: auto;">
+<span style="color: #fbbf24;">class</span> <span style="color: #60a5fa;">ProductTemplate</span>(models.Model):
+    _inherit = <span style="color: #34d399;">'product.template'</span>
+
+    <span style="color: #64748b;"># AI field with prompt in field definition</span>
+    ai_description = fields.Text(
+        string=<span style="color: #34d399;">"AI Description"</span>,
+        ai=<span style="color: #34d399;">"""Write a marketing description for {{name}}.
+Features: {{description_sale}}
+Category: {{categ_id.name}}"""</span>
+    )</pre>
+            <p><strong>Cron Job:</strong> <code>ai_fields.ir_cron_fill_ai_fields</code> processes empty AI fields in batches.</p>
+        </div>
+
+        <!-- ==================== AI SERVER ACTIONS ==================== -->
+        <h3>AI Server Actions - Intelligent Automation</h3>
+
+        <div class="technical-box">
+            <h4>The "AI" Action Type</h4>
+            <p>Odoo 19 adds a new server action type: <strong>"AI"</strong>. This action uses an LLM to intelligently execute operations based on context.</p>
+        </div>
+
+        <h4>AI Tool Execution Flow</h4>
+
+        <div class="mechanism-box">
+            <h4>How AI Actions Work</h4>
+            <ol>
+                <li><strong>Trigger:</strong> Automation rule fires (on create, update, scheduled, etc.)</li>
+                <li><strong>Context:</strong> AI receives record data, available tools, and prompt</li>
+                <li><strong>Decision:</strong> LLM decides which tool(s) to call based on instructions</li>
+                <li><strong>Execution:</strong> Tool runs with AI-provided parameters</li>
+                <li><strong>Loop:</strong> Can call multiple tools in sequence until <code>__end_message</code></li>
+            </ol>
+        </div>
+
+        <h4>Action Types That Can Be AI Tools</h4>
+
+        <table>
+            <tr>
+                <th>Action Type</th>
+                <th>What AI Can Do</th>
+            </tr>
+            <tr>
+                <td><strong>Execute Code</strong></td>
+                <td>Run Python code with AI-provided parameters</td>
+            </tr>
+            <tr>
+                <td><strong>Create Activity</strong></td>
+                <td>Schedule activities with AI-determined details</td>
+            </tr>
+            <tr>
+                <td><strong>Create Record</strong></td>
+                <td>Create records with AI-populated values</td>
+            </tr>
+            <tr>
+                <td><strong>Update Record</strong></td>
+                <td>Modify fields based on AI analysis</td>
+            </tr>
+            <tr>
+                <td><strong>Add Followers</strong></td>
+                <td>Add relevant users as followers</td>
+            </tr>
+            <tr>
+                <td><strong>Send Webhook</strong></td>
+                <td>Trigger external APIs with AI parameters</td>
+            </tr>
+            <tr>
+                <td><strong>Post Message</strong></td>
+                <td>Post AI-generated messages to chatter</td>
+            </tr>
+        </table>
+
+        <div class="example-box">
+            <h4>Example: AI Lead Qualification</h4>
+            <p><strong>Scenario:</strong> Automatically qualify leads based on description and source.</p>
+            <ol>
+                <li>Create Server Action: Type = "AI"</li>
+                <li>Prompt: "Analyze this lead and determine quality (hot/warm/cold). Consider: {{description}}, {{source_id.name}}, {{expected_revenue}}."</li>
+                <li>Add tool: Update Record (priority field)</li>
+                <li>Create Automation: Trigger on lead creation</li>
+            </ol>
+            <p><strong>Result:</strong> New leads automatically get priority assigned by AI analysis.</p>
+        </div>
+
+        <div class="odoo-box">
+            <h4>Technical: AI Tool Schema</h4>
+            <p>Tools require a JSON Schema defining parameters:</p>
+            <pre style="background: #1e293b; color: #e2e8f0; padding: 16px; border-radius: 8px; font-size: 13px; overflow-x: auto;">
+<span style="color: #64748b;">// Tool schema for move_to_folder</span>
+{
+    <span style="color: #34d399;">"properties"</span>: {
+        <span style="color: #34d399;">"folder_id"</span>: {
+            <span style="color: #34d399;">"type"</span>: <span style="color: #34d399;">"integer"</span>,
+            <span style="color: #34d399;">"description"</span>: <span style="color: #34d399;">"Target folder ID"</span>
+        }
+    },
+    <span style="color: #34d399;">"required"</span>: [<span style="color: #34d399;">"folder_id"</span>],
+    <span style="color: #34d399;">"type"</span>: <span style="color: #34d399;">"object"</span>
+}</pre>
+        </div>
+
+        <!-- ==================== AI LIVECHAT ==================== -->
+        <h3>AI Livechat - Automated Customer Service</h3>
+
+        <div class="technical-box">
+            <h4>AI Chatbot in Livechat</h4>
+            <p>AI Agents can be assigned to Livechat channel rules, allowing them to handle customer queries 24/7 without human intervention.</p>
+        </div>
+
+        <h4>Configuration Steps</h4>
+
+        <div class="example-box">
+            <h4>Setting Up AI Livechat</h4>
+            <ol>
+                <li>Go to <strong>Website → Configuration → Livechat Channels</strong></li>
+                <li>Select your channel, go to <strong>Rules</strong> tab</li>
+                <li>Create or edit a rule</li>
+                <li>In <strong>AI Agent</strong> field, select your agent</li>
+                <li>Configure URL pattern and conditions</li>
+            </ol>
+            <p><strong>Note:</strong> System agents (internal) cannot be assigned to livechat.</p>
+        </div>
+
+        <h4>AI Livechat Features</h4>
+
+        <table>
+            <tr>
+                <th>Feature</th>
+                <th>Description</th>
+            </tr>
+            <tr>
+                <td><strong>RAG Responses</strong></td>
+                <td>Answers from uploaded knowledge sources</td>
+            </tr>
+            <tr>
+                <td><strong>Lead Generation</strong></td>
+                <td>Creates CRM leads from chat (ai_crm module)</td>
+            </tr>
+            <tr>
+                <td><strong>Human Escalation</strong></td>
+                <td>Transfers to human operator when needed</td>
+            </tr>
+            <tr>
+                <td><strong>Scripted Bot Fallback</strong></td>
+                <td>Can forward to chatbot script</td>
+            </tr>
+        </table>
+
+        <div class="info-box">
+            <h4>Lead Generation from Livechat</h4>
+            <p>With the <code>ai_crm</code> module installed, AI can:</p>
+            <ul>
+                <li>Extract contact information during chat</li>
+                <li>Create CRM leads with chat context</li>
+                <li>Link leads to AI agent via UTM source tracking</li>
+                <li>Assign to appropriate sales team</li>
+            </ul>
+        </div>
+
+        <!-- ==================== AI DOCUMENTS ==================== -->
+        <h3>AI Documents - Intelligent Filing</h3>
+
+        <div class="technical-box">
+            <h4>Automatic Document Sorting</h4>
+            <p>AI can automatically sort uploaded documents into the correct folders, add appropriate tags, and trigger workflows based on content analysis.</p>
+        </div>
+
+        <h4>How It Works</h4>
+
+        <div class="mechanism-box">
+            <h4>Document Sorting Flow</h4>
+            <ol>
+                <li><strong>Document arrives:</strong> Upload, email, or scan</li>
+                <li><strong>AI analyzes:</strong> Reads content, identifies document type</li>
+                <li><strong>AI decides:</strong> Matches to folder based on configured prompts</li>
+                <li><strong>AI executes:</strong> Moves to folder, adds tags</li>
+                <li><strong>Workflow triggers:</strong> Downstream automations fire</li>
+            </ol>
+        </div>
+
+        <h4>Configuring Folder AI Sorting</h4>
+
+        <div class="example-box">
+            <h4>Example: Invoice Auto-Filing</h4>
+            <ol>
+                <li>Go to <strong>Documents → Configuration → Folders</strong></li>
+                <li>Select or create "Vendor Bills" folder</li>
+                <li>Enable <strong>AI Auto-Sort</strong></li>
+                <li>Configure prompt:
+                    <pre style="background: #f8fafc; padding: 12px; border-radius: 6px; border: 1px solid #e2e8f0;">Analyze this document. If it's a vendor invoice or bill:
+- Move to folder: [Vendor Bills folder ID]
+- Add tags: "invoice", vendor name
+If it's not a vendor invoice, do nothing.</pre>
+                </li>
+                <li>Enable tools: <code>move_to_folder</code>, <code>add_tags</code></li>
+            </ol>
+        </div>
+
+        <h4>Available AI Tools for Documents</h4>
+
+        <table>
+            <tr>
+                <th>Tool</th>
+                <th>Purpose</th>
+                <th>Parameters</th>
+            </tr>
+            <tr>
+                <td><strong>move_to_folder</strong></td>
+                <td>Relocate document</td>
+                <td>folder_id (integer)</td>
+            </tr>
+            <tr>
+                <td><strong>add_tags</strong></td>
+                <td>Classify with tags</td>
+                <td>tag_names (array of strings)</td>
+            </tr>
+        </table>
+
+        <!-- ==================== OTHER AI FEATURES ==================== -->
+        <h3>Other AI Features</h3>
+
+        <h4>AI Website Page Generation</h4>
+
+        <div class="info-box">
+            <h4>Module: ai_website</h4>
+            <p>Generate website page content with AI:</p>
+            <ul>
+                <li><strong>Multi-tone support:</strong> Concise, Professional, Friendly, Persuasive, Informative</li>
+                <li><strong>Multi-language:</strong> Generates in website's default language</li>
+                <li><strong>Placeholder replacement:</strong> AI fills template snippets with relevant content</li>
+            </ul>
+            <p><strong>How to use:</strong> Website → Create Page → Check "Generate with AI" → Enter instructions</p>
+        </div>
+
+        <h4>AI Knowledge Article Drafting</h4>
+
+        <div class="info-box">
+            <h4>Module: ai_knowledge</h4>
+            <p>Draft Knowledge articles with AI assistance:</p>
+            <ul>
+                <li>Click AI button in article editor</li>
+                <li>Describe what you want to write</li>
+                <li>AI generates structured article content</li>
+                <li>Articles can also be used as RAG sources</li>
+            </ul>
+        </div>
+
+        <h4>VoIP Call Transcription</h4>
+
+        <div class="info-box">
+            <h4>Module: voip_ai</h4>
+            <p>Automatic call transcription and summarization:</p>
+            <ul>
+                <li><strong>Transcription:</strong> Uses OpenAI Whisper API for audio → text</li>
+                <li><strong>Summary:</strong> AI generates one-liner summaries (max 60 chars)</li>
+                <li><strong>Status tracking:</strong> pending → queued → done/error</li>
+            </ul>
+            <p><strong>Configuration:</strong> VoIP Provider → Transcription Policy = "Force for all users"</p>
+        </div>
+
+        <h4>AI-Assisted Communications</h4>
+
+        <table>
+            <tr>
+                <th>Module</th>
+                <th>Feature</th>
+                <th>Where</th>
+            </tr>
+            <tr>
+                <td><strong>ai_account</strong></td>
+                <td>AI invoice/bill email drafting</td>
+                <td>Invoice Send wizard</td>
+            </tr>
+            <tr>
+                <td><strong>sign_ai</strong></td>
+                <td>AI signature request messaging</td>
+                <td>Sign Request wizard</td>
+            </tr>
+            <tr>
+                <td><strong>hr_recruitment_ai</strong></td>
+                <td>AI rejection email drafting</td>
+                <td>Applicant Refuse wizard</td>
+            </tr>
+        </table>
+
+        <h4>Web Studio AI Fields</h4>
+
+        <div class="info-box">
+            <h4>Module: web_studio_ai_fields</h4>
+            <p>Create AI-computed fields directly in Web Studio:</p>
+            <ul>
+                <li>No coding required</li>
+                <li>Supports all 11 field types</li>
+                <li>Configure prompts with <code>/field</code> syntax</li>
+                <li>Visual prompt editor with placeholder insertion</li>
+            </ul>
+            <p><strong>How to use:</strong> Studio → Add Field → Select "AI Field" → Configure prompt</p>
+        </div>
+
+        <!-- ==================== CONFIGURATION & BEST PRACTICES ==================== -->
+        <h3>Configuration & Best Practices</h3>
+
+        <h4>API Key Setup</h4>
+
+        <div class="comparison-grid" style="grid-template-columns: 1fr 1fr;">
+            <div class="comparison-card">
+                <h4>OpenAI (Recommended)</h4>
+                <ol>
+                    <li>Go to <code>platform.openai.com</code></li>
+                    <li>Create API key with appropriate limits</li>
+                    <li>In Odoo: Settings → AI → OpenAI API Key</li>
+                    <li>Or set <code>ODOO_AI_CHATGPT_TOKEN</code> env var</li>
+                </ol>
+                <p><strong>Best for:</strong> Most features, best tool support, GPT-4/5 models</p>
+            </div>
+            <div class="comparison-card">
+                <h4>Google Gemini</h4>
+                <ol>
+                    <li>Go to <code>makersuite.google.com</code></li>
+                    <li>Create API key</li>
+                    <li>In Odoo: Settings → AI → Google API Key</li>
+                    <li>Or set <code>ODOO_AI_GEMINI_TOKEN</code> env var</li>
+                </ol>
+                <p><strong>Best for:</strong> Alternative provider, Gemini 2.5 models</p>
+            </div>
+        </div>
+
+        <h4>Cost Considerations</h4>
+
+        <div class="warning-box">
+            <h4>AI API Costs</h4>
+            <ul>
+                <li><strong>Embedding calls:</strong> ~$0.02 per 1M tokens (cheap, but adds up with large documents)</li>
+                <li><strong>LLM calls:</strong> $2-20 per 1M tokens depending on model (GPT-4o vs GPT-3.5)</li>
+                <li><strong>Whisper transcription:</strong> $0.006 per minute of audio</li>
+            </ul>
+            <p><strong>Recommendations:</strong></p>
+            <ul>
+                <li>Use GPT-4.1-mini or Gemini Flash for high-volume, simple tasks</li>
+                <li>Use GPT-4o for complex reasoning tasks</li>
+                <li>Monitor API usage in provider dashboards</li>
+                <li>Set API key spending limits</li>
+            </ul>
+        </div>
+
+        <h4>Security Considerations</h4>
+
+        <div class="critical-box">
+            <h4>Data Privacy with External APIs</h4>
+            <ul>
+                <li><strong>Data leaves Odoo:</strong> Prompts, document chunks, and record data are sent to OpenAI/Google</li>
+                <li><strong>Review sensitivity:</strong> Don't use AI on highly confidential documents without review</li>
+                <li><strong>API key security:</strong> Store keys securely, use env vars in production</li>
+                <li><strong>Restrict to Sources:</strong> Limits AI to your knowledge base only</li>
+            </ul>
+        </div>
+
+        <h4>Limitations</h4>
+
+        <div class="warning-box">
+            <h4>Known Limitations</h4>
+            <ul>
+                <li><strong>No offline mode:</strong> Requires internet access to LLM providers</li>
+                <li><strong>pgvector required:</strong> PostgreSQL must have pgvector extension installed</li>
+                <li><strong>Token limits:</strong> Very large documents may be truncated</li>
+                <li><strong>Response time:</strong> AI calls add latency (1-10 seconds typical)</li>
+                <li><strong>Google limitations:</strong> No tools + schema together, no file uploads</li>
+                <li><strong>Hallucination risk:</strong> Without "Restrict to Sources", AI may fabricate information</li>
+            </ul>
+        </div>
+
+        <h3>Complete AI Module Reference</h3>
+
+        <table>
+            <tr>
+                <th>Module</th>
+                <th>Feature</th>
+                <th>Auto-Install</th>
+                <th>Dependencies</th>
+            </tr>
+            <tr>
+                <td><code>ai</code></td>
+                <td>Core AI framework</td>
+                <td>No</td>
+                <td>mail</td>
+            </tr>
+            <tr>
+                <td><code>ai_app</code></td>
+                <td>Agent management UI</td>
+                <td>No</td>
+                <td>ai, attachment_indexation</td>
+            </tr>
+            <tr>
+                <td><code>ai_fields</code></td>
+                <td>AI-computed fields</td>
+                <td>Yes</td>
+                <td>ai</td>
+            </tr>
+            <tr>
+                <td><code>ai_server_actions</code></td>
+                <td>AI in automations</td>
+                <td>Yes</td>
+                <td>ai_fields</td>
+            </tr>
+            <tr>
+                <td><code>ai_livechat</code></td>
+                <td>AI chatbot</td>
+                <td>Yes</td>
+                <td>ai, im_livechat</td>
+            </tr>
+            <tr>
+                <td><code>ai_documents</code></td>
+                <td>Document sorting</td>
+                <td>Yes</td>
+                <td>ai, documents</td>
+            </tr>
+            <tr>
+                <td><code>ai_documents_source</code></td>
+                <td>Documents as RAG sources</td>
+                <td>Yes</td>
+                <td>ai, documents</td>
+            </tr>
+            <tr>
+                <td><code>ai_crm</code></td>
+                <td>Lead generation</td>
+                <td>Yes</td>
+                <td>ai, crm</td>
+            </tr>
+            <tr>
+                <td><code>ai_website</code></td>
+                <td>Website content generation</td>
+                <td>Yes</td>
+                <td>ai, website</td>
+            </tr>
+            <tr>
+                <td><code>ai_knowledge</code></td>
+                <td>Article drafting</td>
+                <td>Yes</td>
+                <td>ai, knowledge</td>
+            </tr>
+            <tr>
+                <td><code>voip_ai</code></td>
+                <td>Call transcription</td>
+                <td>Yes</td>
+                <td>ai, voip</td>
+            </tr>
+            <tr>
+                <td><code>hr_recruitment_ai</code></td>
+                <td>Rejection emails</td>
+                <td>Yes</td>
+                <td>ai, hr_recruitment</td>
+            </tr>
+            <tr>
+                <td><code>sign_ai</code></td>
+                <td>Signature request emails</td>
+                <td>Yes</td>
+                <td>ai, sign</td>
+            </tr>
+            <tr>
+                <td><code>ai_account</code></td>
+                <td>Invoice emails</td>
+                <td>Yes</td>
+                <td>ai, account</td>
+            </tr>
+            <tr>
+                <td><code>web_studio_ai_fields</code></td>
+                <td>Studio AI field creation</td>
+                <td>Yes</td>
+                <td>ai_fields, web_studio</td>
+            </tr>
+        </table>
+
         <!-- ==================== CONCLUSION ==================== -->
         <hr style="margin: 60px 0; border: 2px solid #e2e8f0;"/>
 
