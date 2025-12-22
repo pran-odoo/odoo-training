@@ -369,6 +369,7 @@
             <a href="#context">24. Context</a>
             <a href="#constraints">25. Constraints</a>
             <a href="#ai">26. AI in Odoo 19</a>
+            <a href="#edi-orders">27. EDI Order Exchange</a>
         </nav>
     </aside>
 
@@ -418,6 +419,7 @@
             <a href="#context">24. Context - The Hidden Parameter</a>
             <a href="#constraints">25. Constraints - Data Validation Rules</a>
             <a href="#ai">26. AI in Odoo 19 <span class="badge badge-enterprise" style="font-size: 10px; padding: 2px 6px; vertical-align: middle;">Enterprise</span></a>
+            <a href="#edi-orders">27. EDI Order Exchange (UBL) <span class="badge badge-new" style="font-size: 10px; padding: 2px 6px; vertical-align: middle;">New in 19</span></a>
         </div>
 
         <!-- ==================== SECTION 0: WHAT IS ODOO ==================== -->
@@ -11133,6 +11135,190 @@ If it's not a vendor invoice, do nothing.</pre>
                 <td>ai_fields, web_studio</td>
             </tr>
         </table>
+
+        <!-- ==================== SECTION 27: EDI UBL ORDER EXCHANGE ==================== -->
+        <h2 id="edi-orders">27. EDI Order Exchange (UBL) <span class="badge badge-new">New in 19</span></h2>
+
+        <p>Odoo 19 introduces <strong>electronic order interchange</strong> using the UBL BIS 3 (Peppol) standard. This allows businesses to exchange purchase orders and sales orders as XML files - no manual data entry required.</p>
+
+        <div class="info-box">
+            <h4>What is UBL?</h4>
+            <p><strong>Universal Business Language (UBL)</strong> is an international XML standard for business documents. The <strong>Peppol BIS Ordering 3.5</strong> format is widely used in Europe for B2B e-commerce, enabling:</p>
+            <ul>
+                <li>Automated order exchange between companies</li>
+                <li>Standardized format understood by any compliant software</li>
+                <li>Reduced errors from manual data entry</li>
+                <li>Faster order processing</li>
+            </ul>
+        </div>
+
+        <h3>How It Works</h3>
+
+        <div class="mechanism-box">
+            <h4>The Order Exchange Flow</h4>
+            <table>
+                <tr>
+                    <th>Step</th>
+                    <th>Seller (Your Customer)</th>
+                    <th>Buyer (Your Company)</th>
+                </tr>
+                <tr>
+                    <td>1</td>
+                    <td>Creates Sale Order in their Odoo</td>
+                    <td>-</td>
+                </tr>
+                <tr>
+                    <td>2</td>
+                    <td>Downloads XML from portal: "Connect with your software!"</td>
+                    <td>-</td>
+                </tr>
+                <tr>
+                    <td>3</td>
+                    <td>Sends XML file to buyer (email, Peppol network, etc.)</td>
+                    <td>Receives XML file</td>
+                </tr>
+                <tr>
+                    <td>4</td>
+                    <td>-</td>
+                    <td>Uploads XML in Purchase Orders → Purchase Order created automatically</td>
+                </tr>
+            </table>
+        </div>
+
+        <h3>For Sellers: Exporting Orders</h3>
+
+        <div class="example-box">
+            <h4>Downloading Order XML</h4>
+            <p>When your customer has a portal account:</p>
+            <ol>
+                <li>Customer receives Sale Order confirmation email</li>
+                <li>Clicks "View Order" to open portal</li>
+                <li>Clicks <strong>"Connect with your software!"</strong> button</li>
+                <li>Downloads XML file (filename: <code>SO001_order.xml</code>)</li>
+            </ol>
+            <p><strong>Direct URL:</strong> <code>/my/orders/&lt;order_id&gt;/download_edi</code></p>
+        </div>
+
+        <h4>What's in the XML?</h4>
+
+        <div class="odoo-box">
+            <h4>UBL Order Contents</h4>
+            <p>The exported XML includes all order details:</p>
+            <ul>
+                <li><strong>Header:</strong> Order reference, date, currency, validity period</li>
+                <li><strong>Buyer Party:</strong> Company name, VAT, address, contact</li>
+                <li><strong>Seller Party:</strong> Supplier info with identifiers</li>
+                <li><strong>Delivery:</strong> Shipping address</li>
+                <li><strong>Payment Terms:</strong> From the order's payment term</li>
+                <li><strong>Order Lines:</strong> Products, quantities, prices, taxes</li>
+                <li><strong>Totals:</strong> Subtotal, tax amounts, grand total</li>
+            </ul>
+        </div>
+
+        <h3>For Buyers: Importing Orders</h3>
+
+        <div class="example-box">
+            <h4>Creating Purchase Orders from XML</h4>
+            <p>When you receive an order XML from a supplier:</p>
+            <ol>
+                <li>Go to <strong>Purchase → Orders → Requests for Quotation</strong></li>
+                <li>Click <strong>"Upload"</strong> button in the list view (or drag-drop)</li>
+                <li>Select the XML file</li>
+                <li>Odoo parses the XML and creates a new Purchase Order</li>
+            </ol>
+        </div>
+
+        <h4>Auto-Matching</h4>
+
+        <div class="mechanism-box">
+            <h4>How Odoo Matches Data</h4>
+            <table>
+                <tr>
+                    <th>XML Field</th>
+                    <th>Matched To</th>
+                    <th>Matching Logic</th>
+                </tr>
+                <tr>
+                    <td>SellerSupplierParty</td>
+                    <td>Partner (Vendor)</td>
+                    <td>VAT number, name, or creates new</td>
+                </tr>
+                <tr>
+                    <td>SellersItemIdentification</td>
+                    <td>Product</td>
+                    <td>Vendor's product code from pricelist</td>
+                </tr>
+                <tr>
+                    <td>BuyersItemIdentification</td>
+                    <td>Product</td>
+                    <td>Your internal reference</td>
+                </tr>
+                <tr>
+                    <td>TaxCategory</td>
+                    <td>Taxes</td>
+                    <td>Tax percentage + type</td>
+                </tr>
+                <tr>
+                    <td>DeliveryParty</td>
+                    <td>Delivery Address</td>
+                    <td>Address matching or creates contact</td>
+                </tr>
+            </table>
+            <p><strong>Tip:</strong> Set up <strong>Vendor Pricelists</strong> with supplier product codes for accurate product matching.</p>
+        </div>
+
+        <h3>Business Scenario</h3>
+
+        <div class="foundation-box">
+            <h4>Real-World Example: Multi-Company Order Flow</h4>
+            <p><strong>Scenario:</strong> Company A sells to Company B, both use Odoo</p>
+            <ol>
+                <li><strong>Company A (Seller):</strong> Creates Sale Order SO/2024/001 for Company B</li>
+                <li><strong>Company A:</strong> Confirms order → Customer receives portal link</li>
+                <li><strong>Company B (Buyer):</strong> Downloads XML from Company A's portal</li>
+                <li><strong>Company B:</strong> Uploads XML → Purchase Order PO/2024/042 created automatically</li>
+                <li><strong>Result:</strong> Both orders linked, no manual data entry, no errors</li>
+            </ol>
+            <p>This also works when one company uses Odoo and the other uses SAP, Microsoft, or any UBL-compliant system!</p>
+        </div>
+
+        <h3>Technical Details</h3>
+
+        <div class="odoo-box">
+            <h4>Modules & Auto-Install</h4>
+            <table>
+                <tr>
+                    <th>Module</th>
+                    <th>Purpose</th>
+                    <th>Auto-Install When</th>
+                </tr>
+                <tr>
+                    <td><code>sale_edi_ubl</code></td>
+                    <td>Export Sale Orders as UBL XML</td>
+                    <td>sale + account_edi_ubl_cii installed</td>
+                </tr>
+                <tr>
+                    <td><code>purchase_edi_ubl_bis3</code></td>
+                    <td>Import/Export Purchase Orders</td>
+                    <td>purchase + account_edi_ubl_cii installed</td>
+                </tr>
+                <tr>
+                    <td><code>account_edi_ubl_cii</code></td>
+                    <td>Core UBL/CII parsing library</td>
+                    <td>Manual or via localization</td>
+                </tr>
+            </table>
+        </div>
+
+        <div class="warning-box">
+            <h4>Important Notes</h4>
+            <ul>
+                <li><strong>PDF embedding:</strong> When generating Purchase Order PDF, the XML is embedded inside for easy sharing</li>
+                <li><strong>Peppol network:</strong> For full B2B automation, consider connecting to the Peppol network (requires access point provider)</li>
+                <li><strong>Product matching:</strong> Works best when vendor product codes are configured in Purchase → Products → Vendor Pricelists</li>
+                <li><strong>Activity created:</strong> If some data couldn't be imported, an activity is scheduled to review</li>
+            </ul>
+        </div>
 
         <!-- ==================== CONCLUSION ==================== -->
         <hr style="margin: 60px 0; border: 2px solid #e2e8f0;"/>
