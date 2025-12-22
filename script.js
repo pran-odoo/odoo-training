@@ -1366,9 +1366,12 @@ function openCommandPalette() {
     renderCommandPaletteResults('');
     document.body.style.overflow = 'hidden';
 
-    // Focus after the element becomes visible (next frame ensures CSS visibility is applied)
+    // Focus after the element becomes visible
+    // Double rAF ensures CSS transition has started and visibility is applied
     requestAnimationFrame(() => {
-        commandPaletteInput.focus();
+        requestAnimationFrame(() => {
+            commandPaletteInput.focus();
+        });
     });
 }
 
