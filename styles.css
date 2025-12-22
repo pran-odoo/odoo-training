@@ -3921,6 +3921,11 @@ body.focus-mode .sidebar-overlay {
     display: none;
 }
 
+/* Hide mobile menu button in focus mode (sidebar is disabled) */
+body.focus-mode .mobile-menu-toggle {
+    display: none;
+}
+
 /* Progress bar spans full width */
 body.focus-mode .progress-container {
     left: 0;
@@ -5589,6 +5594,8 @@ html.scroll-auto {
 }
 
 body.animations-none,
+body.animations-none::before,
+body.animations-none::after,
 body.animations-none *,
 body.animations-none *::before,
 body.animations-none *::after {
