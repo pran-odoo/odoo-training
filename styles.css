@@ -1754,8 +1754,14 @@ strong {
 }
 
 /* ==================== DIAGRAMS ==================== */
+/*
+ * ASCII Diagram Styles for all modes
+ * Must have high contrast text on appropriate backgrounds
+ */
+
+/* Base diagram container - Light Mode */
 .diagram {
-    background: var(--bg-card);
+    background: #ffffff;
     border: 2px solid var(--primary);
     border-radius: 12px;
     padding: 20px;
@@ -1764,56 +1770,78 @@ strong {
     overflow-x: auto;
 }
 
-/* ASCII art diagrams - completely override code block styles */
-.diagram pre,
-body.dark-mode .diagram pre,
-body.code-theme-dark .diagram pre,
-body.code-theme-light .diagram pre,
-body.code-theme-high-contrast .diagram pre {
+/* ASCII art pre - reset all code block styles */
+.diagram pre {
     background: transparent !important;
     border: none !important;
     padding: 0 !important;
     margin: 0 !important;
     box-shadow: none !important;
     text-align: left;
-    font-size: 12px;
-    line-height: 1.4;
+    font-size: 13px;
+    line-height: 1.5;
     overflow-x: auto;
-    font-weight: 400;
+    font-weight: 500;
+    font-family: 'SF Mono', 'Consolas', 'Monaco', monospace;
+    /* Light mode: dark text on white - 12.6:1 contrast */
+    color: #1a202c !important;
 }
 
-/* Light mode diagram - dark text on white bg */
-/* #1e293b on #ffffff = 12.6:1 contrast (AAA) */
-.diagram pre {
-    color: #1e293b !important;
+.diagram pre code {
+    background: transparent !important;
+    color: inherit !important;
+    font-weight: inherit !important;
 }
 
-/* Dark mode diagram - light text on dark bg */
-/* #cbd5e1 on #141b2d = 9.1:1 contrast (AAA) */
+/* ===== DARK MODE DIAGRAMS ===== */
+body.dark-mode .diagram {
+    background: #1e1e1e !important;
+    border-color: #a78bfa;
+}
+
 body.dark-mode .diagram pre {
-    color: #cbd5e1 !important;
+    /* Light text on dark - 14:1 contrast */
+    color: #e4e4e7 !important;
 }
 
-/* High contrast mode - maximum contrast */
-body.code-theme-high-contrast .diagram pre {
+/* ===== HIGH CONTRAST MODE DIAGRAMS ===== */
+body.high-contrast .diagram {
+    background: #ffffff !important;
+    border: 3px solid #000000;
+}
+
+body.high-contrast .diagram pre {
     color: #000000 !important;
+    font-weight: 600;
 }
 
-body.code-theme-high-contrast.dark-mode .diagram pre,
-body.dark-mode.code-theme-high-contrast .diagram pre {
+body.high-contrast.dark-mode .diagram {
+    background: #000000 !important;
+    border-color: #ffffff;
+}
+
+body.high-contrast.dark-mode .diagram pre {
     color: #ffffff !important;
 }
 
-.diagram pre code,
-body.dark-mode .diagram pre code {
-    background: transparent !important;
-    color: inherit !important;
+/* ===== EYE COMFORT LIGHT MODE DIAGRAMS ===== */
+body.eye-comfort .diagram {
+    background: #fdfcf7 !important;
+    border-color: #8b7355;
 }
 
-/* Dark mode diagram container */
-body.dark-mode .diagram {
-    background: var(--bg-card) !important;
-    border-color: var(--primary-light);
+body.eye-comfort .diagram pre {
+    color: #3d3929 !important;
+}
+
+/* ===== EYE COMFORT DARK MODE DIAGRAMS ===== */
+body.eye-comfort.dark-mode .diagram {
+    background: #211d15 !important;
+    border-color: #a89070;
+}
+
+body.eye-comfort.dark-mode .diagram pre {
+    color: #ede8dc !important;
 }
 
 .diagram-box {
@@ -4948,6 +4976,193 @@ body.high-contrast .search-input {
     color: #fff;
 }
 
+/* High contrast code blocks */
+body.high-contrast pre {
+    background: #000 !important;
+    color: #fff !important;
+    border: 2px solid #fff;
+}
+
+body.high-contrast code {
+    background: #000;
+    color: #fff;
+    border: 1px solid #fff;
+}
+
+body.high-contrast pre code {
+    border: none;
+}
+
+body.high-contrast.dark-mode pre {
+    background: #000 !important;
+    color: #fff !important;
+}
+
+body.high-contrast.dark-mode code {
+    background: #000;
+    color: #fff;
+}
+
+/* High contrast tables - maximum readability */
+body.high-contrast table {
+    border: 2px solid #000;
+}
+
+body.high-contrast th {
+    background: #000 !important;
+    color: #fff !important;
+    border: 2px solid #000;
+    font-weight: 700;
+}
+
+body.high-contrast td {
+    background: #fff !important;
+    color: #000 !important;
+    border: 2px solid #000;
+}
+
+body.high-contrast tr:nth-child(even) td {
+    background: #f0f0f0 !important;
+}
+
+body.high-contrast tr:hover td {
+    background: #ffff00 !important;
+    color: #000 !important;
+}
+
+/* High contrast dark mode tables */
+body.high-contrast.dark-mode table {
+    border: 2px solid #fff;
+}
+
+body.high-contrast.dark-mode th {
+    background: #fff !important;
+    color: #000 !important;
+    border: 2px solid #fff;
+}
+
+body.high-contrast.dark-mode td {
+    background: #000 !important;
+    color: #fff !important;
+    border: 2px solid #fff;
+}
+
+body.high-contrast.dark-mode tr:nth-child(even) td {
+    background: #1a1a1a !important;
+}
+
+body.high-contrast.dark-mode tr:hover td {
+    background: #ffff00 !important;
+    color: #000 !important;
+}
+
+/* ==================== HIGH CONTRAST COLORED BOXES ==================== */
+/* High contrast light mode - black borders with white backgrounds */
+body.high-contrast .success-box,
+body.high-contrast .warning-box,
+body.high-contrast .info-box,
+body.high-contrast .mechanism-box,
+body.high-contrast .analogy-box,
+body.high-contrast .odoo-box,
+body.high-contrast .example-box,
+body.high-contrast .critical-box,
+body.high-contrast .technical-box,
+body.high-contrast .foundation-box {
+    background: #fff !important;
+    border: 3px solid #000 !important;
+    color: #000 !important;
+}
+
+body.high-contrast .success-box h4,
+body.high-contrast .warning-box h4,
+body.high-contrast .info-box h4,
+body.high-contrast .mechanism-box h4,
+body.high-contrast .analogy-box h4,
+body.high-contrast .odoo-box h4,
+body.high-contrast .example-box h4,
+body.high-contrast .critical-box h4,
+body.high-contrast .technical-box h4,
+body.high-contrast .foundation-box h4 {
+    color: #000 !important;
+    font-weight: 700;
+}
+
+body.high-contrast .success-box p,
+body.high-contrast .success-box li,
+body.high-contrast .warning-box p,
+body.high-contrast .warning-box li,
+body.high-contrast .info-box p,
+body.high-contrast .info-box li,
+body.high-contrast .mechanism-box p,
+body.high-contrast .mechanism-box li,
+body.high-contrast .analogy-box p,
+body.high-contrast .analogy-box li,
+body.high-contrast .odoo-box p,
+body.high-contrast .odoo-box li,
+body.high-contrast .example-box p,
+body.high-contrast .example-box li,
+body.high-contrast .critical-box p,
+body.high-contrast .critical-box li,
+body.high-contrast .technical-box p,
+body.high-contrast .technical-box li,
+body.high-contrast .foundation-box p,
+body.high-contrast .foundation-box li {
+    color: #000 !important;
+}
+
+/* High contrast dark mode - white borders with black backgrounds */
+body.high-contrast.dark-mode .success-box,
+body.high-contrast.dark-mode .warning-box,
+body.high-contrast.dark-mode .info-box,
+body.high-contrast.dark-mode .mechanism-box,
+body.high-contrast.dark-mode .analogy-box,
+body.high-contrast.dark-mode .odoo-box,
+body.high-contrast.dark-mode .example-box,
+body.high-contrast.dark-mode .critical-box,
+body.high-contrast.dark-mode .technical-box,
+body.high-contrast.dark-mode .foundation-box {
+    background: #000 !important;
+    border: 3px solid #fff !important;
+    color: #fff !important;
+}
+
+body.high-contrast.dark-mode .success-box h4,
+body.high-contrast.dark-mode .warning-box h4,
+body.high-contrast.dark-mode .info-box h4,
+body.high-contrast.dark-mode .mechanism-box h4,
+body.high-contrast.dark-mode .analogy-box h4,
+body.high-contrast.dark-mode .odoo-box h4,
+body.high-contrast.dark-mode .example-box h4,
+body.high-contrast.dark-mode .critical-box h4,
+body.high-contrast.dark-mode .technical-box h4,
+body.high-contrast.dark-mode .foundation-box h4 {
+    color: #fff !important;
+    font-weight: 700;
+}
+
+body.high-contrast.dark-mode .success-box p,
+body.high-contrast.dark-mode .success-box li,
+body.high-contrast.dark-mode .warning-box p,
+body.high-contrast.dark-mode .warning-box li,
+body.high-contrast.dark-mode .info-box p,
+body.high-contrast.dark-mode .info-box li,
+body.high-contrast.dark-mode .mechanism-box p,
+body.high-contrast.dark-mode .mechanism-box li,
+body.high-contrast.dark-mode .analogy-box p,
+body.high-contrast.dark-mode .analogy-box li,
+body.high-contrast.dark-mode .odoo-box p,
+body.high-contrast.dark-mode .odoo-box li,
+body.high-contrast.dark-mode .example-box p,
+body.high-contrast.dark-mode .example-box li,
+body.high-contrast.dark-mode .critical-box p,
+body.high-contrast.dark-mode .critical-box li,
+body.high-contrast.dark-mode .technical-box p,
+body.high-contrast.dark-mode .technical-box li,
+body.high-contrast.dark-mode .foundation-box p,
+body.high-contrast.dark-mode .foundation-box li {
+    color: #fff !important;
+}
+
 body.high-contrast .search-input::placeholder {
     color: #aaa;
 }
@@ -5171,10 +5386,63 @@ body.eye-comfort.dark-mode a:not(.nav-link):not(.toc a):hover {
     color: #e8dcc0;
 }
 
-/* Inline code in eye comfort dark mode */
+/* ==================== EYE COMFORT CODE BLOCKS ==================== */
+/* Eye comfort light mode - warm sepia code blocks */
+body.eye-comfort:not(.dark-mode) pre {
+    background: #2d2820 !important;
+    color: #e8e0d0 !important;
+    border: 1px solid rgba(139, 115, 85, 0.3);
+}
+
+body.eye-comfort:not(.dark-mode) code {
+    background: rgba(139, 115, 85, 0.15);
+    color: #6b5b3d;
+}
+
+body.eye-comfort:not(.dark-mode) pre code {
+    background: none !important;
+    color: inherit !important;
+}
+
+/* Eye comfort dark mode - darker warm code blocks */
+body.eye-comfort.dark-mode pre {
+    background: #1a1612 !important;
+    color: #e0d8c8 !important;
+    border: 1px solid rgba(160, 140, 100, 0.2);
+}
+
 body.eye-comfort.dark-mode code {
     background: rgba(200, 180, 140, 0.15);
     color: #d4c8a8;
+}
+
+body.eye-comfort.dark-mode pre code {
+    background: none !important;
+    color: inherit !important;
+}
+
+/* Tables in eye comfort light mode - warm sepia tones */
+body.eye-comfort:not(.dark-mode) table {
+    border: 1px solid rgba(139, 115, 85, 0.3);
+}
+
+body.eye-comfort:not(.dark-mode) th {
+    background: #5c4a3d !important;
+    color: #fff8eb !important;
+    border-bottom: 2px solid #8b7355;
+}
+
+body.eye-comfort:not(.dark-mode) td {
+    color: #3d3929 !important;
+    border-bottom-color: rgba(139, 115, 85, 0.2);
+}
+
+body.eye-comfort:not(.dark-mode) tr:nth-child(even) {
+    background: rgba(139, 115, 85, 0.08);
+}
+
+body.eye-comfort:not(.dark-mode) tr:hover td {
+    background: rgba(139, 115, 85, 0.12) !important;
 }
 
 /* Tables in eye comfort dark mode */
