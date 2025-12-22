@@ -10058,10 +10058,11 @@ Content-Type: text/xml
             </ol>
         </div>
 
-        <div class="odoo-box">
-            <h4>Technical: Agent Model Structure</h4>
-            <p>Model: <code>ai.agent</code> | File: <code>Enterprise/ai/models/ai_agent.py</code></p>
-            <pre style="background: #1e293b; color: #e2e8f0; padding: 16px; border-radius: 8px; font-size: 13px; overflow-x: auto;">
+        <details class="technical-details">
+            <summary>Technical: Agent Model Structure</summary>
+            <div class="technical-content">
+                <p>Model: <code>ai.agent</code> | File: <code>Enterprise/ai/models/ai_agent.py</code></p>
+                <pre style="background: #1e293b; color: #e2e8f0; padding: 16px; border-radius: 8px; font-size: 13px; overflow-x: auto;">
 <span style="color: #fbbf24;">class</span> <span style="color: #60a5fa;">AIAgent</span>(models.Model):
     _name = <span style="color: #34d399;">'ai.agent'</span>
 
@@ -10076,7 +10077,8 @@ Content-Type: text/xml
     topic_ids = fields.Many2many(<span style="color: #34d399;">'ai.topic'</span>)
     sources_ids = fields.One2many(<span style="color: #34d399;">'ai.agent.source'</span>)
     restrict_to_sources = fields.Boolean()</pre>
-        </div>
+            </div>
+        </details>
 
         <h4>The "Ask AI" Button (Natural Language Search)</h4>
 
@@ -10173,10 +10175,11 @@ Content-Type: text/xml
             </tr>
         </table>
 
-        <div class="odoo-box">
-            <h4>Technical: Vector Embedding Architecture</h4>
-            <p>Model: <code>ai.embedding</code> | Uses PostgreSQL pgvector extension</p>
-            <pre style="background: #1e293b; color: #e2e8f0; padding: 16px; border-radius: 8px; font-size: 13px; overflow-x: auto;">
+        <details class="technical-details">
+            <summary>Technical: Vector Embedding Architecture</summary>
+            <div class="technical-content">
+                <p>Model: <code>ai.embedding</code> | Uses PostgreSQL pgvector extension</p>
+                <pre style="background: #1e293b; color: #e2e8f0; padding: 16px; border-radius: 8px; font-size: 13px; overflow-x: auto;">
 <span style="color: #64748b;"># Vector field definition (1536 dimensions for OpenAI)</span>
 embedding_vector = Vector(size=<span style="color: #f472b6;">1536</span>)
 
@@ -10192,7 +10195,8 @@ FROM ai_embedding
 ORDER BY similarity DESC
 LIMIT 5
 """</span></pre>
-        </div>
+            </div>
+        </details>
 
         <!-- ==================== AI FIELDS ==================== -->
         <h3>AI Fields - Auto-Fill with AI</h3>
@@ -10271,9 +10275,10 @@ Keep it under 100 words, professional tone.</pre>
             <p><strong>Result:</strong> AI generates unique descriptions based on each product's attributes.</p>
         </div>
 
-        <div class="odoo-box">
-            <h4>Technical: Creating AI Fields in Code</h4>
-            <pre style="background: #1e293b; color: #e2e8f0; padding: 16px; border-radius: 8px; font-size: 13px; overflow-x: auto;">
+        <details class="technical-details">
+            <summary>Technical: Creating AI Fields in Code</summary>
+            <div class="technical-content">
+                <pre style="background: #1e293b; color: #e2e8f0; padding: 16px; border-radius: 8px; font-size: 13px; overflow-x: auto;">
 <span style="color: #fbbf24;">class</span> <span style="color: #60a5fa;">ProductTemplate</span>(models.Model):
     _inherit = <span style="color: #34d399;">'product.template'</span>
 
@@ -10284,8 +10289,9 @@ Keep it under 100 words, professional tone.</pre>
 Features: {{description_sale}}
 Category: {{categ_id.name}}"""</span>
     )</pre>
-            <p><strong>Cron Job:</strong> <code>ai_fields.ir_cron_fill_ai_fields</code> processes empty AI fields in batches.</p>
-        </div>
+                <p><strong>Cron Job:</strong> <code>ai_fields.ir_cron_fill_ai_fields</code> processes empty AI fields in batches.</p>
+            </div>
+        </details>
 
         <!-- ==================== AI SERVER ACTIONS ==================== -->
         <h3>AI Server Actions - Intelligent Automation</h3>
@@ -10357,10 +10363,11 @@ Category: {{categ_id.name}}"""</span>
             <p><strong>Result:</strong> New leads automatically get priority assigned by AI analysis.</p>
         </div>
 
-        <div class="odoo-box">
-            <h4>Technical: AI Tool Schema</h4>
-            <p>Tools require a JSON Schema defining parameters:</p>
-            <pre style="background: #1e293b; color: #e2e8f0; padding: 16px; border-radius: 8px; font-size: 13px; overflow-x: auto;">
+        <details class="technical-details">
+            <summary>Technical: AI Tool Schema</summary>
+            <div class="technical-content">
+                <p>Tools require a JSON Schema defining parameters:</p>
+                <pre style="background: #1e293b; color: #e2e8f0; padding: 16px; border-radius: 8px; font-size: 13px; overflow-x: auto;">
 <span style="color: #64748b;">// Tool schema for move_to_folder</span>
 {
     <span style="color: #34d399;">"properties"</span>: {
@@ -10372,7 +10379,8 @@ Category: {{categ_id.name}}"""</span>
     <span style="color: #34d399;">"required"</span>: [<span style="color: #34d399;">"folder_id"</span>],
     <span style="color: #34d399;">"type"</span>: <span style="color: #34d399;">"object"</span>
 }</pre>
-        </div>
+            </div>
+        </details>
 
         <!-- ==================== AI LIVECHAT ==================== -->
         <h3>AI Livechat - Automated Customer Service</h3>
@@ -10628,6 +10636,17 @@ If it's not a vendor invoice, do nothing.</pre>
                 <li><strong>API key security:</strong> Store keys securely, use env vars in production</li>
                 <li><strong>Restrict to Sources:</strong> Limits AI to your knowledge base only</li>
             </ul>
+        </div>
+
+        <div class="info-box">
+            <h4>AI Respects Access Rights</h4>
+            <p>Odoo 19 AI <strong>fully respects your access rights</strong> - it's not a security bypass:</p>
+            <ul>
+                <li><strong>Model Access:</strong> AI only queries models you have read access to (via <code>ir.model.access</code>)</li>
+                <li><strong>Record Rules:</strong> Standard ORM security applies - you only see records matching your rules</li>
+                <li><strong>No sudo():</strong> AI searches use <code>search_read()</code> as your user, not superuser</li>
+            </ul>
+            <p><strong>Example:</strong> If you ask "Show me all sales revenue" but only have access to your own sales orders, AI will only return YOUR sales data - not company-wide figures.</p>
         </div>
 
         <h4>Limitations</h4>
