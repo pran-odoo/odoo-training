@@ -10515,69 +10515,122 @@ Category: {{categ_id.name}}"""</span>
 
         <div class="warning-box">
             <h4>Not LLM-Based AI</h4>
-            <p>Predictive Lead Scoring uses <strong>Bayesian statistics</strong>, not LLM/GPT technology. It's been in Odoo CRM (Community) for several versions and is different from the new AI modules.</p>
+            <p>Predictive Lead Scoring uses <strong>Bayesian statistics</strong> (classical machine learning), not LLM/GPT technology. It's been in Odoo CRM (Community) for several versions and works differently from the new AI modules.</p>
         </div>
 
-        <h4>How Predictive Lead Scoring Works</h4>
+        <h4>The Simple Idea Behind PLS</h4>
+
+        <div class="foundation-box">
+            <h4>Real-World Analogy: The Experienced Sales Manager</h4>
+            <p>Imagine a sales manager who has seen thousands of leads over 10 years. When a new lead comes in, they instantly think:</p>
+            <ul>
+                <li>"Leads from trade shows usually close at 40%..."</li>
+                <li>"But this one is in Germany, and German leads close at 60%..."</li>
+                <li>"And they're asking about our Enterprise product, which closes at 70%..."</li>
+                <li>"My gut says this lead has about 55% chance of closing."</li>
+            </ul>
+            <p><strong>PLS does exactly this</strong> - but with math instead of gut feeling. It looks at your historical data and calculates probabilities based on patterns it finds.</p>
+        </div>
+
+        <h4>How It Differs from ChatGPT-Style AI</h4>
 
         <div class="mechanism-box">
-            <h4>Bayesian Probability vs LLM AI</h4>
+            <h4>Two Types of "AI" in Odoo</h4>
             <table>
                 <tr>
                     <th>Aspect</th>
-                    <th>Predictive Lead Scoring (Bayesian)</th>
+                    <th>Predictive Lead Scoring (PLS)</th>
                     <th>LLM AI (Odoo 19 AI Modules)</th>
                 </tr>
                 <tr>
-                    <td><strong>Technology</strong></td>
-                    <td>Bayes' theorem (statistical formula)</td>
-                    <td>Large Language Models (GPT, Gemini)</td>
+                    <td><strong>What it is</strong></td>
+                    <td>Statistics-based prediction</td>
+                    <td>Language understanding (like ChatGPT)</td>
                 </tr>
                 <tr>
-                    <td><strong>Data Source</strong></td>
-                    <td>Your historical won/lost leads</td>
-                    <td>Pre-trained on internet text + your prompts</td>
+                    <td><strong>Learns from</strong></td>
+                    <td>YOUR historical won/lost leads only</td>
+                    <td>Billions of internet documents + your prompts</td>
                 </tr>
                 <tr>
-                    <td><strong>What It Learns</strong></td>
-                    <td>Patterns from YOUR data only</td>
-                    <td>General language understanding</td>
+                    <td><strong>What it outputs</strong></td>
+                    <td>A number: "37% chance to win"</td>
+                    <td>Text: emails, summaries, classifications</td>
                 </tr>
                 <tr>
-                    <td><strong>Output</strong></td>
-                    <td>Probability percentage (0-100%)</td>
-                    <td>Text responses, classifications, actions</td>
+                    <td><strong>Needs training data?</strong></td>
+                    <td>Yes - needs your past leads</td>
+                    <td>No - works immediately with prompts</td>
+                </tr>
+                <tr>
+                    <td><strong>Data privacy</strong></td>
+                    <td>100% local - nothing leaves your server</td>
+                    <td>Sent to OpenAI/Google APIs</td>
                 </tr>
                 <tr>
                     <td><strong>Cost</strong></td>
-                    <td>Free (runs locally)</td>
-                    <td>Per-token API costs (OpenAI/Google)</td>
+                    <td>Free (included in Community)</td>
+                    <td>Pay per API call (Enterprise only)</td>
                 </tr>
                 <tr>
-                    <td><strong>Privacy</strong></td>
-                    <td>Data stays in your database</td>
-                    <td>Sent to external API providers</td>
-                </tr>
-                <tr>
-                    <td><strong>Edition</strong></td>
-                    <td>Community (free)</td>
-                    <td>Enterprise only</td>
+                    <td><strong>Best for</strong></td>
+                    <td>Prioritizing leads, forecasting revenue</td>
+                    <td>Writing content, understanding text</td>
                 </tr>
             </table>
         </div>
 
-        <div class="odoo-box">
-            <h4>Understanding Bayes' Theorem</h4>
-            <p><strong>Simple explanation:</strong> Bayes' theorem calculates "given what I know about past leads, how likely is this new lead to succeed?"</p>
-            <p><strong>Formula concept:</strong></p>
-            <pre style="background: #f8fafc; padding: 12px; border-radius: 6px; border: 1px solid #e2e8f0;">P(Win | Features) = P(Features | Win) × P(Win) / P(Features)
+        <h4>How PLS Actually Calculates Probability</h4>
 
-Where:
-- P(Win | Features) = Probability of winning given this lead's features
-- P(Features | Win) = How often winning leads had these features
-- P(Win) = Overall win rate
-- P(Features) = How common these features are</pre>
-            <p><strong>Example:</strong> If 80% of won leads came from "Website" source, and this lead is from "Website", that increases its probability.</p>
+        <div class="example-box">
+            <h4>Concrete Example: Calculating a Lead's Score</h4>
+            <p>Let's say your company has 1,000 historical leads. PLS looks at patterns:</p>
+            <table>
+                <tr>
+                    <th>Factor</th>
+                    <th>Your Historical Data</th>
+                    <th>This New Lead</th>
+                    <th>Impact</th>
+                </tr>
+                <tr>
+                    <td>Source</td>
+                    <td>Website leads win 45% of time</td>
+                    <td>From Website</td>
+                    <td style="color: green;">↑ Positive</td>
+                </tr>
+                <tr>
+                    <td>Country</td>
+                    <td>USA leads win 52% of time</td>
+                    <td>From USA</td>
+                    <td style="color: green;">↑ Positive</td>
+                </tr>
+                <tr>
+                    <td>Sales Team</td>
+                    <td>Team A wins 38% of time</td>
+                    <td>Assigned to Team A</td>
+                    <td style="color: orange;">→ Neutral</td>
+                </tr>
+                <tr>
+                    <td>Tag</td>
+                    <td>"Enterprise" tag wins 65% of time</td>
+                    <td>Tagged "Enterprise"</td>
+                    <td style="color: green;">↑↑ Very Positive</td>
+                </tr>
+            </table>
+            <p><strong>Result:</strong> PLS combines these factors using Bayes' theorem → <strong>58% probability</strong></p>
+        </div>
+
+        <div class="odoo-box">
+            <h4>The Math (Simplified)</h4>
+            <p>Bayes' theorem answers: "Given what I know about this lead's features, what's the chance it will be won?"</p>
+            <pre style="background: #f8fafc; padding: 12px; border-radius: 6px; border: 1px solid #e2e8f0;">Probability = How often leads with THESE features won
+              ÷ How often we see leads with THESE features
+
+Example:
+- 200 leads came from Website + USA + "Enterprise" tag
+- 116 of those 200 leads were won
+- Probability = 116 ÷ 200 = 58%</pre>
+            <p><em>Note: The actual formula is more complex, combining multiple factors with weights, but this is the core idea.</em></p>
         </div>
 
         <h4>What PLS Analyzes</h4>
