@@ -45,6 +45,7 @@ const commandPaletteResults = document.getElementById('commandPaletteResults');
 
 // Focus mode element
 const focusModeBtn = document.getElementById('focusModeBtn');
+let focusModeActive = false;
 
 // ==================== LOCAL STORAGE KEYS ====================
 const STORAGE_KEYS = {
@@ -1643,7 +1644,6 @@ document.addEventListener('keydown', function(e) {
 });
 
 // ==================== FOCUS/READING MODE ====================
-let focusModeActive = false;
 const toolbar = document.querySelector('.toolbar');
 
 function toggleFocusMode() {
