@@ -668,6 +668,12 @@ document.addEventListener('keydown', function(e) {
         return;
     }
 
+    // Press Escape to exit focus mode
+    if (e.key === 'Escape' && focusModeActive) {
+        toggleFocusMode();
+        return;
+    }
+
     // Press '?' for help
     if (e.key === '?' || (e.key === '/' && e.shiftKey)) {
         toggleKeyboardHint();
