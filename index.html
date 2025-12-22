@@ -10510,6 +10510,145 @@ Category: {{categ_id.name}}"""</span>
             </ul>
         </div>
 
+        <!-- ==================== PREDICTIVE LEAD SCORING ==================== -->
+        <h3>Predictive Lead Scoring (PLS) - Statistical AI</h3>
+
+        <div class="warning-box">
+            <h4>Not LLM-Based AI</h4>
+            <p>Predictive Lead Scoring uses <strong>Bayesian statistics</strong>, not LLM/GPT technology. It's been in Odoo CRM (Community) for several versions and is different from the new AI modules.</p>
+        </div>
+
+        <h4>How Predictive Lead Scoring Works</h4>
+
+        <div class="mechanism-box">
+            <h4>Bayesian Probability vs LLM AI</h4>
+            <table>
+                <tr>
+                    <th>Aspect</th>
+                    <th>Predictive Lead Scoring (Bayesian)</th>
+                    <th>LLM AI (Odoo 19 AI Modules)</th>
+                </tr>
+                <tr>
+                    <td><strong>Technology</strong></td>
+                    <td>Bayes' theorem (statistical formula)</td>
+                    <td>Large Language Models (GPT, Gemini)</td>
+                </tr>
+                <tr>
+                    <td><strong>Data Source</strong></td>
+                    <td>Your historical won/lost leads</td>
+                    <td>Pre-trained on internet text + your prompts</td>
+                </tr>
+                <tr>
+                    <td><strong>What It Learns</strong></td>
+                    <td>Patterns from YOUR data only</td>
+                    <td>General language understanding</td>
+                </tr>
+                <tr>
+                    <td><strong>Output</strong></td>
+                    <td>Probability percentage (0-100%)</td>
+                    <td>Text responses, classifications, actions</td>
+                </tr>
+                <tr>
+                    <td><strong>Cost</strong></td>
+                    <td>Free (runs locally)</td>
+                    <td>Per-token API costs (OpenAI/Google)</td>
+                </tr>
+                <tr>
+                    <td><strong>Privacy</strong></td>
+                    <td>Data stays in your database</td>
+                    <td>Sent to external API providers</td>
+                </tr>
+                <tr>
+                    <td><strong>Edition</strong></td>
+                    <td>Community (free)</td>
+                    <td>Enterprise only</td>
+                </tr>
+            </table>
+        </div>
+
+        <div class="odoo-box">
+            <h4>Understanding Bayes' Theorem</h4>
+            <p><strong>Simple explanation:</strong> Bayes' theorem calculates "given what I know about past leads, how likely is this new lead to succeed?"</p>
+            <p><strong>Formula concept:</strong></p>
+            <pre style="background: #f8fafc; padding: 12px; border-radius: 6px; border: 1px solid #e2e8f0;">P(Win | Features) = P(Features | Win) × P(Win) / P(Features)
+
+Where:
+- P(Win | Features) = Probability of winning given this lead's features
+- P(Features | Win) = How often winning leads had these features
+- P(Win) = Overall win rate
+- P(Features) = How common these features are</pre>
+            <p><strong>Example:</strong> If 80% of won leads came from "Website" source, and this lead is from "Website", that increases its probability.</p>
+        </div>
+
+        <h4>What PLS Analyzes</h4>
+
+        <p>Odoo's PLS considers these factors from your historical data:</p>
+
+        <table>
+            <tr>
+                <th>Factor</th>
+                <th>How It Affects Probability</th>
+            </tr>
+            <tr>
+                <td><strong>Stage</strong></td>
+                <td>Which stages had higher win rates historically</td>
+            </tr>
+            <tr>
+                <td><strong>Sales Team</strong></td>
+                <td>Team performance patterns</td>
+            </tr>
+            <tr>
+                <td><strong>Tags</strong></td>
+                <td>Which tags correlate with wins</td>
+            </tr>
+            <tr>
+                <td><strong>Source/Medium</strong></td>
+                <td>Lead sources that convert better</td>
+            </tr>
+            <tr>
+                <td><strong>Country</strong></td>
+                <td>Geographic success patterns</td>
+            </tr>
+            <tr>
+                <td><strong>Language</strong></td>
+                <td>Language correlation with wins</td>
+            </tr>
+        </table>
+
+        <h4>Enabling Predictive Lead Scoring</h4>
+
+        <div class="example-box">
+            <h4>Configuration Steps</h4>
+            <ol>
+                <li>Go to <strong>CRM → Configuration → Settings</strong></li>
+                <li>Find <strong>Predictive Lead Scoring</strong> section</li>
+                <li>Enable the feature</li>
+                <li>Select which fields to include in scoring</li>
+                <li>Wait for cron job to build frequency tables (runs periodically)</li>
+            </ol>
+            <p><strong>Minimum data:</strong> PLS needs sufficient historical won/lost leads to calculate meaningful probabilities. With few leads, predictions won't be accurate.</p>
+        </div>
+
+        <h4>Reading the Probability Field</h4>
+
+        <div class="info-box">
+            <h4>Two Probability Fields on Leads</h4>
+            <ul>
+                <li><strong>Probability (%):</strong> Can be manual OR automated - shows current win likelihood</li>
+                <li><strong>Automated Probability:</strong> Always calculated by PLS - the statistical prediction</li>
+            </ul>
+            <p>If you manually change Probability, it detaches from automated updates. Reset by setting it equal to Automated Probability again.</p>
+        </div>
+
+        <div class="foundation-box">
+            <h4>When to Use Which?</h4>
+            <ul>
+                <li><strong>Use PLS (Bayesian)</strong> for: Probability scoring, prioritizing leads, forecasting pipeline value</li>
+                <li><strong>Use LLM AI</strong> for: Qualifying lead descriptions, generating emails, chatbot conversations, document analysis</li>
+            </ul>
+            <p>They complement each other: PLS gives you <em>numbers</em>, LLM AI gives you <em>understanding and content</em>.</p>
+        </div>
+
         <!-- ==================== AI DOCUMENTS ==================== -->
         <h3>AI Documents - Intelligent Filing</h3>
 
