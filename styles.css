@@ -1363,6 +1363,157 @@ p {
 .odoo-box { background: #faf5ff; border-color: #714B67; }
 .example-box { background: #f0fdf4; border-color: #16a34a; }
 
+/* ==================== COLLAPSIBLE TECHNICAL DETAILS ==================== */
+details.technical-details {
+    background: #faf5ff;
+    border: 2px solid #714B67;
+    border-radius: 12px;
+    margin: 20px 0;
+    overflow: hidden;
+}
+
+details.technical-details summary {
+    padding: 16px 20px;
+    cursor: pointer;
+    font-weight: 600;
+    color: #714B67;
+    background: linear-gradient(135deg, #f5f0fa 0%, #ede5f5 100%);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    list-style: none;
+    user-select: none;
+    transition: background 0.2s ease;
+}
+
+details.technical-details summary::-webkit-details-marker {
+    display: none;
+}
+
+details.technical-details summary::before {
+    content: '▶';
+    font-size: 12px;
+    transition: transform 0.2s ease;
+    color: #714B67;
+}
+
+details.technical-details[open] summary::before {
+    transform: rotate(90deg);
+}
+
+details.technical-details summary:hover {
+    background: linear-gradient(135deg, #ede5f5 0%, #e5daf0 100%);
+}
+
+details.technical-details summary::after {
+    content: 'Click to expand';
+    margin-left: auto;
+    font-size: 12px;
+    font-weight: 400;
+    color: #9f7aea;
+    opacity: 0.8;
+}
+
+details.technical-details[open] summary::after {
+    content: 'Click to collapse';
+}
+
+details.technical-details .technical-content {
+    padding: 20px;
+    border-top: 1px solid rgba(113, 75, 103, 0.2);
+}
+
+details.technical-details .technical-content p {
+    color: var(--text-secondary);
+    line-height: 1.7;
+    margin-bottom: 12px;
+}
+
+details.technical-details .technical-content p:last-child {
+    margin-bottom: 0;
+}
+
+/* Dark mode */
+body.dark-mode details.technical-details {
+    background: rgba(113, 75, 103, 0.15);
+    border-color: rgba(159, 122, 234, 0.4);
+}
+
+body.dark-mode details.technical-details summary {
+    background: linear-gradient(135deg, rgba(113, 75, 103, 0.25) 0%, rgba(113, 75, 103, 0.15) 100%);
+    color: #c4b5fd;
+}
+
+body.dark-mode details.technical-details summary::before {
+    color: #c4b5fd;
+}
+
+body.dark-mode details.technical-details summary:hover {
+    background: linear-gradient(135deg, rgba(113, 75, 103, 0.35) 0%, rgba(113, 75, 103, 0.25) 100%);
+}
+
+body.dark-mode details.technical-details summary::after {
+    color: rgba(196, 181, 253, 0.6);
+}
+
+body.dark-mode details.technical-details .technical-content {
+    border-top-color: rgba(159, 122, 234, 0.2);
+}
+
+body.dark-mode details.technical-details .technical-content p {
+    color: #d1d5db;
+}
+
+/* High contrast mode */
+body.high-contrast details.technical-details {
+    border-width: 3px;
+}
+
+body.high-contrast details.technical-details summary {
+    font-weight: 700;
+}
+
+/* Eye comfort mode */
+body.eye-comfort:not(.dark-mode) details.technical-details {
+    background: #faf6f0;
+    border-color: #8b7355;
+}
+
+body.eye-comfort:not(.dark-mode) details.technical-details summary {
+    background: linear-gradient(135deg, #f5f0e8 0%, #ede5d8 100%);
+    color: #5c4a3d;
+}
+
+body.eye-comfort:not(.dark-mode) details.technical-details summary::before {
+    color: #5c4a3d;
+}
+
+body.eye-comfort:not(.dark-mode) details.technical-details summary::after {
+    color: #8b7355;
+}
+
+body.eye-comfort:not(.dark-mode) details.technical-details .technical-content {
+    border-top-color: rgba(139, 115, 85, 0.2);
+}
+
+body.eye-comfort.dark-mode details.technical-details {
+    background: rgba(139, 115, 85, 0.15);
+    border-color: rgba(212, 196, 160, 0.4);
+}
+
+body.eye-comfort.dark-mode details.technical-details summary {
+    background: linear-gradient(135deg, rgba(139, 115, 85, 0.25) 0%, rgba(139, 115, 85, 0.15) 100%);
+    color: #d4c4a0;
+}
+
+body.eye-comfort.dark-mode details.technical-details summary::before {
+    color: #d4c4a0;
+}
+
+body.eye-comfort.dark-mode details.technical-details summary::after {
+    color: rgba(212, 196, 160, 0.6);
+}
+
 /* ==================== CODE BLOCKS ==================== */
 .code-block {
     background: var(--bg-code);
