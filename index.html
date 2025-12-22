@@ -6907,6 +6907,130 @@ odoo.rpc('/web/dataset/search_read', {
             <p><strong>Payload example:</strong> <code>{"_id": 42, "_model": "crm.lead", "_name": "Sync Won Opportunities", "name": "Website Redesign Project", "partner_name": "TechCorp Solutions", "expected_revenue": 250000}</code></p>
         </div>
 
+        <!-- INCREMENTAL MASS EDIT -->
+        <h3>Incremental Mass Edit (List View Feature)</h3>
+
+        <div class="technical-box">
+            <h4>What is Incremental Mass Edit?</h4>
+            <p>A <strong>built-in list view feature</strong> that allows you to update multiple records at once using mathematical operators. Instead of setting a fixed value, you can <strong>modify existing values</strong> incrementally.</p>
+            <p><strong>Available in:</strong> Any list view where inline editing is enabled (Odoo 15+)</p>
+            <p><strong>Key benefit:</strong> Update prices, quantities, or amounts across hundreds of records with a single edit</p>
+        </div>
+
+        <h4>Supported Operators</h4>
+
+        <table>
+            <tr>
+                <th>Operator</th>
+                <th>Meaning</th>
+                <th>Example</th>
+                <th>Result (if current = 100)</th>
+            </tr>
+            <tr>
+                <td><strong>+=</strong></td>
+                <td>Add to current value</td>
+                <td><code>+=10</code></td>
+                <td>110</td>
+            </tr>
+            <tr>
+                <td><strong>-=</strong></td>
+                <td>Subtract from current value</td>
+                <td><code>-=25</code></td>
+                <td>75</td>
+            </tr>
+            <tr>
+                <td><strong>*=</strong></td>
+                <td>Multiply current value</td>
+                <td><code>*=1.15</code></td>
+                <td>115 (15% increase)</td>
+            </tr>
+            <tr>
+                <td><strong>/=</strong></td>
+                <td>Divide current value</td>
+                <td><code>/=2</code></td>
+                <td>50</td>
+            </tr>
+        </table>
+
+        <div class="mechanism-box">
+            <h4>How It Works Internally</h4>
+            <p>When you use an operator like <code>+=10</code>, Odoo:</p>
+            <ol>
+                <li><strong>Parses the input</strong> - The <code>parsers.js</code> module detects operator patterns (e.g., <code>/^[+\-*/]\s*=\s*(-?\d+)/</code>)</li>
+                <li><strong>Creates an Operation object</strong> - Stores the operator and operand separately</li>
+                <li><strong>Shows confirmation</strong> - Displays "Update to: Sales Price + 10" (not a computed result)</li>
+                <li><strong>Computes per record</strong> - For each selected record, applies: <code>operation.compute(currentValue)</code></li>
+                <li><strong>Calls web_save_multi</strong> - Saves each record with its individually calculated value</li>
+            </ol>
+            <p><strong>Key insight:</strong> The operation is computed <em>per record</em>, so each record gets its own calculated value based on its current data.</p>
+        </div>
+
+        <div class="info-box">
+            <h4>Field Types That Support Operators</h4>
+            <p>The operator tip only appears for <strong>numeric field types:</strong></p>
+            <ul>
+                <li><strong>Integer</strong> - Quantities, counts, sequence numbers</li>
+                <li><strong>Float</strong> - Measurements, percentages, ratings</li>
+                <li><strong>Monetary</strong> - Prices, costs, amounts</li>
+            </ul>
+            <p>For other field types (like Selection, Many2one, Char), you can only set fixed values.</p>
+        </div>
+
+        <div class="example-box">
+            <h4>Example: 10% Price Increase Across Products</h4>
+            <p><strong>Scenario:</strong> Annual price revision - increase all product sales prices by 10%.</p>
+            <p><strong>Steps:</strong></p>
+            <ol>
+                <li>Go to Sales > Products > Products</li>
+                <li>Use filters/search to find products to update (or select all)</li>
+                <li>Click the checkbox to select records (or use "Select all X")</li>
+                <li>Click on the <strong>Sales Price</strong> column of any selected record</li>
+                <li>Enter: <code>*=1.10</code></li>
+                <li>Press Tab or click away - confirmation dialog appears</li>
+                <li>Review: "Field: Sales Price, Update to: Sales Price * 1.10"</li>
+                <li>Click <strong>Update</strong> to apply to all selected records</li>
+            </ol>
+            <p><strong>Result:</strong> Each product's price is multiplied by 1.10 (10% increase). A $100 product becomes $110, a $50 product becomes $55.</p>
+        </div>
+
+        <div class="example-box">
+            <h4>Example: Add Safety Stock to Inventory</h4>
+            <p><strong>Scenario:</strong> Warehouse manager needs to increase minimum stock levels by 5 units for all products.</p>
+            <p><strong>Steps:</strong></p>
+            <ol>
+                <li>Go to Inventory > Products > Products</li>
+                <li>Select the products to update</li>
+                <li>Edit the <strong>Min Quantity</strong> (or reordering rule minimum) column</li>
+                <li>Enter: <code>+=5</code></li>
+                <li>Confirm the update</li>
+            </ol>
+            <p><strong>Result:</strong> All selected products get +5 to their minimum stock level, regardless of their current values.</p>
+        </div>
+
+        <div class="warning-box">
+            <h4>Important Considerations</h4>
+            <ul>
+                <li><strong>Domain selection limitation:</strong> If you click "Select all X records" (domain selection), only records on the current page are actually updated</li>
+                <li><strong>Validation:</strong> Records that fail validation (e.g., negative price not allowed) are skipped, and you'll see "X of Y records are valid"</li>
+                <li><strong>Precision:</strong> Division may produce decimal results - be aware of rounding for Integer fields</li>
+                <li><strong>No undo:</strong> Mass edits cannot be easily undone - consider testing on a few records first</li>
+                <li><strong>Access rights:</strong> Users need write permission on the field being edited</li>
+            </ul>
+        </div>
+
+        <div class="odoo-box">
+            <h4>Technical Implementation (For Developers)</h4>
+            <p>The feature is implemented in the web module:</p>
+            <ul>
+                <li><strong>Parser:</strong> <code>addons/web/static/src/views/fields/parsers.js</code> - <code>parseOperation()</code> function</li>
+                <li><strong>Operation class:</strong> <code>addons/web/static/src/model/relational_model/operation.js</code></li>
+                <li><strong>Confirmation dialog:</strong> <code>addons/web/static/src/views/list/list_confirmation_dialog.js</code></li>
+                <li><strong>Multi-save logic:</strong> <code>addons/web/static/src/model/relational_model/dynamic_list.js</code> - <code>multiSave()</code></li>
+                <li><strong>Backend:</strong> <code>addons/web/models/models.py</code> - <code>web_save_multi()</code> method</li>
+            </ul>
+            <p>The <code>Operation</code> class simply stores operator and operand, then computes: <code>value + operand</code>, <code>value - operand</code>, <code>value * operand</code>, or <code>value / operand</code></p>
+        </div>
+
         <!-- SCHEDULED ACTIONS -->
         <h3>Scheduled Actions (ir.cron)</h3>
 

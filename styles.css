@@ -725,8 +725,9 @@ body.dark-mode table {
 }
 
 body.dark-mode th {
-    background: var(--primary);
+    background: #5b4178;
     color: #ffffff;
+    font-weight: 600;
 }
 
 body.dark-mode tr:nth-child(even) {
