@@ -1616,10 +1616,27 @@ document.addEventListener('keydown', function(e) {
 
 // ==================== FOCUS/READING MODE ====================
 let focusModeActive = false;
+const toolbar = document.querySelector('.toolbar');
 
 function toggleFocusMode() {
     focusModeActive = !focusModeActive;
     document.body.classList.toggle('focus-mode', focusModeActive);
+
+    // Move toolbar out of sidebar to avoid transform containment issue
+    // (position: fixed inside a transformed ancestor is relative to that ancestor)
+    if (toolbar) {
+        if (focusModeActive) {
+            document.body.appendChild(toolbar);
+        } else {
+            // Move toolbar back into sidebar (after search-container)
+            const searchContainer = sidebar.querySelector('.search-container');
+            if (searchContainer && searchContainer.nextSibling) {
+                sidebar.insertBefore(toolbar, searchContainer.nextSibling);
+            } else {
+                sidebar.appendChild(toolbar);
+            }
+        }
+    }
 
     // Update button state
     if (focusModeBtn) {
@@ -1647,6 +1664,10 @@ function initFocusMode() {
     if (savedFocusMode === 'true') {
         focusModeActive = true;
         document.body.classList.add('focus-mode');
+        // Move toolbar out of sidebar on init too
+        if (toolbar) {
+            document.body.appendChild(toolbar);
+        }
         if (focusModeBtn) {
             focusModeBtn.setAttribute('aria-pressed', 'true');
             focusModeBtn.title = 'Exit focus mode (F)';
@@ -2276,7 +2297,11 @@ function applyPersonalization() {
     // === MOTION ===
     // Apply animation preferences
     body.classList.remove('animations-normal', 'animations-reduced', 'animations-none');
-    body.classList.add('animations-' + (currentSettings.animations || 'normal'));
+    const animationLevel = currentSettings.animations || 'normal';
+    body.classList.add('animations-' + animationLevel);
+    // Also set on html for scroll-behavior (Firefox :has() fallback)
+    document.documentElement.classList.remove('scroll-smooth', 'scroll-auto');
+    document.documentElement.classList.add(animationLevel === 'normal' ? 'scroll-smooth' : 'scroll-auto');
 
     // Update UI
     updateSettingsUI();
@@ -3100,12 +3125,16 @@ const InteractiveDiagrams = {
      */
     init() {
         const diagrams = document.querySelectorAll('.diagram');
+        const interactiveDiagrams = [];
 
         diagrams.forEach(diagram => {
             const boxes = diagram.querySelectorAll('.diagram-box');
 
             // Skip diagrams with no boxes or only one box
             if (boxes.length < 2) return;
+
+            // Track interactive diagrams for single document listener
+            interactiveDiagrams.push(diagram);
 
             // Add interactive class
             diagram.classList.add('diagram-interactive');
@@ -3143,14 +3172,18 @@ const InteractiveDiagrams = {
             resetBtn.addEventListener('click', () => {
                 this.resetDiagram(diagram);
             });
-
-            // Click outside to reset
-            document.addEventListener('click', (e) => {
-                if (!diagram.contains(e.target)) {
-                    this.resetDiagram(diagram);
-                }
-            });
         });
+
+        // Single document listener for all diagrams (instead of one per diagram)
+        if (interactiveDiagrams.length > 0) {
+            document.addEventListener('click', (e) => {
+                interactiveDiagrams.forEach(diagram => {
+                    if (!diagram.contains(e.target)) {
+                        this.resetDiagram(diagram);
+                    }
+                });
+            });
+        }
     },
 
     /**
