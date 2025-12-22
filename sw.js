@@ -1,11 +1,15 @@
 // Service Worker for Odoo Training PWA
-const CACHE_NAME = 'odoo-training-v11';
+const CACHE_NAME = 'odoo-training-v12';
 const ASSETS_TO_CACHE = [
     './',
     './index.html',
     './styles.css',
     './script.js',
-    './manifest.json'
+    './manifest.json',
+    './favicon.svg',
+    './icons/icon.svg',
+    './icons/icon-192.png',
+    './icons/icon-512.png'
 ];
 
 // Install event - cache essential assets
