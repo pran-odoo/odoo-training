@@ -2321,9 +2321,11 @@ function applyPersonalization() {
     body.classList.remove('animations-normal', 'animations-reduced', 'animations-none');
     const animationLevel = currentSettings.animations || 'normal';
     body.classList.add('animations-' + animationLevel);
-    // Also set on html for scroll-behavior (Firefox :has() fallback)
-    document.documentElement.classList.remove('scroll-smooth', 'scroll-auto');
-    document.documentElement.classList.add(animationLevel === 'normal' ? 'scroll-smooth' : 'scroll-auto');
+
+    // Re-evaluate spidey availability when animation setting changes
+    if (typeof updateSpideyAvailability === 'function') {
+        updateSpideyAvailability();
+    }
 
     // Update UI
     updateSettingsUI();
@@ -2618,6 +2620,8 @@ function showToast(message) {
 initShareability();
 
 // ==================== SERVICE WORKER REGISTRATION ====================
+let waitingWorker = null;
+
 if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
         // Use relative path for flexibility when not hosted at domain root
@@ -2630,6 +2634,8 @@ if ('serviceWorker' in navigator) {
                     const newWorker = registration.installing;
                     newWorker.addEventListener('statechange', () => {
                         if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                            // Store reference to waiting worker
+                            waitingWorker = newWorker;
                             // New version available - show update notification
                             showUpdateNotification();
                         }
@@ -2639,6 +2645,11 @@ if ('serviceWorker' in navigator) {
             .catch(error => {
                 console.log('[PWA] Service Worker registration failed:', error);
             });
+
+        // Reload page when new service worker takes over
+        navigator.serviceWorker.addEventListener('controllerchange', () => {
+            window.location.reload();
+        });
     });
 }
 
@@ -2652,7 +2663,13 @@ function showUpdateNotification() {
     const updateBtn = document.createElement('button');
     updateBtn.className = 'update-btn';
     updateBtn.textContent = 'Update';
-    updateBtn.addEventListener('click', () => location.reload());
+    updateBtn.addEventListener('click', () => {
+        if (waitingWorker) {
+            // Tell the waiting service worker to skip waiting and become active
+            waitingWorker.postMessage({ type: 'SKIP_WAITING' });
+        }
+        notification.remove();
+    });
 
     const dismissBtn = document.createElement('button');
     dismissBtn.className = 'update-dismiss';
