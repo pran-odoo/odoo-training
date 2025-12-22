@@ -10580,6 +10580,114 @@ If it's not a vendor invoice, do nothing.</pre>
             <p><strong>How to use:</strong> Studio → Add Field → Select "AI Field" → Configure prompt</p>
         </div>
 
+        <!-- ==================== PRACTICAL USE CASES ==================== -->
+        <h3>Practical AI Use Cases - Try These!</h3>
+
+        <p>Here are real-world scenarios you can implement in your Odoo instance to see AI in action:</p>
+
+        <div class="use-cases-container">
+            <div class="use-case-card">
+                <div class="use-case-scenario">Use Case 1: Smart Lead Qualification</div>
+                <div class="use-case-content" style="padding: 16px;">
+                    <p><strong>Goal:</strong> Automatically score and prioritize incoming leads</p>
+                    <p><strong>Setup Steps:</strong></p>
+                    <ol>
+                        <li>Create AI Field on <code>crm.lead</code>: "AI Priority Score" (Selection: Hot/Warm/Cold)</li>
+                        <li>Prompt: <code>Analyze this lead. Company: {{partner_name}}, Revenue: {{expected_revenue}}, Source: {{source_id.name}}, Description: {{description}}. Rate as hot (ready to buy), warm (interested), or cold (just browsing).</code></li>
+                        <li>Create automation to notify sales team when AI marks lead as "Hot"</li>
+                    </ol>
+                    <p><strong>Result:</strong> Sales team focuses on high-value leads first, improving conversion rates.</p>
+                </div>
+            </div>
+
+            <div class="use-case-card">
+                <div class="use-case-scenario">Use Case 2: Product Description Generator</div>
+                <div class="use-case-content" style="padding: 16px;">
+                    <p><strong>Goal:</strong> Auto-generate SEO-friendly product descriptions</p>
+                    <p><strong>Setup Steps:</strong></p>
+                    <ol>
+                        <li>Create AI Field on <code>product.template</code>: "Marketing Description" (HTML)</li>
+                        <li>Prompt: <code>Write a compelling product description for "{{name}}". Category: {{categ_id.name}}. Features: {{description_sale}}. Price: {{list_price}}. Include benefits, use cases, and a call-to-action. Format with bullet points.</code></li>
+                        <li>Use on website product pages via Website Builder</li>
+                    </ol>
+                    <p><strong>Result:</strong> Consistent, professional product descriptions without manual writing.</p>
+                </div>
+            </div>
+
+            <div class="use-case-card">
+                <div class="use-case-scenario">Use Case 3: Support Ticket Auto-Routing</div>
+                <div class="use-case-content" style="padding: 16px;">
+                    <p><strong>Goal:</strong> Automatically assign helpdesk tickets to the right team</p>
+                    <p><strong>Setup Steps:</strong></p>
+                    <ol>
+                        <li>Create AI Server Action on <code>helpdesk.ticket</code></li>
+                        <li>Prompt: <code>Analyze this support ticket. Subject: {{name}}, Description: {{description}}. Categorize as: billing, technical, shipping, or general.</code></li>
+                        <li>Add tools to update team_id based on AI category</li>
+                        <li>Create automation trigger on ticket creation</li>
+                    </ol>
+                    <p><strong>Result:</strong> Tickets reach the right team instantly, reducing response time.</p>
+                </div>
+            </div>
+
+            <div class="use-case-card">
+                <div class="use-case-scenario">Use Case 4: Invoice Document Auto-Filing</div>
+                <div class="use-case-content" style="padding: 16px;">
+                    <p><strong>Goal:</strong> Automatically sort uploaded documents into correct folders</p>
+                    <p><strong>Setup Steps:</strong></p>
+                    <ol>
+                        <li>Enable AI on Documents inbox folder</li>
+                        <li>Configure folder rules with AI prompt: <code>Analyze this document. If it's a vendor invoice, move to "Vendor Bills". If it's a contract, move to "Contracts". If it's a receipt, move to "Expenses".</code></li>
+                        <li>Upload documents via email alias or manual upload</li>
+                    </ol>
+                    <p><strong>Result:</strong> Documents automatically organized without manual sorting.</p>
+                </div>
+            </div>
+
+            <div class="use-case-card">
+                <div class="use-case-scenario">Use Case 5: Meeting Summary Generator</div>
+                <div class="use-case-content" style="padding: 16px;">
+                    <p><strong>Goal:</strong> Generate meeting summaries from VoIP call transcripts</p>
+                    <p><strong>Setup Steps:</strong></p>
+                    <ol>
+                        <li>Enable VoIP transcription (voip_ai module)</li>
+                        <li>Create AI Field on <code>calendar.event</code>: "Meeting Summary" (Text)</li>
+                        <li>Link VoIP calls to calendar events</li>
+                        <li>Prompt: <code>Summarize this meeting transcript in 3-5 bullet points. Include: key decisions, action items, and next steps. Transcript: {{voip_call_id.transcript}}</code></li>
+                    </ol>
+                    <p><strong>Result:</strong> Automatic meeting notes shared with attendees.</p>
+                </div>
+            </div>
+
+            <div class="use-case-card">
+                <div class="use-case-scenario">Use Case 6: Customer FAQ Chatbot</div>
+                <div class="use-case-content" style="padding: 16px;">
+                    <p><strong>Goal:</strong> 24/7 customer support using your knowledge base</p>
+                    <p><strong>Setup Steps:</strong></p>
+                    <ol>
+                        <li>Create AI Agent: "Customer Support Bot"</li>
+                        <li>Upload FAQ documents, product manuals as RAG sources</li>
+                        <li>Enable "Restrict to Sources" to prevent hallucination</li>
+                        <li>Assign agent to Livechat channel rule for website visitors</li>
+                        <li>Configure human escalation for complex queries</li>
+                    </ol>
+                    <p><strong>Result:</strong> Instant answers to common questions, human agents handle complex cases only.</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="info-box">
+            <h4>Try the Ask AI Search</h4>
+            <p>The quickest way to experience Odoo AI is the "Ask AI" natural language search. Press <strong>Ctrl+K</strong> (or Cmd+K on Mac) and try these queries:</p>
+            <ul>
+                <li>"Show me all unpaid invoices over $5,000"</li>
+                <li>"Find leads created this week from the website"</li>
+                <li>"List products with low stock in warehouse A"</li>
+                <li>"Show sales orders pending delivery"</li>
+                <li>"Find employees on leave next week"</li>
+            </ul>
+            <p>AI will parse your natural language, build the domain filter, and navigate to the filtered view automatically!</p>
+        </div>
+
         <!-- ==================== CONFIGURATION & BEST PRACTICES ==================== -->
         <h3>Configuration & Best Practices</h3>
 
