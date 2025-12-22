@@ -3041,12 +3041,13 @@ state = fields.Selection(
 
         <div class="critical-box">
             <h4>The Group By Limitation</h4>
-            <p>If you try to "Group By" a non-stored field in reports or list views, you'll get an error or no results. This happens because:</p>
+            <p>If you try to "Group By" a non-stored field in reports or list views, you'll <strong>usually</strong> get an error or no results. This happens because:</p>
             <ul>
                 <li>Group By uses SQL, which needs a real database column</li>
                 <li>Non-stored fields don't have database columns</li>
                 <li>Odoo can't GROUP BY something that doesn't exist in the table</li>
             </ul>
+            <p><strong>Exception:</strong> Some fields may <em>appear</em> as "Stored: False" in Developer Mode but still work for Group By. This happens when Odoo uses SQL translation tricks (like <code>_field_to_sql</code>) to redirect queries to an underlying stored field. See the <strong>Case Study</strong> below for a real example.</p>
         </div>
 
         <div class="warning-box">
@@ -3153,8 +3154,9 @@ state = fields.Selection(
         <h3>Case Study: Why Can You Group Employees By Department?</h3>
 
         <div class="critical-box">
-            <h4>A Common Puzzle</h4>
-            <p>This case study explores a question that puzzles many functional consultants: <strong>"How can I Group By a field that shows Stored: False in Developer Mode?"</strong></p>
+            <h4>A Common Puzzle (The Exception in Action)</h4>
+            <p>This case study explores the exception mentioned above: <strong>"How can I Group By a field that shows Stored: False in Developer Mode?"</strong></p>
+            <p>Understanding this will help you diagnose whether a "non-stored" field truly can't be grouped, or if it's using behind-the-scenes magic.</p>
         </div>
 
         <div class="analogy-box">
@@ -3166,7 +3168,7 @@ state = fields.Selection(
                 <li>It works! Employees are grouped by their department.</li>
             </ul>
             <p><strong>But here's the confusing part:</strong> If you check <code>department_id</code> in Developer Mode (Settings → Technical → Fields), it shows <strong>Stored: False</strong>!</p>
-            <p>We learned that non-stored fields can't be used for Group By. So how is this possible?</p>
+            <p>Based on the rule above, this shouldn't work. So what's going on?</p>
         </div>
 
         <h4>The Investigation</h4>
