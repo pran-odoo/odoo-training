@@ -187,10 +187,9 @@ body.dark-mode {
     --border: #3f3f46;
     --border-light: #27272a;
     --border-dark: #52525b;
-    /* Accent colors - slightly desaturated for dark mode */
-    --primary: #a78bfa;
-    --primary-dark: #8b5cf6;
-    --primary-light: #c4b5fd;
+    /* Note: --primary colors are now managed by JS to support user accent color selection */
+    /* Fallback dark mode accents if JS hasn't loaded */
+    /* --primary, --primary-dark, --primary-light are set via inline styles */
     /* Semantic colors - softer for dark backgrounds */
     --success: #4ade80;
     --success-light: rgba(74, 222, 128, 0.15);
@@ -4123,17 +4122,24 @@ body.focus-mode .toolbar-btn:not(#focusModeBtn):not(#darkModeBtn) {
     display: none;
 }
 
-/* Simplify toolbar in focus mode */
+/* Simplify toolbar in focus mode - extract from hidden sidebar */
 body.focus-mode .toolbar {
+    position: fixed;
     top: auto;
     bottom: var(--space-6);
     right: var(--space-6);
+    left: auto;
     flex-direction: row;
     gap: var(--space-2);
     background: var(--bg-primary);
     padding: var(--space-2);
     border-radius: var(--radius-full);
     box-shadow: var(--shadow-lg);
+    /* Override sidebar's hidden state - toolbar must remain visible for mouse exit */
+    visibility: visible !important;
+    pointer-events: auto !important;
+    transform: none !important;
+    z-index: 1001;
 }
 
 /* Focus mode button indicator */

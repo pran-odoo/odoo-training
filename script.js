@@ -659,12 +659,6 @@ document.addEventListener('keydown', function(e) {
         return;
     }
 
-    // Press 'Escape' to disable spider cursor (if active)
-    if (e.key === 'Escape' && isSpideyActive) {
-        disableSpidey(true);
-        return;
-    }
-
     // Press '?' for help
     if (e.key === '?' || (e.key === '/' && e.shiftKey)) {
         toggleKeyboardHint();
@@ -683,14 +677,14 @@ document.addEventListener('keydown', function(e) {
         return;
     }
 
-    // Press Escape to close things
+    // Press Escape to close things - check modals first, then spider cursor
     if (e.key === 'Escape') {
-        // Close command palette if open
+        // Priority 1: Close command palette if open
         if (typeof closeCommandPalette === 'function' && commandPalette && commandPalette.classList.contains('active')) {
             closeCommandPalette();
             return;
         }
-        // Close settings panel if open
+        // Priority 2: Close settings panel if open
         const settingsPanel = document.getElementById('settingsPanel');
         if (settingsPanel && settingsPanel.classList.contains('open')) {
             settingsPanel.classList.remove('open');
@@ -699,14 +693,27 @@ document.addEventListener('keydown', function(e) {
             document.getElementById('settingsBtn')?.setAttribute('aria-expanded', 'false');
             return;
         }
-        // Close other UI elements
+        // Priority 3: Close keyboard help if visible
+        if (keyboardHint && keyboardHint.classList.contains('visible')) {
+            keyboardHint.classList.remove('visible');
+            return;
+        }
+        // Priority 4: Clear search if active
+        if (searchResults && searchResults.innerHTML) {
+            searchInput.blur();
+            searchResults.innerHTML = '';
+            searchResults._results = null;
+            searchInput.setAttribute('aria-expanded', 'false');
+            searchInput.removeAttribute('aria-activedescendant');
+            return;
+        }
+        // Priority 5: Disable spider cursor if active
+        if (isSpideyActive) {
+            disableSpidey(true);
+            return;
+        }
+        // Priority 6: Close mobile menu
         closeMobileMenu();
-        keyboardHint.classList.remove('visible');
-        searchInput.blur();
-        searchResults.innerHTML = '';
-        searchResults._results = null;
-        searchInput.setAttribute('aria-expanded', 'false');
-        searchInput.removeAttribute('aria-activedescendant');
     }
 });
 
@@ -2023,9 +2030,10 @@ function initGlossary() {
 
         textNodes.forEach(textNode => {
             const text = textNode.textContent;
+            // Reset regex before test to avoid global flag lastIndex issues
+            termRegex.lastIndex = 0;
             if (!termRegex.test(text)) return;
-
-            termRegex.lastIndex = 0; // Reset regex
+            termRegex.lastIndex = 0; // Reset again for exec loop
 
             const fragment = document.createDocumentFragment();
             let lastIndex = 0;
@@ -2485,7 +2493,13 @@ function initShareability() {
 
         shareBtn.addEventListener('click', (e) => {
             e.stopPropagation();
-            const url = window.location.origin + window.location.pathname + '#' + section.id;
+            // Handle file:// protocol where origin is null
+            let url;
+            if (window.location.protocol === 'file:') {
+                url = window.location.href.split('#')[0] + '#' + section.id;
+            } else {
+                url = window.location.origin + window.location.pathname + '#' + section.id;
+            }
             copyToClipboard(url, shareBtn);
         });
 
@@ -2665,10 +2679,18 @@ addCopyButtons();
 
 // Wrap tables for mobile horizontal scrolling
 function wrapTablesForMobile() {
-    const tables = document.querySelectorAll('.container table:not(.table-wrapper table)');
+    let tables;
+    try {
+        // Modern browsers: use :not() with descendant selector
+        tables = document.querySelectorAll('.container table:not(.table-wrapper table)');
+    } catch (e) {
+        // Fallback for older browsers that don't support complex :not()
+        tables = document.querySelectorAll('.container table');
+    }
     tables.forEach(table => {
-        // Skip if already wrapped
+        // Skip if already wrapped (handles fallback case)
         if (table.parentElement.classList.contains('table-wrapper')) return;
+        if (table.closest('.table-wrapper')) return;
 
         const wrapper = document.createElement('div');
         wrapper.className = 'table-wrapper';
@@ -2989,12 +3011,19 @@ const SyntaxHighlighter = {
      */
     init() {
         // Select pre > code but exclude those inside .diagram
-        const codeBlocks = document.querySelectorAll('pre:not(.diagram pre) code');
+        let codeBlocks;
+        try {
+            // Modern browsers: use :not() with descendant selector
+            codeBlocks = document.querySelectorAll('pre:not(.diagram pre) code');
+        } catch (e) {
+            // Fallback for older browsers
+            codeBlocks = document.querySelectorAll('pre code');
+        }
 
         codeBlocks.forEach(codeElement => {
             const pre = codeElement.parentElement;
 
-            // Skip if already highlighted or inside a diagram
+            // Skip if already highlighted or inside a diagram (handles fallback)
             if (pre.dataset.highlighted === 'true') return;
             if (pre.closest('.diagram')) return;
 
