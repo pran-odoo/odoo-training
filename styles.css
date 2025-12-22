@@ -5465,57 +5465,76 @@ body.eye-comfort.dark-mode tr:hover {
 }
 
 /* ==================== EYE COMFORT SIDEBAR ==================== */
-/* Light mode - warm brown tones */
+/* Light mode - warm cream tones matching main content */
 body.eye-comfort .sidebar {
     background: linear-gradient(180deg,
-        #5c4a3d 0%,
-        #4a3c32 50%,
-        #382e26 100%);
-    border-right-color: rgba(255, 240, 220, 0.15);
+        #f5ebe0 0%,
+        #ede4d9 50%,
+        #e8ddd0 100%);
+    border-right: 1px solid #d4c4a8;
 }
 
 body.eye-comfort .sidebar::before {
     background: linear-gradient(180deg,
-        rgba(255, 240, 220, 0.08) 0%,
+        rgba(255, 255, 255, 0.5) 0%,
         transparent 100%);
 }
 
 body.eye-comfort .sidebar-header {
-    border-bottom-color: rgba(255, 240, 220, 0.15);
+    border-bottom-color: #d4c4a8;
 }
 
 body.eye-comfort .sidebar a {
-    color: rgba(255, 248, 235, 0.92);
+    color: #5c4a3d;
 }
 
 body.eye-comfort .sidebar a:hover {
-    background: rgba(255, 248, 235, 0.15);
-    color: #fff8eb;
-    border-left-color: rgba(255, 240, 220, 0.6);
+    background: rgba(92, 74, 61, 0.1);
+    color: #3d3028;
+    border-left-color: #8b7355;
 }
 
 body.eye-comfort .sidebar a.active {
-    background: rgba(255, 248, 235, 0.2);
-    color: #fff8eb;
-    border-left-color: #ffecd0;
+    background: rgba(92, 74, 61, 0.15);
+    color: #3d3028;
+    border-left-color: #714B67;
 }
 
 body.eye-comfort .sidebar-section-title {
-    color: rgba(255, 248, 235, 0.9);
+    color: #4a3c32;
 }
 
 body.eye-comfort .sidebar-subtitle {
-    color: rgba(255, 248, 235, 0.7);
+    color: #6b5a4a;
 }
 
 body.eye-comfort .search-input {
-    background: rgba(255, 248, 235, 0.08);
-    border-color: rgba(255, 240, 220, 0.2);
-    color: #fff8eb;
+    background: rgba(255, 255, 255, 0.6);
+    border-color: #d4c4a8;
+    color: #3d3028;
 }
 
 body.eye-comfort .search-input::placeholder {
-    color: rgba(255, 248, 235, 0.5);
+    color: #8b7355;
+}
+
+body.eye-comfort .sidebar-logo {
+    color: #3d3028;
+}
+
+body.eye-comfort .sidebar-logo-icon {
+    background: rgba(113, 75, 103, 0.1);
+    border-color: #d4c4a8;
+}
+
+body.eye-comfort .sidebar-toggle-btn {
+    background: rgba(92, 74, 61, 0.1);
+    color: #5c4a3d;
+    border-color: #d4c4a8;
+}
+
+body.eye-comfort .sidebar-toggle-btn:hover {
+    background: rgba(92, 74, 61, 0.2);
 }
 
 /* Eye comfort dark mode sidebar - darker warm tones */
