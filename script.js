@@ -83,9 +83,14 @@ function updateProgressBar() {
     }
 }
 
-// ==================== SCROLL BEHAVIOR (respects reduced-motion) ====================
+// ==================== SCROLL BEHAVIOR (respects reduced-motion and user setting) ====================
 function getScrollBehavior() {
-    return window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth';
+    // Check OS preference
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return 'auto';
+    // Check user's in-app animation setting
+    const animClass = document.body.classList.contains('animations-reduced') ||
+                      document.body.classList.contains('animations-none');
+    return animClass ? 'auto' : 'smooth';
 }
 
 // ==================== BACK TO TOP ====================
@@ -265,7 +270,11 @@ function buildSearchIndex() {
     const allH2s = Array.from(container.querySelectorAll('h2[id]'));
 
     allH2s.forEach((h2, h2Index) => {
-        const sectionTitle = h2.textContent.trim();
+        // Clone and remove share button to get clean title text
+        const h2Clone = h2.cloneNode(true);
+        const shareWrapper = h2Clone.querySelector('.section-share-wrapper');
+        if (shareWrapper) shareWrapper.remove();
+        const sectionTitle = h2Clone.textContent.trim();
         const nextH2 = allH2s[h2Index + 1];
 
         // Get preview text from first paragraph after section heading
@@ -885,9 +894,20 @@ function initTrueFocus() {
             currentIndex = index;
         }
 
+        // Check if animations should be disabled
+        function shouldDisableAnimation() {
+            return document.body.classList.contains('animations-reduced') ||
+                   document.body.classList.contains('animations-none') ||
+                   window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+        }
+
         // Auto-advance animation
         function startAutoAnimation() {
-            if (manualMode) return;
+            if (manualMode || shouldDisableAnimation()) {
+                // Just show first word without animation
+                setActiveWord(0);
+                return;
+            }
 
             // Initial activation
             setActiveWord(0);
@@ -941,9 +961,11 @@ reducedMotionQuery.addEventListener('change', function(e) {
     updateSpideyAvailability();
 });
 
-// Dynamic availability check
+// Dynamic availability check (respects OS and user animation settings)
 function isSpideyAvailable() {
-    return window.innerWidth >= 768 && !prefersReducedMotion;
+    const userDisabledAnimations = document.body.classList.contains('animations-reduced') ||
+                                   document.body.classList.contains('animations-none');
+    return window.innerWidth >= 768 && !prefersReducedMotion && !userDisabledAnimations;
 }
 
 // ==================== SPIDER ANIMATION ENGINE ====================

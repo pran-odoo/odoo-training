@@ -5951,15 +5951,6 @@ body.code-theme-light pre[data-language]::before {
 }
 
 /* Dark mode adjustments */
-body.dark-mode .diagram-tooltip {
-    background: #1e1e2e;
-    border: 1px solid var(--border-dark);
-}
-
-body.dark-mode .diagram-tooltip::after {
-    border-top-color: #1e1e2e;
-}
-
 body.dark-mode .diagram-reset {
     background: var(--bg-tertiary);
     border-color: var(--border-dark);
@@ -5968,8 +5959,7 @@ body.dark-mode .diagram-reset {
 /* Reduced motion */
 @media (prefers-reduced-motion: reduce) {
     .diagram-interactive .diagram-box,
-    .diagram-interactive .arrow,
-    .diagram-tooltip {
+    .diagram-interactive .arrow {
         transition: none;
     }
 
