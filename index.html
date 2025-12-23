@@ -4,8 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="Content-Security-Policy" content="default-src 'self'; style-src 'self' 'unsafe-inline'; script-src 'self' https://www.googletagmanager.com https://www.google-analytics.com; img-src 'self' data: https://www.google-analytics.com https://www.googletagmanager.com; connect-src 'self' https://www.google-analytics.com https://analytics.google.com https://region1.google-analytics.com;">
-    <meta name="description" content="Free Odoo 19 training guide for functional consultants. Learn models, fields, views, domains, security, workflows, AI features, and more with interactive examples.">
-    <meta name="keywords" content="Odoo training, Odoo 19, Odoo tutorial, Odoo functional consultant, Odoo models, Odoo fields, Odoo views, Odoo domains, Odoo security, Odoo ERP, Odoo guide, learn Odoo">
+    <meta name="description" content="Free Odoo 19 training guide for functional consultants. Learn models, fields, views, domains, security, workflows, AI features, EDI/UBL, and more with interactive examples.">
+    <meta name="keywords" content="Odoo training, Odoo 19, Odoo tutorial, Odoo functional consultant, Odoo models, Odoo fields, Odoo views, Odoo domains, Odoo security, Odoo ERP, Odoo guide, learn Odoo, EDI, UBL, Peppol">
     <meta name="author" content="Odoo Training">
     <meta name="robots" content="index, follow">
     <meta name="theme-color" content="#714B67">
@@ -207,6 +207,14 @@
                         <span class="toggle-track"><span class="toggle-thumb"></span></span>
                     </button>
                 </div>
+                <!-- In-page search highlights toggle -->
+                <div class="settings-group settings-group-inline">
+                    <label class="settings-label">In-page Highlights</label>
+                    <span class="settings-hint">Highlight search matches</span>
+                    <button class="settings-toggle" id="searchHighlightsToggle" aria-label="Toggle in-page search highlights" aria-checked="true" role="switch">
+                        <span class="toggle-track"><span class="toggle-thumb"></span></span>
+                    </button>
+                </div>
             </div>
 
             <!-- TYPOGRAPHY SECTION -->
@@ -318,6 +326,13 @@
                 <input type="text" class="search-input" id="searchInput" placeholder="Search topics... (Press /)" autocomplete="off" role="combobox" aria-autocomplete="list" aria-controls="searchResults" aria-expanded="false">
             </div>
             <div class="search-results" id="searchResults" role="listbox" aria-label="Search results" aria-live="polite"></div>
+            <div class="search-highlight-controls" id="searchHighlightControls" aria-live="polite">
+                <span class="search-highlight-count" id="searchHighlightCount">0 matches</span>
+                <div class="search-highlight-actions">
+                    <button class="search-highlight-btn" id="searchHighlightPrev" type="button" aria-label="Previous match">Prev</button>
+                    <button class="search-highlight-btn" id="searchHighlightNext" type="button" aria-label="Next match">Next</button>
+                </div>
+            </div>
         </div>
 
         <!-- Toolbar -->
@@ -329,6 +344,16 @@
             <button class="toolbar-btn" id="settingsBtn" title="Personalization settings" aria-label="Open settings" aria-expanded="false">⚙️</button>
             <button class="toolbar-btn" id="spideyToggleBtn" title="Toggle spider cursor (Esc to disable)" aria-label="Toggle spider cursor" aria-pressed="false">🕷️</button>
             <button class="toolbar-btn" id="helpBtn" title="Keyboard shortcuts (?)" aria-label="Show keyboard shortcuts" aria-pressed="false">⌨️</button>
+        </div>
+
+        <!-- Bookmarks -->
+        <div class="bookmarks-panel" id="bookmarksPanel" data-empty="true" aria-label="Bookmarked sections">
+            <div class="bookmarks-header">
+                <span class="bookmarks-title">Bookmarks</span>
+                <button class="bookmarks-clear" id="bookmarksClear" type="button" aria-label="Clear all bookmarks">Clear</button>
+            </div>
+            <div class="bookmarks-empty">No bookmarks yet</div>
+            <ul class="bookmarks-list" id="bookmarksList"></ul>
         </div>
 
         <nav>
@@ -378,6 +403,14 @@
 
     <!-- Current Section Indicator -->
     <div class="current-section" id="currentSection"></div>
+
+    <!-- Focus Mode Mobile Bar -->
+    <div class="focus-mobile-bar" id="focusMobileBar" role="toolbar" aria-label="Focus mode controls">
+        <button class="focus-mobile-btn" id="focusExitMobile" type="button" aria-label="Exit focus mode">Exit</button>
+        <button class="focus-mobile-btn" id="focusSearchMobile" type="button" aria-label="Open search">Search</button>
+        <button class="focus-mobile-btn" id="focusFontDownMobile" type="button" aria-label="Decrease font size">A-</button>
+        <button class="focus-mobile-btn" id="focusFontUpMobile" type="button" aria-label="Increase font size">A+</button>
+    </div>
 
     <!-- Main Content -->
     <main class="container">
@@ -8386,6 +8419,16 @@ Content-Type: text/xml
                 <td>Slow saves</td>
                 <td>Consolidate or use scheduled actions</td>
             </tr>
+            <tr>
+                <td><strong>AI/LLM calls in loops</strong></td>
+                <td>Timeout, high IAP costs</td>
+                <td>Batch requests, use caching</td>
+            </tr>
+            <tr>
+                <td><strong>Large XML/EDI file processing</strong></td>
+                <td>Memory spikes, slow imports</td>
+                <td>Process in batches, use queue jobs</td>
+            </tr>
         </table>
 
         <div class="success-box">
@@ -8651,6 +8694,41 @@ Content-Type: text/xml
             </tr>
         </table>
 
+        <h3>Integration Decision</h3>
+
+        <table>
+            <tr>
+                <th>Integration Need</th>
+                <th>Recommended Approach</th>
+                <th>When to Use</th>
+            </tr>
+            <tr>
+                <td>B2B document exchange with partners</td>
+                <td>EDI/UBL (Peppol BIS 3)</td>
+                <td>Sales ↔ Purchase order automation</td>
+            </tr>
+            <tr>
+                <td>Generate text content (emails, descriptions)</td>
+                <td>AI Agents with LLM</td>
+                <td>Marketing, support, content creation</td>
+            </tr>
+            <tr>
+                <td>Extract data from documents</td>
+                <td>AI Digitization (OCR + LLM)</td>
+                <td>Invoices, receipts, contracts</td>
+            </tr>
+            <tr>
+                <td>Real-time external system sync</td>
+                <td>XML-RPC / JSON-RPC API</td>
+                <td>Custom integrations, webhooks</td>
+            </tr>
+            <tr>
+                <td>Lead scoring & prediction</td>
+                <td>Predictive Lead Scoring (PLS)</td>
+                <td>Sales pipeline optimization</td>
+            </tr>
+        </table>
+
         <!-- ==================== SECTION 19: PRACTICAL EXAMPLES ==================== -->
         <h2 id="practical">19. Real-World Business Examples</h2>
 
@@ -8763,6 +8841,42 @@ Content-Type: text/xml
             <p><strong>Many2one chain:</strong> Work Order → Manufacturing Order → Bill of Materials → Product</p>
         </div>
 
+        <h3>Example 4: B2B Order Exchange (EDI)</h3>
+
+        <div class="diagram">
+            <h4>EDI Order Flow Between Companies</h4>
+            <div style="display: flex; justify-content: center; align-items: flex-start; flex-wrap: wrap; gap: 30px; margin-top: 20px;">
+                <div style="text-align: center;">
+                    <div class="diagram-box secondary">Buyer's Sale Order</div>
+                    <p style="font-size: 12px;">sale.order</p>
+                    <span class="arrow-down">↓</span>
+                    <div class="diagram-box" style="background: #60a5fa;">Export UBL XML</div>
+                </div>
+                <span class="arrow">→</span>
+                <div style="text-align: center;">
+                    <div class="diagram-box tertiary" style="font-size: 14px;">XML File</div>
+                    <p style="font-size: 12px;">Peppol BIS 3 format</p>
+                </div>
+                <span class="arrow">→</span>
+                <div style="text-align: center;">
+                    <div class="diagram-box" style="background: #60a5fa;">Import UBL XML</div>
+                    <span class="arrow-down">↓</span>
+                    <div class="diagram-box" style="background: #4ade80;">Supplier's Purchase Order</div>
+                    <p style="font-size: 12px;">purchase.order</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="info-box">
+            <h4>When to Use EDI</h4>
+            <ul>
+                <li>Regular orders between same trading partners</li>
+                <li>High-volume B2B transactions</li>
+                <li>Compliance with Peppol network requirements</li>
+                <li>Reducing manual data entry errors</li>
+            </ul>
+        </div>
+
         <!-- ==================== SECTION 20: COMMON MISTAKES ==================== -->
         <h2 id="mistakes">20. Common Mistakes & How to Avoid Them</h2>
 
@@ -8832,6 +8946,25 @@ Content-Type: text/xml
             <h4>Best Practice</h4>
             <p>For important fields (status, assigned user, amounts), add <code>tracking=True</code></p>
             <p>This creates an audit trail in the chatter showing who changed what and when.</p>
+        </div>
+
+        <h3>Mistake 6: Expecting AI to Replace PLS</h3>
+        <div class="comparison-grid">
+            <div class="comparison-card bad">
+                <h4>Wrong Assumption</h4>
+                <p>"Odoo 19 AI will predict lead conversion using GPT"</p>
+                <p><strong>Reality:</strong> Lead probability still uses Bayesian PLS algorithm, not LLM</p>
+            </div>
+            <div class="comparison-card good">
+                <h4>Correct Understanding</h4>
+                <p>AI in Odoo 19 is for:</p>
+                <ul>
+                    <li>Text generation (emails, descriptions)</li>
+                    <li>Document digitization (OCR)</li>
+                    <li>Chat assistants</li>
+                </ul>
+                <p>PLS remains statistical/Bayesian</p>
+            </div>
         </div>
 
         <h3>Quick Reference: Error Messages and Solutions</h3>
@@ -11400,7 +11533,7 @@ If it's not a vendor invoice, do nothing.</pre>
             <strong>Ready to Configure Odoo with Confidence!</strong>
         </p>
         <p style="text-align: center; font-size: 16px; color: #64748b; margin-bottom: 50px;">
-            <em>Document Version: 1.1 | Compatible with Odoo 17, 18, 19 | December 2025</em>
+            <em>Document Version: 1.2 | Compatible with Odoo 17, 18, 19 | December 2025</em>
         </p>
 
         <!-- Footer -->
@@ -11437,4 +11570,3 @@ If it's not a vendor invoice, do nothing.</pre>
     <script src="script.js" defer></script>
 </body>
 </html>
-

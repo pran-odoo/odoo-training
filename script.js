@@ -24,10 +24,15 @@ const sidebarOverlay = document.getElementById('sidebarOverlay');
 const currentSectionIndicator = document.getElementById('currentSection');
 const sections = document.querySelectorAll('h2[id]');
 const sectionsArray = Array.from(sections);
+const sectionOrderMap = new Map(sectionsArray.map((section, index) => [section.id, index]));
 
 // New feature elements
 const searchInput = document.getElementById('searchInput');
 const searchResults = document.getElementById('searchResults');
+const searchHighlightControls = document.getElementById('searchHighlightControls');
+const searchHighlightCount = document.getElementById('searchHighlightCount');
+const searchHighlightPrev = document.getElementById('searchHighlightPrev');
+const searchHighlightNext = document.getElementById('searchHighlightNext');
 const darkModeBtn = document.getElementById('darkModeBtn');
 const fontSmallBtn = document.getElementById('fontSmallBtn');
 const fontLargeBtn = document.getElementById('fontLargeBtn');
@@ -36,6 +41,14 @@ const keyboardHint = document.getElementById('keyboardHint');
 const resumeBanner = document.getElementById('resumeBanner');
 const resumeSection = document.getElementById('resumeSection');
 const resumeClose = document.getElementById('resumeClose');
+const bookmarksPanel = document.getElementById('bookmarksPanel');
+const bookmarksList = document.getElementById('bookmarksList');
+const bookmarksClear = document.getElementById('bookmarksClear');
+const focusMobileBar = document.getElementById('focusMobileBar');
+const focusExitMobile = document.getElementById('focusExitMobile');
+const focusSearchMobile = document.getElementById('focusSearchMobile');
+const focusFontDownMobile = document.getElementById('focusFontDownMobile');
+const focusFontUpMobile = document.getElementById('focusFontUpMobile');
 
 // Command palette elements
 const commandPalette = document.getElementById('commandPalette');
@@ -54,7 +67,8 @@ const STORAGE_KEYS = {
     lastSection: 'odoo_training_last_section',
     lastScrollPos: 'odoo_training_scroll_pos',
     spideyCursor: 'odoo_training_spidey_cursor',
-    focusMode: 'odoo_training_focus_mode'
+    focusMode: 'odoo_training_focus_mode',
+    bookmarks: 'odoo_training_bookmarks'
 };
 
 // Safe localStorage wrappers (handles Safari private mode, quota exceeded, etc.)
@@ -263,6 +277,22 @@ function fuzzyMatch(text, query) {
     return 0;
 }
 
+function getHeadingText(heading) {
+    if (!heading) return '';
+    const clone = heading.cloneNode(true);
+    clone.querySelectorAll('.section-action-wrapper, .section-share-wrapper').forEach(el => el.remove());
+    return clone.textContent.trim();
+}
+
+function slugify(text) {
+    return text
+        .toLowerCase()
+        .trim()
+        .replace(/['"]/g, '')
+        .replace(/[^a-z0-9]+/g, '-')
+        .replace(/^-+|-+$/g, '');
+}
+
 function buildSearchIndex() {
     searchIndex = [];
     const container = document.querySelector('.container');
@@ -271,11 +301,7 @@ function buildSearchIndex() {
     const allH2s = Array.from(container.querySelectorAll('h2[id]'));
 
     allH2s.forEach((h2, h2Index) => {
-        // Clone and remove share button to get clean title text
-        const h2Clone = h2.cloneNode(true);
-        const shareWrapper = h2Clone.querySelector('.section-share-wrapper');
-        if (shareWrapper) shareWrapper.remove();
-        const sectionTitle = h2Clone.textContent.trim();
+        const sectionTitle = getHeadingText(h2);
         const nextH2 = allH2s[h2Index + 1];
 
         // Get preview text from first paragraph after section heading
@@ -313,7 +339,7 @@ function buildSearchIndex() {
                 }
 
                 searchIndex.push({
-                    title: current.textContent.trim(),
+                    title: getHeadingText(current),
                     section: sectionTitle.substring(0, 35),
                     element: current,
                     type: 'heading',
@@ -344,7 +370,7 @@ function buildSearchIndex() {
 
             const innerHeadings = current.querySelectorAll ? current.querySelectorAll('h3, h4') : [];
             innerHeadings.forEach(heading => {
-                const title = heading.textContent.trim();
+                const title = getHeadingText(heading);
                 if (!searchIndex.some(item => item.title === title && item.section === sectionTitle.substring(0, 35))) {
                     searchIndex.push({
                         title: title,
@@ -471,6 +497,164 @@ function escapeRegex(string) {
     return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 }
 
+// ==================== IN-PAGE SEARCH HIGHLIGHTS ====================
+let searchHighlightElements = [];
+let searchHighlightIndex = -1;
+const SEARCH_HIGHLIGHT_SKIP_SELECTOR = [
+    'code', 'pre', 'kbd', 'svg', 'canvas',
+    'input', 'textarea', 'select', 'option', 'button',
+    '.sidebar', '.search-results', '.search-highlight-controls',
+    '.command-palette', '.settings-panel', '.toast', '.update-notification',
+    '.keyboard-hint', '.resume-banner', '.toolbar', '.section-nav',
+    '.mini-toc', '.section-action-wrapper', '.glossary-term',
+    '.diagram', '.quiz-card', '.bookmarks-panel', '.true-focus-container'
+].join(', ');
+
+function isSearchHighlightable(node, testRegex) {
+    if (!node || !node.parentElement) return false;
+    if (node.parentElement.closest(SEARCH_HIGHLIGHT_SKIP_SELECTOR)) return false;
+    if (!node.nodeValue || !testRegex.test(node.nodeValue)) return false;
+    return true;
+}
+
+function clearSearchHighlights() {
+    if (!searchHighlightElements.length) {
+        updateSearchHighlightControls();
+        return;
+    }
+
+    const parentsToNormalize = new Set();
+    searchHighlightElements.forEach(span => {
+        const parent = span.parentNode;
+        if (!parent) return;
+        parent.replaceChild(document.createTextNode(span.textContent), span);
+        parentsToNormalize.add(parent);
+    });
+    parentsToNormalize.forEach(parent => parent.normalize());
+
+    searchHighlightElements = [];
+    searchHighlightIndex = -1;
+    updateSearchHighlightControls();
+}
+
+function areSearchHighlightsEnabled() {
+    return !document.body.classList.contains('inpage-highlights-disabled');
+}
+
+function updateSearchHighlightControls() {
+    if (!searchHighlightControls || !searchHighlightCount || !searchHighlightPrev || !searchHighlightNext) return;
+    if (!areSearchHighlightsEnabled()) {
+        searchHighlightControls.classList.remove('visible');
+        searchHighlightCount.textContent = 'Highlights off';
+        searchHighlightPrev.disabled = true;
+        searchHighlightNext.disabled = true;
+        return;
+    }
+    const total = searchHighlightElements.length;
+    if (total === 0) {
+        searchHighlightControls.classList.remove('visible');
+        searchHighlightCount.textContent = '0 matches';
+        searchHighlightPrev.disabled = true;
+        searchHighlightNext.disabled = true;
+        return;
+    }
+
+    searchHighlightControls.classList.add('visible');
+    const current = searchHighlightIndex >= 0 ? searchHighlightIndex + 1 : 1;
+    searchHighlightCount.textContent = `${current} of ${total}`;
+    searchHighlightPrev.disabled = total < 2;
+    searchHighlightNext.disabled = total < 2;
+}
+
+function setActiveSearchHighlight(index) {
+    if (!searchHighlightElements.length) return;
+    searchHighlightElements.forEach(el => el.classList.remove('active'));
+    searchHighlightIndex = ((index % searchHighlightElements.length) + searchHighlightElements.length) % searchHighlightElements.length;
+    const active = searchHighlightElements[searchHighlightIndex];
+    active.classList.add('active');
+    active.scrollIntoView({ behavior: getScrollBehavior(), block: 'center' });
+    updateSearchHighlightControls();
+}
+
+function moveSearchHighlight(delta) {
+    if (!searchHighlightElements.length) return;
+    const nextIndex = searchHighlightIndex < 0 ? 0 : searchHighlightIndex + delta;
+    setActiveSearchHighlight(nextIndex);
+}
+
+function updateSearchHighlights(query) {
+    if (!areSearchHighlightsEnabled()) {
+        clearSearchHighlights();
+        return;
+    }
+    const trimmed = query.trim();
+    if (trimmed.length < 2) {
+        clearSearchHighlights();
+        return;
+    }
+
+    clearSearchHighlights();
+
+    const terms = trimmed.split(/\s+/).filter(term => term.length >= 2);
+    if (!terms.length) return;
+
+    const pattern = terms.map(term => escapeRegex(term)).join('|');
+    const testRegex = new RegExp(pattern, 'i');
+    const highlightRegex = new RegExp(pattern, 'gi');
+
+    const container = document.querySelector('.container');
+    if (!container) return;
+
+    const walker = document.createTreeWalker(container, NodeFilter.SHOW_TEXT, {
+        acceptNode(node) {
+            return isSearchHighlightable(node, testRegex) ? NodeFilter.FILTER_ACCEPT : NodeFilter.FILTER_REJECT;
+        }
+    });
+
+    const textNodes = [];
+    let currentNode;
+    while ((currentNode = walker.nextNode())) {
+        textNodes.push(currentNode);
+    }
+
+    textNodes.forEach(node => {
+        const text = node.nodeValue;
+        if (!text) return;
+        highlightRegex.lastIndex = 0;
+        if (!highlightRegex.test(text)) return;
+
+        const fragment = document.createDocumentFragment();
+        let lastIndex = 0;
+        highlightRegex.lastIndex = 0;
+        text.replace(highlightRegex, (match, offset) => {
+            if (offset > lastIndex) {
+                fragment.appendChild(document.createTextNode(text.slice(lastIndex, offset)));
+            }
+            const span = document.createElement('span');
+            span.className = 'content-search-highlight';
+            span.textContent = match;
+            fragment.appendChild(span);
+            searchHighlightElements.push(span);
+            lastIndex = offset + match.length;
+            return match;
+        });
+
+        if (lastIndex < text.length) {
+            fragment.appendChild(document.createTextNode(text.slice(lastIndex)));
+        }
+
+        if (node.parentNode) {
+            node.parentNode.replaceChild(fragment, node);
+        }
+    });
+
+    if (searchHighlightElements.length) {
+        setActiveSearchHighlight(0);
+    } else {
+        updateSearchHighlightControls();
+    }
+}
+
 // Click handler using event delegation
 searchResults.addEventListener('click', function(e) {
     const resultItem = e.target.closest('.search-result-item');
@@ -484,6 +668,7 @@ searchResults.addEventListener('click', function(e) {
             searchResults._results = null;
             searchInput.setAttribute('aria-expanded', 'false');
             searchInput.removeAttribute('aria-activedescendant');
+            clearSearchHighlights();
             closeMobileMenu();
         }
     }
@@ -494,14 +679,18 @@ let searchTimeout;
 searchInput.addEventListener('input', function() {
     clearTimeout(searchTimeout);
     searchTimeout = setTimeout(() => {
-        performSearch(this.value.trim());
-    }, 100);
+        const query = this.value.trim();
+        performSearch(query);
+        updateSearchHighlights(query);
+    }, 150);
 });
 
 // Also trigger search on focus if there's already text
 searchInput.addEventListener('focus', function() {
     if (this.value.trim().length >= 2) {
-        performSearch(this.value.trim());
+        const query = this.value.trim();
+        performSearch(query);
+        updateSearchHighlights(query);
     }
 });
 
@@ -512,6 +701,7 @@ searchInput.addEventListener('keydown', function(e) {
         searchResults._results = null;
         searchInput.setAttribute('aria-expanded', 'false');
         searchInput.removeAttribute('aria-activedescendant');
+        clearSearchHighlights();
         this.blur();
     }
     if (e.key === 'Enter') {
@@ -549,6 +739,13 @@ searchInput.addEventListener('keydown', function(e) {
         searchInput.setAttribute('aria-activedescendant', nextItem.id);
     }
 });
+
+if (searchHighlightPrev) {
+    searchHighlightPrev.addEventListener('click', () => moveSearchHighlight(-1));
+}
+if (searchHighlightNext) {
+    searchHighlightNext.addEventListener('click', () => moveSearchHighlight(1));
+}
 
 // ==================== DARK MODE ====================
 function toggleDarkMode() {
@@ -721,6 +918,7 @@ document.addEventListener('keydown', function(e) {
             searchResults._results = null;
             searchInput.setAttribute('aria-expanded', 'false');
             searchInput.removeAttribute('aria-activedescendant');
+            clearSearchHighlights();
             return;
         }
         // Priority 5: Disable spider cursor if active
@@ -824,6 +1022,7 @@ window.addEventListener('scroll', function() {
 
 // ==================== INITIALIZATION ====================
 function init() {
+    initMiniToc();
     buildSearchIndex();
     loadDarkMode();
     loadFontSize();
@@ -1348,6 +1547,21 @@ function commandFuzzyMatch(text, query) {
 function getCommands() {
     const isDark = document.body.classList.contains('dark-mode');
     const isFocusMode = document.body.classList.contains('focus-mode');
+    const bookmarkCommands = bookmarks
+        .map(id => {
+            const heading = document.getElementById(id);
+            if (!heading) return null;
+            const title = getHeadingText(heading);
+            return {
+                id: `bookmark-${id}`,
+                type: 'bookmark',
+                icon: '⭐',
+                title: `Bookmark: ${title}`,
+                action: () => navigateTo(id),
+                keywords: ['bookmark', title.toLowerCase()]
+            };
+        })
+        .filter(Boolean);
 
     return [
         // Actions (most commonly used)
@@ -1375,6 +1589,7 @@ function getCommands() {
         { id: 'nav-chatter', type: 'nav', icon: '📖', title: 'Go to: Chatter', action: () => navigateTo('chatter'), keywords: ['messages', 'followers', 'activities', 'discuss'] },
         { id: 'nav-email', type: 'nav', icon: '📖', title: 'Go to: Email', action: () => navigateTo('emails'), keywords: ['email', 'smtp', 'mail', 'template'] },
         { id: 'nav-context', type: 'nav', icon: '📖', title: 'Go to: Context', action: () => navigateTo('context'), keywords: ['context', 'default', 'parameter', 'active_id'] },
+        ...bookmarkCommands
     ];
 }
 
@@ -1705,6 +1920,36 @@ function initFocusMode() {
 
 initFocusMode();
 
+// Focus mode mobile bar controls
+if (focusExitMobile) {
+    focusExitMobile.addEventListener('click', () => {
+        if (focusModeBtn) {
+            focusModeBtn.click();
+        } else {
+            toggleFocusMode();
+        }
+    });
+}
+if (focusSearchMobile) {
+    focusSearchMobile.addEventListener('click', () => {
+        if (typeof openCommandPalette === 'function') {
+            openCommandPalette();
+        } else if (searchInput) {
+            searchInput.focus();
+        }
+    });
+}
+if (focusFontDownMobile) {
+    focusFontDownMobile.addEventListener('click', () => {
+        if (fontSmallBtn) fontSmallBtn.click();
+    });
+}
+if (focusFontUpMobile) {
+    focusFontUpMobile.addEventListener('click', () => {
+        if (fontLargeBtn) fontLargeBtn.click();
+    });
+}
+
 // ==================== INTERACTIVE QUIZ WITH PROGRESS ====================
 const QUIZ_STORAGE_KEY = 'odoo_training_quiz_progress';
 
@@ -1945,8 +2190,8 @@ function initSectionNavigation() {
         nav.className = 'section-nav';
         nav.setAttribute('aria-label', 'Section navigation');
 
-        const prevTitle = prevSection ? prevSection.textContent.trim() : '';
-        const nextTitle = nextSection ? nextSection.textContent.trim() : '';
+        const prevTitle = prevSection ? getHeadingText(prevSection) : '';
+        const nextTitle = nextSection ? getHeadingText(nextSection) : '';
 
         // Truncate long titles
         const truncate = (str, max = 40) => str.length > max ? str.substring(0, max) + '...' : str;
@@ -2208,6 +2453,7 @@ const DEFAULT_SETTINGS = {
     codeTheme: 'dark',
     highContrast: false,
     eyeComfort: false,
+    inPageHighlights: true,
     // Typography
     fontFamily: 'system',
     lineHeight: 'normal',
@@ -2294,6 +2540,14 @@ function applyPersonalization() {
     // Apply eye comfort mode (blue light filter)
     body.classList.toggle('eye-comfort', currentSettings.eyeComfort === true);
 
+    // Apply in-page search highlight preference
+    body.classList.toggle('inpage-highlights-disabled', currentSettings.inPageHighlights === false);
+    if (currentSettings.inPageHighlights === false) {
+        clearSearchHighlights();
+    } else if (searchInput && searchInput.value.trim().length >= 2) {
+        updateSearchHighlights(searchInput.value);
+    }
+
     // === TYPOGRAPHY ===
     // Apply font family
     const font = FONT_FAMILIES[currentSettings.fontFamily] || FONT_FAMILIES.system;
@@ -2361,6 +2615,7 @@ function updateSettingsUI() {
     updateOptionGroup('.code-theme-option', 'codetheme', currentSettings.codeTheme);
     updateToggle('#highContrastToggle', currentSettings.highContrast);
     updateToggle('#eyeComfortToggle', currentSettings.eyeComfort);
+    updateToggle('#searchHighlightsToggle', currentSettings.inPageHighlights);
 
     // Typography
     updateOptionGroup('.font-option', 'font', currentSettings.fontFamily);
@@ -2504,6 +2759,16 @@ function initPersonalization() {
         });
     }
 
+    // In-page search highlights toggle
+    const searchHighlightsToggle = document.getElementById('searchHighlightsToggle');
+    if (searchHighlightsToggle) {
+        searchHighlightsToggle.addEventListener('click', () => {
+            currentSettings.inPageHighlights = !currentSettings.inPageHighlights;
+            savePersonalization();
+            applyPersonalization();
+        });
+    }
+
     // === TYPOGRAPHY ===
     bindOptionGroup('.font-option', 'font', 'fontFamily');
     bindOptionGroup('.line-height-option', 'lineheight', 'lineHeight');
@@ -2534,20 +2799,130 @@ function initPersonalization() {
 
 initPersonalization();
 
+// ==================== BOOKMARKS ====================
+let bookmarks = [];
+
+function loadBookmarks() {
+    const saved = safeGetItem(STORAGE_KEYS.bookmarks);
+    if (saved) {
+        try {
+            const parsed = JSON.parse(saved);
+            if (Array.isArray(parsed)) {
+                bookmarks = parsed.filter(id => typeof id === 'string');
+            }
+        } catch (e) {
+            bookmarks = [];
+        }
+    }
+    updateBookmarksPanel();
+}
+
+function saveBookmarks() {
+    safeSetItem(STORAGE_KEYS.bookmarks, JSON.stringify(bookmarks));
+}
+
+function isBookmarked(sectionId) {
+    return bookmarks.includes(sectionId);
+}
+
+function sortBookmarksByDocumentOrder(ids) {
+    return ids.slice().sort((a, b) => {
+        const aIndex = sectionOrderMap.get(a) ?? 0;
+        const bIndex = sectionOrderMap.get(b) ?? 0;
+        return aIndex - bIndex;
+    });
+}
+
+function updateBookmarkButtons() {
+    document.querySelectorAll('.section-bookmark-btn').forEach(btn => {
+        const sectionId = btn.dataset.sectionId;
+        const heading = sectionId ? document.getElementById(sectionId) : null;
+        const title = heading ? getHeadingText(heading) : 'this section';
+        const bookmarked = sectionId ? isBookmarked(sectionId) : false;
+        btn.classList.toggle('bookmarked', bookmarked);
+        btn.setAttribute('aria-pressed', bookmarked ? 'true' : 'false');
+        btn.textContent = bookmarked ? '★' : '☆';
+        btn.title = bookmarked ? 'Remove bookmark' : 'Bookmark this section';
+        btn.setAttribute('aria-label', bookmarked ? `Remove bookmark: ${title}` : `Bookmark: ${title}`);
+    });
+}
+
+function updateBookmarksPanel() {
+    if (!bookmarksPanel || !bookmarksList) return;
+
+    const validBookmarks = bookmarks.filter(id => document.getElementById(id));
+    const sortedBookmarks = sortBookmarksByDocumentOrder(validBookmarks);
+
+    if (sortedBookmarks.length !== bookmarks.length ||
+        sortedBookmarks.some((id, index) => id !== bookmarks[index])) {
+        bookmarks = sortedBookmarks;
+        saveBookmarks();
+    }
+
+    bookmarksList.innerHTML = '';
+    bookmarks.forEach(id => {
+        const heading = document.getElementById(id);
+        if (!heading) return;
+        const title = getHeadingText(heading);
+        const li = document.createElement('li');
+        const link = document.createElement('a');
+        link.href = '#' + id;
+        link.textContent = title;
+        li.appendChild(link);
+        bookmarksList.appendChild(li);
+    });
+
+    bookmarksPanel.dataset.empty = bookmarks.length ? 'false' : 'true';
+    updateBookmarkButtons();
+}
+
+function toggleBookmark(sectionId) {
+    if (!sectionId) return;
+    if (isBookmarked(sectionId)) {
+        bookmarks = bookmarks.filter(id => id !== sectionId);
+    } else {
+        bookmarks = sortBookmarksByDocumentOrder([...bookmarks, sectionId]);
+    }
+    saveBookmarks();
+    updateBookmarksPanel();
+}
+
+function initBookmarksPanel() {
+    if (bookmarksClear) {
+        bookmarksClear.addEventListener('click', () => {
+            bookmarks = [];
+            saveBookmarks();
+            updateBookmarksPanel();
+        });
+    }
+
+    if (bookmarksList) {
+        bookmarksList.addEventListener('click', (e) => {
+            const link = e.target.closest('a');
+            if (link && window.innerWidth <= 1024) {
+                closeMobileMenu();
+            }
+        });
+    }
+}
+
 // ==================== SHAREABILITY FEATURES ====================
 function initShareability() {
-    // Add share button to each h2 section heading
+    // Add share/bookmark buttons to each h2 section heading
     const sections = document.querySelectorAll('h2[id]');
 
     sections.forEach(section => {
-        const shareWrapper = document.createElement('span');
-        shareWrapper.className = 'section-share-wrapper';
+        if (section.querySelector('.section-action-wrapper')) return;
+        const actionWrapper = document.createElement('span');
+        actionWrapper.className = 'section-action-wrapper';
+
+        const sectionTitle = getHeadingText(section);
 
         const shareBtn = document.createElement('button');
-        shareBtn.className = 'section-share-btn';
+        shareBtn.className = 'section-share-btn section-action-btn';
         shareBtn.innerHTML = '🔗';
         shareBtn.title = 'Copy link to this section';
-        shareBtn.setAttribute('aria-label', 'Copy link to ' + section.textContent);
+        shareBtn.setAttribute('aria-label', 'Copy link to ' + sectionTitle);
 
         shareBtn.addEventListener('click', (e) => {
             e.stopPropagation();
@@ -2561,10 +2936,105 @@ function initShareability() {
             copyToClipboard(url, shareBtn);
         });
 
-        shareWrapper.appendChild(shareBtn);
-        section.appendChild(shareWrapper);
+        const bookmarkBtn = document.createElement('button');
+        bookmarkBtn.className = 'section-bookmark-btn section-action-btn';
+        bookmarkBtn.dataset.sectionId = section.id;
+        bookmarkBtn.textContent = '☆';
+        bookmarkBtn.setAttribute('aria-pressed', 'false');
+        bookmarkBtn.title = 'Bookmark this section';
+        bookmarkBtn.setAttribute('aria-label', 'Bookmark: ' + sectionTitle);
+        bookmarkBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            toggleBookmark(section.id);
+        });
+
+        actionWrapper.appendChild(shareBtn);
+        actionWrapper.appendChild(bookmarkBtn);
+        section.appendChild(actionWrapper);
     });
 
+    updateBookmarkButtons();
+}
+
+function initMiniToc() {
+    const container = document.querySelector('.container');
+    if (!container) return;
+
+    const allH2s = Array.from(container.querySelectorAll('h2[id]'));
+    const existingIds = new Set(Array.from(container.querySelectorAll('[id]')).map(el => el.id));
+
+    allH2s.forEach(h2 => {
+        if (h2.nextElementSibling && h2.nextElementSibling.classList.contains('mini-toc')) return;
+
+        const items = [];
+        const seen = new Set();
+        let current = h2.nextElementSibling;
+        while (current && current.tagName !== 'H2') {
+            const candidates = [];
+            if (current.matches && current.matches('h3, h4')) {
+                candidates.push(current);
+            }
+            if (current.querySelectorAll) {
+                current.querySelectorAll('h3, h4').forEach(heading => candidates.push(heading));
+            }
+
+            candidates.forEach(heading => {
+                if (seen.has(heading)) return;
+                seen.add(heading);
+
+                let id = heading.id;
+                if (!id) {
+                    let baseId = slugify(heading.textContent);
+                    if (!baseId) baseId = h2.id + '-sub';
+                    let uniqueId = baseId;
+                    let counter = 1;
+                    while (existingIds.has(uniqueId)) {
+                        counter += 1;
+                        uniqueId = `${baseId}-${counter}`;
+                    }
+                    heading.id = uniqueId;
+                    existingIds.add(uniqueId);
+                    id = uniqueId;
+                }
+
+                items.push({
+                    id: id,
+                    text: heading.textContent.trim(),
+                    level: heading.tagName === 'H4' ? 4 : 3
+                });
+            });
+
+            current = current.nextElementSibling;
+        }
+
+        if (!items.length) return;
+
+        const toc = document.createElement('div');
+        toc.className = 'mini-toc';
+        toc.setAttribute('data-mini-toc', 'true');
+
+        const title = document.createElement('div');
+        title.className = 'mini-toc-title';
+        title.textContent = 'On this section';
+        toc.appendChild(title);
+
+        const list = document.createElement('ul');
+        list.className = 'mini-toc-list';
+        items.forEach(item => {
+            const li = document.createElement('li');
+            li.className = `mini-toc-item level-${item.level}`;
+            const link = document.createElement('a');
+            link.href = `#${item.id}`;
+            link.textContent = item.text;
+            li.appendChild(link);
+            list.appendChild(li);
+        });
+        toc.appendChild(list);
+
+        if (h2.parentNode) {
+            h2.parentNode.insertBefore(toc, h2.nextSibling);
+        }
+    });
 }
 
 function copyToClipboard(text, triggerElement) {
@@ -2623,7 +3093,9 @@ function showToast(message) {
     }, 2500);
 }
 
+initBookmarksPanel();
 initShareability();
+loadBookmarks();
 
 // ==================== SERVICE WORKER REGISTRATION ====================
 let waitingWorker = null;
@@ -3080,6 +3552,31 @@ const SyntaxHighlighter = {
     },
 
     /**
+     * Highlight a single code element
+     */
+    highlightCodeElement(codeElement) {
+        const pre = codeElement.parentElement;
+        if (!pre) return;
+
+        // Skip if already highlighted or inside a diagram
+        if (pre.dataset.highlighted === 'true') return;
+        if (pre.closest('.diagram')) return;
+
+        const originalCode = codeElement.textContent;
+
+        // Skip ASCII art
+        if (this.isAsciiArt(originalCode)) return;
+
+        const language = this.detectLanguage(originalCode);
+
+        if (language) {
+            codeElement.innerHTML = this.highlight(originalCode, language);
+            pre.dataset.language = language;
+            pre.dataset.highlighted = 'true';
+        }
+    },
+
+    /**
      * Initialize syntax highlighting for all code blocks
      */
     init() {
@@ -3094,24 +3591,7 @@ const SyntaxHighlighter = {
         }
 
         codeBlocks.forEach(codeElement => {
-            const pre = codeElement.parentElement;
-
-            // Skip if already highlighted or inside a diagram (handles fallback)
-            if (pre.dataset.highlighted === 'true') return;
-            if (pre.closest('.diagram')) return;
-
-            const originalCode = codeElement.textContent;
-
-            // Skip ASCII art
-            if (this.isAsciiArt(originalCode)) return;
-
-            const language = this.detectLanguage(originalCode);
-
-            if (language) {
-                codeElement.innerHTML = this.highlight(originalCode, language);
-                pre.dataset.language = language;
-                pre.dataset.highlighted = 'true';
-            }
+            this.highlightCodeElement(codeElement);
         });
     }
 };
@@ -3156,6 +3636,8 @@ const InteractiveDiagrams = {
         'owl components': ['web client', 'widgets', 'actions'],
         'odoo orm': ['models', 'fields', 'methods'],
     },
+    interactiveDiagrams: [],
+    docListenerAttached: false,
 
     /**
      * Get related boxes for a given box
@@ -3166,69 +3648,78 @@ const InteractiveDiagrams = {
     },
 
     /**
+     * Initialize a single diagram
+     */
+    initDiagram(diagram) {
+        if (!diagram || diagram.dataset.interactive === 'true') return;
+        const boxes = diagram.querySelectorAll('.diagram-box');
+
+        // Skip diagrams with no boxes or only one box
+        if (boxes.length < 2) return;
+
+        diagram.dataset.interactive = 'true';
+
+        // Track interactive diagrams for single document listener
+        this.interactiveDiagrams.push(diagram);
+
+        // Add interactive class
+        diagram.classList.add('diagram-interactive');
+
+        // Add reset button
+        const resetBtn = document.createElement('button');
+        resetBtn.className = 'diagram-reset';
+        resetBtn.textContent = 'Reset view';
+        resetBtn.setAttribute('aria-label', 'Reset diagram highlighting');
+        diagram.appendChild(resetBtn);
+
+        // Make boxes focusable for accessibility
+        boxes.forEach(box => {
+            box.setAttribute('tabindex', '0');
+            box.setAttribute('role', 'button');
+        });
+
+        // Handle box clicks
+        boxes.forEach(box => {
+            const handleActivate = (e) => {
+                e.stopPropagation();
+                this.highlightRelated(diagram, box);
+            };
+
+            box.addEventListener('click', handleActivate);
+            box.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    handleActivate(e);
+                }
+            });
+        });
+
+        // Reset button handler
+        resetBtn.addEventListener('click', () => {
+            this.resetDiagram(diagram);
+        });
+
+        // Single document listener for all diagrams
+        if (!this.docListenerAttached) {
+            document.addEventListener('click', (e) => {
+                this.interactiveDiagrams.forEach(activeDiagram => {
+                    if (!activeDiagram.contains(e.target)) {
+                        this.resetDiagram(activeDiagram);
+                    }
+                });
+            });
+            this.docListenerAttached = true;
+        }
+    },
+
+    /**
      * Initialize interactive diagrams
      */
     init() {
         const diagrams = document.querySelectorAll('.diagram');
-        const interactiveDiagrams = [];
-
         diagrams.forEach(diagram => {
-            const boxes = diagram.querySelectorAll('.diagram-box');
-
-            // Skip diagrams with no boxes or only one box
-            if (boxes.length < 2) return;
-
-            // Track interactive diagrams for single document listener
-            interactiveDiagrams.push(diagram);
-
-            // Add interactive class
-            diagram.classList.add('diagram-interactive');
-
-            // Add reset button
-            const resetBtn = document.createElement('button');
-            resetBtn.className = 'diagram-reset';
-            resetBtn.textContent = 'Reset view';
-            resetBtn.setAttribute('aria-label', 'Reset diagram highlighting');
-            diagram.appendChild(resetBtn);
-
-            // Make boxes focusable for accessibility
-            boxes.forEach(box => {
-                box.setAttribute('tabindex', '0');
-                box.setAttribute('role', 'button');
-            });
-
-            // Handle box clicks
-            boxes.forEach(box => {
-                const handleActivate = (e) => {
-                    e.stopPropagation();
-                    this.highlightRelated(diagram, box);
-                };
-
-                box.addEventListener('click', handleActivate);
-                box.addEventListener('keydown', (e) => {
-                    if (e.key === 'Enter' || e.key === ' ') {
-                        e.preventDefault();
-                        handleActivate(e);
-                    }
-                });
-            });
-
-            // Reset button handler
-            resetBtn.addEventListener('click', () => {
-                this.resetDiagram(diagram);
-            });
+            this.initDiagram(diagram);
         });
-
-        // Single document listener for all diagrams (instead of one per diagram)
-        if (interactiveDiagrams.length > 0) {
-            document.addEventListener('click', (e) => {
-                interactiveDiagrams.forEach(diagram => {
-                    if (!diagram.contains(e.target)) {
-                        this.resetDiagram(diagram);
-                    }
-                });
-            });
-        }
     },
 
     /**
@@ -3313,9 +3804,45 @@ const InteractiveDiagrams = {
     }
 };
 
+function initLazyWidgets() {
+    if (!('IntersectionObserver' in window)) {
+        SyntaxHighlighter.init();
+        InteractiveDiagrams.init();
+        return;
+    }
+
+    const codeObserver = new IntersectionObserver((entries, observer) => {
+        entries.forEach(entry => {
+            if (!entry.isIntersecting) return;
+            const pre = entry.target;
+            const codeElement = pre.querySelector('code');
+            if (codeElement) {
+                SyntaxHighlighter.highlightCodeElement(codeElement);
+            }
+            observer.unobserve(pre);
+        });
+    }, { rootMargin: '200px 0px' });
+
+    document.querySelectorAll('pre').forEach(pre => {
+        if (pre.closest('.diagram')) return;
+        codeObserver.observe(pre);
+    });
+
+    const diagramObserver = new IntersectionObserver((entries, observer) => {
+        entries.forEach(entry => {
+            if (!entry.isIntersecting) return;
+            InteractiveDiagrams.initDiagram(entry.target);
+            observer.unobserve(entry.target);
+        });
+    }, { rootMargin: '200px 0px' });
+
+    document.querySelectorAll('.diagram').forEach(diagram => {
+        diagramObserver.observe(diagram);
+    });
+}
+
 // Initialize syntax highlighting and interactive diagrams
-SyntaxHighlighter.init();
-InteractiveDiagrams.init();
+initLazyWidgets();
 
 init();
 });
