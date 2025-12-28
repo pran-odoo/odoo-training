@@ -104,6 +104,15 @@
   --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
   --text-base: 16px;
   --line-height-content: 1.75;
+
+  /* Apply base font size to html for rem calculations */
+  font-size: var(--text-base);
+}
+
+/* Global typography that responds to personalization */
+body {
+  font-family: var(--font-sans);
+  line-height: var(--line-height-content);
 }
 
 /* ============================================
