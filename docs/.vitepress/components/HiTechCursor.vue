@@ -78,7 +78,7 @@ function draw() {
   const isDark = document.documentElement.classList.contains('dark')
   const primaryColor = isDark ? '#818CF8' : '#4F46E5'
   const secondaryColor = isDark ? '#F97316' : '#EA580C'
-  const glowColor = isDark ? 'rgba(129, 140, 248, 0.3)' : 'rgba(79, 70, 229, 0.3)'
+  const trailColor = isDark ? 'rgba(129, 140, 248, 0.3)' : 'rgba(79, 70, 229, 0.3)'
 
   // Draw trail
   ctx.beginPath()
@@ -91,21 +91,10 @@ function draw() {
       ctx.lineTo(t.x, t.y)
     }
   }
-  ctx.strokeStyle = glowColor
+  ctx.strokeStyle = trailColor
   ctx.lineWidth = 2
   ctx.lineCap = 'round'
   ctx.stroke()
-
-  // Outer glow ring
-  const glowSize = 35 + Math.sin(time * 2) * 5
-  const gradient = ctx.createRadialGradient(x, y, 0, x, y, glowSize)
-  gradient.addColorStop(0, 'rgba(255, 255, 255, 0)')
-  gradient.addColorStop(0.5, glowColor)
-  gradient.addColorStop(1, 'rgba(255, 255, 255, 0)')
-  ctx.beginPath()
-  ctx.arc(x, y, glowSize, 0, Math.PI * 2)
-  ctx.fillStyle = gradient
-  ctx.fill()
 
   // Rotating crosshairs
   ctx.save()
@@ -171,20 +160,6 @@ function draw() {
     ctx.arc(px, py, size, 0, Math.PI * 2)
     ctx.fillStyle = '#fff'
     ctx.fill()
-  }
-
-  // Inner pulsing rings
-  for (let i = 0; i < 3; i++) {
-    const ringRadius = 8 + i * 6 + Math.sin(time * 3 - i * 0.5) * 2
-    const alpha = 0.4 - i * 0.1
-
-    ctx.beginPath()
-    ctx.arc(x, y, ringRadius, 0, Math.PI * 2)
-    ctx.strokeStyle = primaryColor
-    ctx.globalAlpha = alpha
-    ctx.lineWidth = 1
-    ctx.stroke()
-    ctx.globalAlpha = 1
   }
 
   // Center dot
