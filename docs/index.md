@@ -3,7 +3,6 @@ layout: home
 
 hero:
   name: "Odoo Functional Training"
-  text: "Master Odoo 19 Configuration"
   tagline: Free, comprehensive training for functional consultants
   actions:
     - theme: brand
