@@ -1,0 +1,1010 @@
+/**
+ * AURORA PREMIUM DESIGN SYSTEM
+ * Sophisticated, accessible, eye-comfortable design
+ * WCAG AA+ compliant with premium aesthetics
+ */
+
+/* ============================================
+   1. PREMIUM COLOR PALETTE - LIGHT MODE
+   Vibrant, professional design with rich colors
+   ============================================ */
+
+:root {
+  /* Primary Brand - Vibrant Indigo */
+  --vp-c-brand-1: #4338CA;
+  --vp-c-brand-2: #4F46E5;
+  --vp-c-brand-3: #6366F1;
+  --vp-c-brand-soft: rgba(67, 56, 202, 0.14);
+  --vp-c-brand-softer: rgba(67, 56, 202, 0.08);
+
+  /* Accent - Vibrant Orange */
+  --accent-primary: #C2410C;
+  --accent-secondary: #EA580C;
+  --accent-soft: rgba(194, 65, 12, 0.14);
+
+  /* Success/Tip - Rich Emerald */
+  --color-success: #047857;
+  --color-success-soft: rgba(4, 120, 87, 0.14);
+  --color-success-border: rgba(4, 120, 87, 0.5);
+  --color-success-text: #065F46;
+
+  /* Warning - Deep Amber */
+  --color-warning: #92400E;
+  --color-warning-soft: rgba(146, 64, 14, 0.14);
+  --color-warning-border: rgba(146, 64, 14, 0.5);
+  --color-warning-text: #78350F;
+
+  /* Danger - Bold Rose */
+  --color-danger: #B91C1C;
+  --color-danger-soft: rgba(185, 28, 28, 0.14);
+  --color-danger-border: rgba(185, 28, 28, 0.5);
+  --color-danger-text: #991B1B;
+
+  /* Info - Rich Sky */
+  --color-info: #0369A1;
+  --color-info-soft: rgba(3, 105, 161, 0.14);
+  --color-info-border: rgba(3, 105, 161, 0.5);
+  --color-info-text: #075985;
+
+  /* Surfaces - Clean white */
+  --vp-c-bg: #FFFFFF;
+  --vp-c-bg-soft: #F8FAFC;
+  --vp-c-bg-mute: #F1F5F9;
+  --vp-c-bg-alt: #FFFFFF;
+  --surface-elevated: #FFFFFF;
+  --surface-sunken: #F1F5F9;
+
+  /* Premium Glass Effect - Light mode */
+  --glass-bg: rgba(255, 255, 255, 0.92);
+  --glass-bg-elevated: rgba(255, 255, 255, 0.96);
+  --glass-border: rgba(15, 23, 42, 0.1);
+  --glass-border-light: rgba(15, 23, 42, 0.06);
+  --glass-blur: blur(20px) saturate(180%);
+
+  /* Text - Strong contrast for readability */
+  --vp-c-text-1: #0F172A;
+  --vp-c-text-2: #1E293B;
+  --vp-c-text-3: #475569;
+  --text-muted: #64748B;
+
+  /* Borders - Visible */
+  --vp-c-border: #CBD5E1;
+  --vp-c-border-hard: #94A3B8;
+  --vp-c-divider: #E2E8F0;
+  --vp-c-gutter: #F1F5F9;
+
+  /* Premium Shadows */
+  --shadow-xs: 0 1px 2px rgba(15, 23, 42, 0.06);
+  --shadow-sm: 0 2px 4px rgba(15, 23, 42, 0.08), 0 1px 2px rgba(15, 23, 42, 0.06);
+  --shadow-md: 0 4px 12px rgba(15, 23, 42, 0.1), 0 2px 4px rgba(15, 23, 42, 0.06);
+  --shadow-lg: 0 12px 32px rgba(15, 23, 42, 0.14), 0 4px 8px rgba(15, 23, 42, 0.08);
+  --shadow-xl: 0 24px 48px rgba(15, 23, 42, 0.18), 0 8px 16px rgba(15, 23, 42, 0.1);
+  --shadow-glow: 0 0 40px rgba(67, 56, 202, 0.2);
+  --shadow-inner: inset 0 2px 4px rgba(15, 23, 42, 0.06);
+
+  /* Code blocks */
+  --vp-code-block-bg: #1E293B;
+  --vp-code-line-highlight-color: rgba(67, 56, 202, 0.15);
+
+  /* Animation timings */
+  --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-in-out-smooth: cubic-bezier(0.45, 0, 0.55, 1);
+  --duration-fast: 150ms;
+  --duration-normal: 250ms;
+  --duration-slow: 400ms;
+
+  /* Border radius */
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 14px;
+  --radius-xl: 20px;
+  --radius-full: 9999px;
+}
+
+/* ============================================
+   2. PREMIUM COLOR PALETTE - DARK MODE
+   Deep, rich blacks with good contrast
+   ============================================ */
+
+.dark {
+  /* Primary Brand - Bright for dark backgrounds */
+  --vp-c-brand-1: #A5B4FC;
+  --vp-c-brand-2: #C7D2FE;
+  --vp-c-brand-3: #E0E7FF;
+  --vp-c-brand-soft: rgba(165, 180, 252, 0.18);
+  --vp-c-brand-softer: rgba(165, 180, 252, 0.1);
+
+  /* Accent - Bright Coral */
+  --accent-primary: #FDBA74;
+  --accent-secondary: #FED7AA;
+  --accent-soft: rgba(253, 186, 116, 0.18);
+
+  /* Status Colors - Bright for dark mode */
+  --color-success: #6EE7B7;
+  --color-success-soft: rgba(110, 231, 183, 0.18);
+  --color-success-border: rgba(110, 231, 183, 0.4);
+  --color-success-text: #A7F3D0;
+
+  --color-warning: #FCD34D;
+  --color-warning-soft: rgba(252, 211, 77, 0.18);
+  --color-warning-border: rgba(252, 211, 77, 0.4);
+  --color-warning-text: #FDE68A;
+
+  --color-danger: #FCA5A5;
+  --color-danger-soft: rgba(252, 165, 165, 0.18);
+  --color-danger-border: rgba(252, 165, 165, 0.4);
+  --color-danger-text: #FECACA;
+
+  --color-info: #7DD3FC;
+  --color-info-soft: rgba(125, 211, 252, 0.18);
+  --color-info-border: rgba(125, 211, 252, 0.4);
+  --color-info-text: #BAE6FD;
+
+  /* Surfaces - Rich deep blacks */
+  --vp-c-bg: #0F0F0F;
+  --vp-c-bg-soft: #1A1A1A;
+  --vp-c-bg-mute: #262626;
+  --vp-c-bg-alt: #0F0F0F;
+  --surface-elevated: #1A1A1A;
+  --surface-sunken: #0A0A0A;
+
+  /* Premium Glass Effect - Dark */
+  --glass-bg: rgba(15, 15, 15, 0.85);
+  --glass-bg-elevated: rgba(26, 26, 26, 0.92);
+  --glass-border: rgba(255, 255, 255, 0.12);
+  --glass-border-light: rgba(255, 255, 255, 0.06);
+
+  /* Text - Bright for readability */
+  --vp-c-text-1: #FAFAFA;
+  --vp-c-text-2: #E5E5E5;
+  --vp-c-text-3: #A3A3A3;
+  --text-muted: #737373;
+
+  /* Borders */
+  --vp-c-border: #404040;
+  --vp-c-border-hard: #525252;
+  --vp-c-divider: #333333;
+  --vp-c-gutter: #1A1A1A;
+
+  /* Premium Shadows */
+  --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.4);
+  --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.4), 0 1px 2px rgba(0, 0, 0, 0.5);
+  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.5), 0 2px 4px rgba(0, 0, 0, 0.4);
+  --shadow-lg: 0 12px 32px rgba(0, 0, 0, 0.6), 0 4px 8px rgba(0, 0, 0, 0.4);
+  --shadow-xl: 0 24px 48px rgba(0, 0, 0, 0.7), 0 8px 16px rgba(0, 0, 0, 0.5);
+  --shadow-glow: 0 0 60px rgba(165, 180, 252, 0.15);
+  --shadow-inner: inset 0 2px 4px rgba(0, 0, 0, 0.4);
+
+  /* Code blocks */
+  --vp-code-block-bg: #0A0A0A;
+}
+
+/* ============================================
+   3. PREMIUM GLASSMORPHISM
+   ============================================ */
+
+/* Navbar */
+.VPNav {
+  background: var(--glass-bg) !important;
+  backdrop-filter: var(--glass-blur) !important;
+  -webkit-backdrop-filter: var(--glass-blur) !important;
+  border-bottom: 1px solid var(--glass-border) !important;
+  box-shadow: var(--shadow-sm) !important;
+}
+
+/* Sidebar */
+.VPSidebar {
+  background: var(--glass-bg) !important;
+  backdrop-filter: var(--glass-blur) !important;
+  -webkit-backdrop-filter: var(--glass-blur) !important;
+  border-right: 1px solid var(--glass-border) !important;
+}
+
+/* Local nav */
+.VPLocalNav {
+  background: var(--glass-bg-elevated) !important;
+  backdrop-filter: var(--glass-blur) !important;
+  -webkit-backdrop-filter: var(--glass-blur) !important;
+  border-bottom: 1px solid var(--glass-border-light) !important;
+}
+
+/* ============================================
+   4. PREMIUM TYPOGRAPHY
+   ============================================ */
+
+.vp-doc {
+  font-feature-settings: 'kern' 1, 'liga' 1, 'calt' 1;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* H1 */
+.vp-doc h1 {
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  color: var(--vp-c-text-1);
+  position: relative;
+  padding-bottom: 0.5em;
+}
+
+.vp-doc h1::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 60px;
+  height: 4px;
+  background: linear-gradient(90deg, var(--vp-c-brand-1), var(--accent-primary));
+  border-radius: var(--radius-full);
+}
+
+/* H2 */
+.vp-doc h2 {
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: var(--vp-c-text-1);
+  margin-top: 2.5em;
+  padding-bottom: 0.4em;
+  border-bottom: 2px solid var(--vp-c-border);
+}
+
+/* H3 */
+.vp-doc h3 {
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  color: var(--vp-c-text-1);
+}
+
+/* Paragraph */
+.vp-doc p {
+  line-height: 1.75;
+  color: var(--vp-c-text-2);
+}
+
+/* ============================================
+   5. PREMIUM LINKS
+   ============================================ */
+
+.vp-doc a {
+  color: var(--vp-c-brand-1);
+  text-decoration: none;
+  font-weight: 500;
+  position: relative;
+  transition: color var(--duration-fast) var(--ease-out-expo);
+}
+
+.vp-doc a::after {
+  content: '';
+  position: absolute;
+  bottom: -2px;
+  left: 0;
+  width: 100%;
+  height: 2px;
+  background: var(--vp-c-brand-1);
+  transform: scaleX(0);
+  transform-origin: right;
+  transition: transform var(--duration-normal) var(--ease-out-expo);
+  border-radius: var(--radius-full);
+}
+
+.vp-doc a:hover {
+  color: var(--vp-c-brand-2);
+}
+
+.vp-doc a:hover::after {
+  transform: scaleX(1);
+  transform-origin: left;
+}
+
+/* ============================================
+   6. PREMIUM CONTAINERS (CUSTOM BLOCKS)
+   ============================================ */
+
+.vp-doc .custom-block {
+  border-radius: var(--radius-lg);
+  border-width: 1px;
+  border-style: solid;
+  padding: 1.25rem 1.5rem;
+  margin: 1.5rem 0;
+  transition: transform var(--duration-normal) var(--ease-out-expo),
+              box-shadow var(--duration-normal) var(--ease-out-expo);
+}
+
+.vp-doc .custom-block:hover {
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-md);
+}
+
+/* Ensure text inside blocks is readable */
+.vp-doc .custom-block p {
+  color: var(--vp-c-text-1);
+}
+
+/* Tip - Emerald */
+.vp-doc .custom-block.tip {
+  background: var(--color-success-soft);
+  border-color: var(--color-success-border);
+  border-left: 4px solid var(--color-success);
+}
+
+.vp-doc .custom-block.tip .custom-block-title {
+  color: var(--color-success-text);
+  font-weight: 700;
+}
+
+/* Warning - Amber */
+.vp-doc .custom-block.warning {
+  background: var(--color-warning-soft);
+  border-color: var(--color-warning-border);
+  border-left: 4px solid var(--color-warning);
+}
+
+.vp-doc .custom-block.warning .custom-block-title {
+  color: var(--color-warning-text);
+  font-weight: 700;
+}
+
+/* Danger - Rose */
+.vp-doc .custom-block.danger {
+  background: var(--color-danger-soft);
+  border-color: var(--color-danger-border);
+  border-left: 4px solid var(--color-danger);
+}
+
+.vp-doc .custom-block.danger .custom-block-title {
+  color: var(--color-danger-text);
+  font-weight: 700;
+}
+
+/* Info - Sky */
+.vp-doc .custom-block.info {
+  background: var(--color-info-soft);
+  border-color: var(--color-info-border);
+  border-left: 4px solid var(--color-info);
+}
+
+.vp-doc .custom-block.info .custom-block-title {
+  color: var(--color-info-text);
+  font-weight: 700;
+}
+
+/* Details */
+.vp-doc .custom-block.details {
+  background: var(--vp-c-bg-soft);
+  border-color: var(--vp-c-border);
+}
+
+.vp-doc .custom-block.details summary {
+  cursor: pointer;
+  font-weight: 600;
+  color: var(--vp-c-text-1);
+  padding: 0.5rem 0;
+  transition: color var(--duration-fast) var(--ease-out-expo);
+}
+
+.vp-doc .custom-block.details summary:hover {
+  color: var(--vp-c-brand-1);
+}
+
+.vp-doc .custom-block.details[open] summary {
+  margin-bottom: 0.75rem;
+  padding-bottom: 0.75rem;
+  border-bottom: 1px solid var(--vp-c-border);
+}
+
+/* ============================================
+   7. PREMIUM TABLES
+   ============================================ */
+
+.vp-doc table {
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  border: 1px solid var(--vp-c-border);
+  box-shadow: var(--shadow-sm);
+  margin: 1.5rem 0;
+}
+
+.vp-doc th {
+  background: var(--vp-c-bg-mute);
+  font-weight: 700;
+  color: var(--vp-c-text-1);
+  text-transform: uppercase;
+  font-size: 0.75rem;
+  letter-spacing: 0.05em;
+  padding: 0.875rem 1rem;
+  border-bottom: 2px solid var(--vp-c-brand-1);
+}
+
+.vp-doc td {
+  padding: 0.875rem 1rem;
+  border-top: 1px solid var(--vp-c-border);
+  color: var(--vp-c-text-1);
+}
+
+.vp-doc tr {
+  transition: background var(--duration-fast) var(--ease-out-expo);
+}
+
+.vp-doc tbody tr:hover {
+  background: var(--vp-c-brand-softer);
+}
+
+.vp-doc tbody tr:nth-child(even) {
+  background: var(--vp-c-bg-soft);
+}
+
+.vp-doc tbody tr:nth-child(even):hover {
+  background: var(--vp-c-brand-softer);
+}
+
+/* ============================================
+   8. PREMIUM CODE BLOCKS
+   ============================================ */
+
+.vp-doc div[class*="language-"] {
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-lg);
+  margin: 1.5rem 0;
+  overflow: hidden;
+  border: 1px solid var(--vp-c-border);
+}
+
+.dark .vp-doc div[class*="language-"] {
+  border-color: var(--vp-c-border);
+  box-shadow: var(--shadow-lg), var(--shadow-glow);
+}
+
+/* Inline code */
+.vp-doc :not(pre) > code {
+  background: var(--vp-c-bg-mute);
+  color: var(--vp-c-brand-1);
+  border-radius: var(--radius-sm);
+  padding: 0.2em 0.45em;
+  font-weight: 600;
+  font-size: 0.875em;
+  border: 1px solid var(--vp-c-border);
+}
+
+.dark .vp-doc :not(pre) > code {
+  background: #2D2D2D;
+  color: #E9D5FF;
+  border-color: #525252;
+}
+
+/* Inline code inside custom blocks - ensure visibility */
+.vp-doc .custom-block :not(pre) > code {
+  background: rgba(0, 0, 0, 0.15);
+  color: var(--vp-c-text-1);
+  border-color: rgba(0, 0, 0, 0.2);
+}
+
+.dark .vp-doc .custom-block :not(pre) > code {
+  background: rgba(0, 0, 0, 0.3);
+  color: #FAFAFA;
+  border-color: rgba(255, 255, 255, 0.15);
+}
+
+/* Inline code in tables */
+.vp-doc td :not(pre) > code {
+  background: rgba(0, 0, 0, 0.06);
+}
+
+.dark .vp-doc td :not(pre) > code {
+  background: rgba(255, 255, 255, 0.1);
+  color: #E9D5FF;
+}
+
+/* ============================================
+   9. PREMIUM SIDEBAR
+   ============================================ */
+
+.VPSidebarItem .text {
+  font-weight: 500;
+  color: var(--vp-c-text-2);
+  transition: color var(--duration-fast) var(--ease-out-expo);
+}
+
+.VPSidebarItem .link {
+  border-radius: var(--radius-md);
+  padding: 0.5rem 0.75rem;
+  margin: 2px 0;
+  transition: all var(--duration-fast) var(--ease-out-expo);
+}
+
+.VPSidebarItem .link:hover {
+  background: var(--vp-c-brand-soft);
+}
+
+.VPSidebarItem .link:hover .text {
+  color: var(--vp-c-brand-1);
+}
+
+.VPSidebarItem .link.active {
+  background: var(--vp-c-brand-soft);
+  position: relative;
+}
+
+.VPSidebarItem .link.active .text {
+  color: var(--vp-c-brand-1);
+  font-weight: 700;
+}
+
+.VPSidebarItem .link.active::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 3px;
+  height: 60%;
+  background: var(--vp-c-brand-1);
+  border-radius: var(--radius-full);
+}
+
+/* Section titles */
+.VPSidebarItem.level-0 > .item > .text {
+  font-weight: 700;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--vp-c-text-3);
+  margin-top: 1.5rem;
+}
+
+/* ============================================
+   10. PREMIUM BUTTONS
+   ============================================ */
+
+.VPButton {
+  border-radius: var(--radius-md) !important;
+  font-weight: 600 !important;
+  transition: all var(--duration-normal) var(--ease-out-expo) !important;
+}
+
+.VPButton.brand {
+  background: var(--vp-c-brand-1) !important;
+  color: white !important;
+  border: none !important;
+  box-shadow: var(--shadow-md), 0 0 0 0 var(--vp-c-brand-soft) !important;
+}
+
+.VPButton.brand:hover {
+  background: var(--vp-c-brand-2) !important;
+  transform: translateY(-2px) !important;
+  box-shadow: var(--shadow-lg), 0 0 0 4px var(--vp-c-brand-soft) !important;
+}
+
+.VPButton.alt {
+  background: var(--vp-c-bg-soft) !important;
+  border: 1px solid var(--vp-c-border) !important;
+  color: var(--vp-c-text-1) !important;
+}
+
+.VPButton.alt:hover {
+  background: var(--vp-c-bg-mute) !important;
+  border-color: var(--vp-c-border-hard) !important;
+  transform: translateY(-2px) !important;
+}
+
+/* ============================================
+   11. PREMIUM SCROLLBAR
+   ============================================ */
+
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--vp-c-border);
+  border-radius: var(--radius-full);
+  border: 3px solid transparent;
+  background-clip: content-box;
+  transition: background var(--duration-fast) var(--ease-out-expo);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--vp-c-text-3);
+  border: 3px solid transparent;
+  background-clip: content-box;
+}
+
+/* ============================================
+   12. PREMIUM BADGES
+   ============================================ */
+
+.VPBadge {
+  background: linear-gradient(135deg, var(--vp-c-brand-1), var(--accent-primary)) !important;
+  color: white !important;
+  font-weight: 600 !important;
+  border: none !important;
+  border-radius: var(--radius-full) !important;
+  padding: 0.2em 0.7em !important;
+  font-size: 0.75em !important;
+  box-shadow: var(--shadow-sm) !important;
+}
+
+.VPBadge.tip {
+  background: var(--color-success) !important;
+}
+
+.VPBadge.warning {
+  background: var(--color-warning) !important;
+}
+
+.VPBadge.danger {
+  background: var(--color-danger) !important;
+}
+
+/* ============================================
+   13. PREMIUM SEARCH
+   ============================================ */
+
+.VPLocalSearchBox .shell {
+  background: var(--glass-bg-elevated) !important;
+  backdrop-filter: var(--glass-blur) !important;
+  -webkit-backdrop-filter: var(--glass-blur) !important;
+  border: 1px solid var(--glass-border) !important;
+  border-radius: var(--radius-xl) !important;
+  box-shadow: var(--shadow-xl) !important;
+  overflow: hidden;
+}
+
+.VPLocalSearchBox .search-input {
+  font-size: 1.1rem;
+  color: var(--vp-c-text-1);
+}
+
+.VPLocalSearchBox .result {
+  border-radius: var(--radius-md);
+  transition: background var(--duration-fast) var(--ease-out-expo);
+}
+
+.VPLocalSearchBox .result.selected,
+.VPLocalSearchBox .result:hover {
+  background: var(--vp-c-brand-soft) !important;
+}
+
+/* ============================================
+   14. PREMIUM OUTLINE (TOC)
+   ============================================ */
+
+.VPDocOutlineItem .outline-link {
+  font-size: 0.875rem;
+  color: var(--vp-c-text-3);
+  transition: all var(--duration-fast) var(--ease-out-expo);
+  padding: 0.25rem 0;
+}
+
+.VPDocOutlineItem .outline-link:hover {
+  color: var(--vp-c-brand-1);
+}
+
+.VPDocOutlineItem .outline-link.active {
+  color: var(--vp-c-brand-1);
+  font-weight: 600;
+}
+
+/* ============================================
+   15. PREMIUM FOOTER
+   ============================================ */
+
+.VPFooter {
+  border-top: 1px solid var(--vp-c-border) !important;
+  background: var(--vp-c-bg-soft) !important;
+}
+
+.VPFooter .message,
+.VPFooter .copyright {
+  color: var(--vp-c-text-3);
+}
+
+/* ============================================
+   16. PREMIUM HOME PAGE
+   ============================================ */
+
+.VPHome .name {
+  font-weight: 800 !important;
+  letter-spacing: -0.03em;
+  background: linear-gradient(135deg, var(--vp-c-brand-1), var(--accent-primary)) !important;
+  -webkit-background-clip: text !important;
+  background-clip: text !important;
+  -webkit-text-fill-color: transparent !important;
+}
+
+.VPHome .tagline {
+  color: var(--vp-c-text-2) !important;
+  font-weight: 400;
+}
+
+.VPFeature {
+  background: var(--surface-elevated) !important;
+  border: 1px solid var(--vp-c-border) !important;
+  border-radius: var(--radius-lg) !important;
+  transition: all var(--duration-normal) var(--ease-out-expo) !important;
+}
+
+.VPFeature:hover {
+  transform: translateY(-4px) !important;
+  box-shadow: var(--shadow-lg) !important;
+  border-color: var(--vp-c-brand-1) !important;
+}
+
+.VPFeature .title {
+  color: var(--vp-c-text-1) !important;
+  font-weight: 600;
+}
+
+.VPFeature .details {
+  color: var(--vp-c-text-2) !important;
+}
+
+/* ============================================
+   17. PREMIUM BLOCKQUOTES
+   ============================================ */
+
+.vp-doc blockquote {
+  background: var(--vp-c-bg-mute);
+  border-left: 4px solid var(--vp-c-brand-1);
+  border-radius: 0 var(--radius-md) var(--radius-md) 0;
+  padding: 1rem 1.25rem;
+  margin: 1.5rem 0;
+  font-style: italic;
+}
+
+.vp-doc blockquote p {
+  margin: 0;
+  color: var(--vp-c-text-1);
+}
+
+/* ============================================
+   18. PREMIUM LISTS
+   ============================================ */
+
+.vp-doc ul,
+.vp-doc ol {
+  padding-left: 1.5rem;
+}
+
+.vp-doc li {
+  margin: 0.5rem 0;
+  line-height: 1.7;
+  color: var(--vp-c-text-2);
+}
+
+.vp-doc li::marker {
+  color: var(--vp-c-brand-1);
+}
+
+/* ============================================
+   19. PREMIUM IMAGES
+   ============================================ */
+
+.vp-doc img {
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-md);
+  transition: all var(--duration-normal) var(--ease-out-expo);
+}
+
+.vp-doc img:hover {
+  transform: scale(1.01);
+  box-shadow: var(--shadow-lg);
+}
+
+/* ============================================
+   20. SELECTION HIGHLIGHT
+   ============================================ */
+
+::selection {
+  background: var(--vp-c-brand-soft);
+  color: var(--vp-c-text-1);
+}
+
+/* ============================================
+   21. FOCUS STYLES (Accessibility)
+   ============================================ */
+
+:focus-visible {
+  outline: 2px solid var(--vp-c-brand-1);
+  outline-offset: 2px;
+  border-radius: var(--radius-sm);
+}
+
+/* ============================================
+   22. SMOOTH SCROLL
+   ============================================ */
+
+html {
+  scroll-behavior: smooth;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* ============================================
+   23. RESPONSIVE REFINEMENTS
+   ============================================ */
+
+@media (max-width: 768px) {
+  .VPSidebar,
+  .VPNav,
+  .VPLocalNav {
+    backdrop-filter: blur(24px) saturate(200%) !important;
+    -webkit-backdrop-filter: blur(24px) saturate(200%) !important;
+  }
+
+  .vp-doc h1 {
+    font-size: 2rem;
+  }
+
+  .vp-doc h2 {
+    font-size: 1.5rem;
+  }
+
+  .vp-doc .custom-block {
+    padding: 1rem 1.25rem;
+  }
+}
+
+/* ============================================
+   24. PRINT STYLES
+   ============================================ */
+
+@media print {
+  .vp-doc h1,
+  .vp-doc h2,
+  .vp-doc h3 {
+    color: #000 !important;
+    background: none !important;
+    -webkit-text-fill-color: #000 !important;
+  }
+
+  .vp-doc a {
+    color: #000 !important;
+    text-decoration: underline;
+  }
+
+  .vp-doc .custom-block {
+    border: 1px solid #ccc;
+    background: #f9f9f9 !important;
+  }
+
+  .VPNav,
+  .VPSidebar,
+  .VPLocalNav {
+    display: none !important;
+  }
+}
+
+/* ============================================
+   25. ARCHITECTURE DIAGRAMS (Mermaid)
+   ============================================ */
+
+.architecture-diagram {
+  margin: 2rem 0;
+}
+
+.architecture-diagram pre {
+  background: var(--vp-c-bg-soft) !important;
+  border: 1px solid var(--vp-c-border) !important;
+  border-radius: var(--radius-lg) !important;
+  padding: 1.5rem !important;
+  box-shadow: var(--shadow-md);
+}
+
+.dark .architecture-diagram pre {
+  background: var(--vp-c-bg-soft) !important;
+  box-shadow: var(--shadow-md), var(--shadow-glow);
+}
+
+/* ============================================
+   26. MERMAID DIAGRAM STYLING
+   ============================================ */
+
+.mermaid {
+  background: var(--vp-c-bg-soft);
+  border-radius: var(--radius-lg);
+  padding: 1.5rem;
+  margin: 1.5rem 0;
+  border: 1px solid var(--vp-c-border);
+}
+
+/* ============================================
+   27. HR / DIVIDERS
+   ============================================ */
+
+.vp-doc hr {
+  border: none;
+  height: 2px;
+  background: var(--vp-c-border);
+  margin: 2.5rem 0;
+}
+
+/* ============================================
+   28. KEYBOARD SHORTCUTS HINT
+   ============================================ */
+
+kbd {
+  background: var(--vp-c-bg-mute);
+  border: 1px solid var(--vp-c-border);
+  border-radius: var(--radius-sm);
+  padding: 0.15em 0.4em;
+  font-size: 0.85em;
+  font-family: inherit;
+  color: var(--vp-c-text-1);
+  box-shadow: var(--shadow-xs), inset 0 -2px 0 var(--vp-c-border-hard);
+}
+
+/* ============================================
+   29. STRONG / BOLD TEXT
+   ============================================ */
+
+.vp-doc strong {
+  color: var(--vp-c-text-1);
+  font-weight: 700;
+}
+
+/* ============================================
+   30. NAV MENU ITEMS
+   ============================================ */
+
+.VPNavBarMenuLink {
+  color: var(--vp-c-text-1) !important;
+  font-weight: 500;
+}
+
+.VPNavBarMenuLink:hover {
+  color: var(--vp-c-brand-1) !important;
+}
+
+.VPNavBarMenuLink.active {
+  color: var(--vp-c-brand-1) !important;
+  font-weight: 600;
+}
+
+/* ============================================
+   31. DARK MODE SPECIFIC ENHANCEMENTS
+   ============================================ */
+
+.dark .VPHome .name {
+  background: linear-gradient(135deg, var(--vp-c-brand-1), var(--accent-primary)) !important;
+  -webkit-background-clip: text !important;
+  background-clip: text !important;
+  -webkit-text-fill-color: transparent !important;
+}
+
+.dark .VPFeature:hover {
+  border-color: var(--vp-c-brand-1) !important;
+  box-shadow: var(--shadow-lg), 0 0 30px rgba(165, 180, 252, 0.1) !important;
+}
+
+.dark .vp-doc h2 {
+  border-bottom-color: var(--vp-c-border);
+}
+
+/* ============================================
+   32. LIGHT MODE SPECIFIC ENHANCEMENTS
+   ============================================ */
+
+:root .VPFeature:hover {
+  border-color: var(--vp-c-brand-1) !important;
+}
+
+:root .vp-doc h1::after {
+  background: linear-gradient(90deg, #4338CA, #C2410C);
+}

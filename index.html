@@ -92,9 +92,6 @@
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-    <!-- Spider Animation Canvas - Transparent overlay for cursor effect -->
-    <canvas id="spiderCanvas"></canvas>
-
     <!-- Skip Link for Accessibility -->
     <a href="#intro" class="skip-link">Skip to main content</a>
 
@@ -129,7 +126,7 @@
         <div class="keyboard-hint-row"><kbd>/</kbd> Focus search</div>
         <div class="keyboard-hint-row"><kbd>D</kbd> Toggle dark mode</div>
         <div class="keyboard-hint-row"><kbd>F</kbd> Toggle focus mode</div>
-        <div class="keyboard-hint-row"><kbd>Esc</kbd> Close / Disable spider</div>
+        <div class="keyboard-hint-row"><kbd>Esc</kbd> Close panels</div>
         <div class="keyboard-hint-row"><kbd>?</kbd> Show/hide shortcuts</div>
     </div>
 
@@ -342,7 +339,6 @@
             <button class="toolbar-btn" id="fontSmallBtn" title="Smaller text" aria-label="Decrease font size">A-</button>
             <button class="toolbar-btn" id="fontLargeBtn" title="Larger text" aria-label="Increase font size">A+</button>
             <button class="toolbar-btn" id="settingsBtn" title="Personalization settings" aria-label="Open settings" aria-expanded="false">⚙️</button>
-            <button class="toolbar-btn" id="spideyToggleBtn" title="Toggle spider cursor (Esc to disable)" aria-label="Toggle spider cursor" aria-pressed="false">🕷️</button>
             <button class="toolbar-btn" id="helpBtn" title="Keyboard shortcuts (?)" aria-label="Show keyboard shortcuts" aria-pressed="false">⌨️</button>
         </div>
 

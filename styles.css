@@ -2900,50 +2900,6 @@ body.dark-mode .quiz-explanation code {
     }
 }
 
-/* ==================== SPIDER ANIMATION ==================== */
-/* Hide default cursor globally when spider mode is active (desktop only via JS) */
-/* Exclude sidebar to ensure clicks work properly */
-body.spidey-mode,
-body.spidey-mode *:not(.sidebar):not(.sidebar *) {
-    cursor: none !important;
-}
-
-/* Keep pointer cursor on sidebar interactive elements in spidey mode */
-body.spidey-mode .sidebar,
-body.spidey-mode .sidebar * {
-    cursor: pointer;
-}
-
-body.spidey-mode .sidebar a,
-body.spidey-mode .sidebar button,
-body.spidey-mode .sidebar input {
-    cursor: pointer !important;
-}
-
-/* Spider animation canvas - transparent overlay */
-#spiderCanvas {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    pointer-events: none !important; /* Allow clicks to pass through */
-    z-index: 10000; /* Above everything so spider shows everywhere */
-    display: none; /* Hidden until spidey mode enabled */
-}
-
-/* Show canvas when spidey mode is active */
-body.spidey-mode #spiderCanvas {
-    display: block;
-}
-
-/* Hide spider canvas on print */
-@media print {
-    #spiderCanvas {
-        display: none !important;
-    }
-}
-
 /* ==================== REDUCED MOTION ==================== */
 @media (prefers-reduced-motion: reduce) {
     *, *::before, *::after {

@@ -1,0 +1,37 @@
+{
+  "name": "odoo-training",
+  "version": "1.0.0",
+  "description": "Odoo Framework Training for Functional Consultants",
+  "main": "script.js",
+  "directories": {
+    "doc": "docs"
+  },
+  "scripts": {
+    "docs:dev": "vitepress dev docs",
+    "docs:build": "vitepress build docs",
+    "docs:preview": "vitepress preview docs"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/pran-odoo/odoo-training.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "module",
+  "bugs": {
+    "url": "https://github.com/pran-odoo/odoo-training/issues"
+  },
+  "homepage": "https://github.com/pran-odoo/odoo-training#readme",
+  "devDependencies": {
+    "@types/three": "^0.182.0",
+    "@vite-pwa/vitepress": "^1.1.0",
+    "vite-plugin-pwa": "^1.2.0",
+    "vitepress": "^1.6.4",
+    "vue": "^3.5.26",
+    "workbox-window": "^7.4.0"
+  },
+  "dependencies": {
+    "three": "^0.182.0"
+  }
+}
