@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import DefaultTheme from 'vitepress/theme'
-import { useRoute } from 'vitepress'
+import { useRoute, useData } from 'vitepress'
 import { onMounted, watch, ref, onUnmounted } from 'vue'
 import { usePersonalization } from '../composables/usePersonalization'
 
@@ -18,7 +18,11 @@ import HiTechCursor from '../components/HiTechCursor.vue'
 
 const { Layout } = DefaultTheme
 const route = useRoute()
+const { frontmatter } = useData()
 const { settings, applySettings, toggleSetting } = usePersonalization()
+
+// Check if we're on the home page
+const isHomePage = () => frontmatter.value?.layout === 'home'
 
 const keyboardHelpRef = ref<InstanceType<typeof KeyboardHelp> | null>(null)
 
@@ -119,8 +123,8 @@ onUnmounted(() => {
 </script>
 
 <template>
-  <HiTechCursor v-if="route.path === '/'" />
-  <LiquidBackground v-if="route.path === '/'" />
+  <HiTechCursor v-if="isHomePage()" />
+  <LiquidBackground v-if="isHomePage()" />
   <Layout>
     <template #layout-top>
       <ProgressBar />
