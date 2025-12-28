@@ -15,8 +15,8 @@ export default withPwa(defineConfig({
     ['meta', { name: 'theme-color', media: '(prefers-color-scheme: dark)', content: '#0C0A09' }],
     ['meta', { name: 'mobile-web-app-capable', content: 'yes' }],
     ['meta', { name: 'apple-mobile-web-app-status-bar-style', content: 'black-translucent' }],
-    ['link', { rel: 'apple-touch-icon', sizes: '192x192', href: '/icons/icon-192.png' }],
-    ['link', { rel: 'icon', type: 'image/png', sizes: '32x32', href: '/icons/icon-32.png' }],
+    ['link', { rel: 'apple-touch-icon', sizes: '192x192', href: '/odoo-training/icons/icon-192.png' }],
+    ['link', { rel: 'icon', type: 'image/png', sizes: '32x32', href: '/odoo-training/icons/icon-32.png' }],
   ],
 
   themeConfig: {
@@ -121,17 +121,17 @@ export default withPwa(defineConfig({
       categories: ['education', 'productivity'],
       icons: [
         {
-          src: '/icons/icon-192.png',
+          src: 'icons/icon-192.png',
           sizes: '192x192',
           type: 'image/png'
         },
         {
-          src: '/icons/icon-512.png',
+          src: 'icons/icon-512.png',
           sizes: '512x512',
           type: 'image/png'
         },
         {
-          src: '/icons/icon-512.png',
+          src: 'icons/icon-512.png',
           sizes: '512x512',
           type: 'image/png',
           purpose: 'maskable'
