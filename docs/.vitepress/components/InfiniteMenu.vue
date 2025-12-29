@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted, computed } from 'vue'
-import { mat4, quat, vec2, vec3, vec4 } from 'gl-matrix'
+import { mat4, quat, vec2, vec3 } from 'gl-matrix'
 
 interface MenuItem {
   text: string
@@ -14,7 +14,6 @@ const props = defineProps<{
 }>()
 
 const canvasRef = ref<HTMLCanvasElement | null>(null)
-const textCanvasRef = ref<HTMLCanvasElement | null>(null)
 const activeItem = ref<MenuItem | null>(null)
 const isMoving = ref(false)
 
@@ -73,7 +72,7 @@ const categoryColors: Record<string, string> = {
 const activeCategory = computed(() => activeItem.value?.category || '')
 const activeCategoryColor = computed(() => categoryColors[activeCategory.value] || '#6366f1')
 
-// WebGL Shaders with electric glow effect
+// WebGL Shaders with electric glow
 const discVertShaderSource = `#version 300 es
 uniform mat4 uWorldMatrix;
 uniform mat4 uViewMatrix;
@@ -89,7 +88,7 @@ in mat4 aInstanceMatrix;
 
 out vec2 vUvs;
 out float vAlpha;
-out float vGlow;
+out vec3 vWorldPos;
 flat out int vInstanceId;
 
 void main() {
@@ -111,10 +110,9 @@ void main() {
     worldPosition.xyz = radius * normalize(worldPosition.xyz);
     gl_Position = uProjectionMatrix * uViewMatrix * worldPosition;
 
-    float zNorm = normalize(worldPosition.xyz).z;
-    vAlpha = smoothstep(0.5, 1., zNorm) * .9 + .1;
-    vGlow = sin(uTime * 3.0 + float(gl_InstanceID) * 0.5) * 0.3 + 0.7;
+    vAlpha = smoothstep(0.5, 1., normalize(worldPosition.xyz).z) * .9 + .1;
     vUvs = aModelUvs;
+    vWorldPos = worldPosition.xyz;
     vInstanceId = gl_InstanceID;
 }
 `
@@ -126,14 +124,12 @@ uniform int uItemCount;
 uniform vec3 uCategoryColors[10];
 uniform int uCategoryIndices[42];
 uniform float uTime;
-uniform sampler2D uTextAtlas;
-uniform int uAtlasSize;
 
 out vec4 outColor;
 
 in vec2 vUvs;
 in float vAlpha;
-in float vGlow;
+in vec3 vWorldPos;
 flat in int vInstanceId;
 
 void main() {
@@ -148,43 +144,20 @@ void main() {
         discard;
     }
 
-    // Electric glow edge effect
-    float edgeDist = 1.0 - dist;
-    float electricPulse = sin(uTime * 5.0 + dist * 10.0 + float(vInstanceId) * 0.3) * 0.5 + 0.5;
-    float glowIntensity = smoothstep(0.0, 0.3, edgeDist) * (1.0 - smoothstep(0.3, 0.5, edgeDist));
-    glowIntensity *= electricPulse * 0.5 + 0.5;
-
     // Inner disc with gradient
-    float innerGradient = 1.0 - dist * 0.4;
-    vec3 color = baseColor * innerGradient * 0.7;
+    float gradient = 1.0 - dist * 0.4;
+    vec3 color = baseColor * gradient * 0.8;
 
-    // Add electric glow at edges
-    vec3 glowColor = baseColor * 1.5;
-    color += glowColor * glowIntensity * vGlow;
+    // Electric pulse effect
+    float pulse = sin(uTime * 4.0 + float(vInstanceId) * 0.5) * 0.5 + 0.5;
 
-    // Sharp edge glow (electric border)
-    float edgeGlow = smoothstep(0.85, 0.95, dist) * (1.0 - smoothstep(0.95, 1.0, dist));
-    color += glowColor * edgeGlow * (electricPulse * 0.5 + 0.5) * 2.0;
+    // Glowing edge
+    float edgeGlow = smoothstep(0.7, 0.95, dist);
+    color += baseColor * edgeGlow * pulse * 1.5;
 
-    // Sample text from atlas
-    int cellsPerRow = uAtlasSize;
-    int cellX = itemIndex % cellsPerRow;
-    int cellY = itemIndex / cellsPerRow;
-    vec2 cellSize = vec2(1.0) / vec2(float(cellsPerRow));
-    vec2 cellOffset = vec2(float(cellX), float(cellY)) * cellSize;
-
-    // Scale UVs for text (center portion of disc)
-    vec2 textUv = (vUvs - 0.2) / 0.6; // Use center 60% of disc
-    textUv.y = 1.0 - textUv.y; // Flip Y
-    textUv = clamp(textUv, 0.0, 1.0);
-    textUv = textUv * cellSize + cellOffset;
-
-    vec4 textSample = texture(uTextAtlas, textUv);
-
-    // Blend text with shiny effect
-    float textShine = sin(uTime * 2.0 + vUvs.x * 5.0) * 0.2 + 0.8;
-    vec3 textColor = vec3(1.0) * textSample.a * textShine;
-    color = mix(color, textColor, textSample.a * 0.9);
+    // Sharp bright edge
+    float sharpEdge = smoothstep(0.9, 0.98, dist) * (1.0 - smoothstep(0.98, 1.0, dist));
+    color += vec3(1.0) * sharpEdge * 0.8;
 
     outColor = vec4(color, vAlpha);
 }
@@ -530,8 +503,6 @@ let discProgram: WebGLProgram | null = null
 let discVAO: WebGLVertexArrayObject | null = null
 let control: ArcballControl | null = null
 let animationId: number | null = null
-let textAtlasTexture: WebGLTexture | null = null
-let atlasSize = 6 // 6x6 grid for 30+ items
 
 const worldMatrix = mat4.create()
 const camera = {
@@ -578,41 +549,6 @@ let discLocations: {
   uCategoryColors: WebGLUniformLocation | null
   uCategoryIndices: WebGLUniformLocation | null
   uTime: WebGLUniformLocation | null
-  uTextAtlas: WebGLUniformLocation | null
-  uAtlasSize: WebGLUniformLocation | null
-}
-
-// Create text atlas texture
-function createTextAtlas(): HTMLCanvasElement {
-  const cellSize = 128
-  const canvas = document.createElement('canvas')
-  canvas.width = atlasSize * cellSize
-  canvas.height = atlasSize * cellSize
-  const ctx = canvas.getContext('2d')!
-
-  ctx.fillStyle = 'transparent'
-  ctx.fillRect(0, 0, canvas.width, canvas.height)
-
-  menuItems.forEach((item, i) => {
-    const cellX = i % atlasSize
-    const cellY = Math.floor(i / atlasSize)
-    const x = cellX * cellSize + cellSize / 2
-    const y = cellY * cellSize + cellSize / 2
-
-    // Draw icon
-    ctx.font = '32px serif'
-    ctx.textAlign = 'center'
-    ctx.textBaseline = 'middle'
-    ctx.fillStyle = '#ffffff'
-    ctx.fillText(item.icon || '📄', x, y - 15)
-
-    // Draw text
-    ctx.font = 'bold 14px system-ui, sans-serif'
-    ctx.fillStyle = '#ffffff'
-    ctx.fillText(item.text, x, y + 20)
-  })
-
-  return canvas
 }
 
 function initWebGL(canvas: HTMLCanvasElement) {
@@ -644,19 +580,7 @@ function initWebGL(canvas: HTMLCanvasElement) {
     uCategoryColors: gl.getUniformLocation(discProgram, 'uCategoryColors'),
     uCategoryIndices: gl.getUniformLocation(discProgram, 'uCategoryIndices'),
     uTime: gl.getUniformLocation(discProgram, 'uTime'),
-    uTextAtlas: gl.getUniformLocation(discProgram, 'uTextAtlas'),
-    uAtlasSize: gl.getUniformLocation(discProgram, 'uAtlasSize'),
   }
-
-  // Create text atlas texture
-  const textAtlasCanvas = createTextAtlas()
-  textAtlasTexture = gl.createTexture()
-  gl.bindTexture(gl.TEXTURE_2D, textAtlasTexture)
-  gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, textAtlasCanvas)
-  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE)
-  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE)
-  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR)
-  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR)
 
   const discGeo = new DiscGeometry(56, 1)
   discBuffers = {
@@ -863,17 +787,11 @@ function render() {
   )
 
   gl.uniform1i(discLocations.uItemCount, menuItems.length)
-  gl.uniform1f(discLocations.uTime, _frames * 0.016) // Time in seconds
-  gl.uniform1i(discLocations.uAtlasSize, atlasSize)
-
-  // Bind text atlas
-  gl.activeTexture(gl.TEXTURE0)
-  gl.bindTexture(gl.TEXTURE_2D, textAtlasTexture)
-  gl.uniform1i(discLocations.uTextAtlas, 0)
+  gl.uniform1f(discLocations.uTime, _frames * 0.016)
 
   // Category colors as vec3 array
   const categoryList = Object.keys(categoryColors)
-  const colorArray = new Float32Array(30) // 10 categories * 3 components
+  const colorArray = new Float32Array(30)
   categoryList.forEach((cat, i) => {
     const hex = categoryColors[cat]
     const r = parseInt(hex.slice(1, 3), 16) / 255
@@ -886,7 +804,7 @@ function render() {
   gl.uniform3fv(discLocations.uCategoryColors, colorArray)
 
   // Category indices for each menu item
-  const categoryIndices = new Int32Array(42) // max 42 items
+  const categoryIndices = new Int32Array(42)
   menuItems.forEach((item, i) => {
     categoryIndices[i] = categoryList.indexOf(item.category)
   })
@@ -910,7 +828,6 @@ function run(time = 0) {
 
 function handleClick() {
   if (!activeItem.value) return
-  // Navigate using VitePress router
   window.location.href = `/odoo-training${activeItem.value.link}`
 }
 
@@ -936,6 +853,12 @@ onUnmounted(() => {
       ref="canvasRef"
       class="infinite-menu-canvas"
     />
+
+    <!-- Large center display showing active topic -->
+    <div class="center-label" :class="{ hidden: isMoving }">
+      <span class="center-icon">{{ activeItem?.icon }}</span>
+      <span class="center-text">{{ activeItem?.text }}</span>
+    </div>
 
     <div v-if="activeItem" class="menu-info" :class="{ hidden: isMoving }">
       <div class="category-badge" :style="{ backgroundColor: activeCategoryColor, boxShadow: `0 0 20px ${activeCategoryColor}` }">
@@ -976,6 +899,52 @@ onUnmounted(() => {
 
 .infinite-menu-canvas:active {
   cursor: grabbing;
+}
+
+/* Center label showing current topic */
+.center-label {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  pointer-events: none;
+  text-align: center;
+  transition: opacity 0.3s ease;
+}
+
+.center-label.hidden {
+  opacity: 0;
+}
+
+.center-icon {
+  font-size: 3rem;
+  filter: drop-shadow(0 0 10px rgba(255, 255, 255, 0.5));
+}
+
+.center-text {
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: white;
+  text-shadow: 0 0 20px rgba(0, 0, 0, 0.8), 0 2px 4px rgba(0, 0, 0, 0.5);
+  background: linear-gradient(
+    120deg,
+    rgba(255,255,255,0.9) 0%,
+    rgba(255,255,255,1) 50%,
+    rgba(255,255,255,0.9) 100%
+  );
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  background-clip: text;
+  animation: textShine 3s linear infinite;
+}
+
+@keyframes textShine {
+  0% { background-position: 200% center; }
+  100% { background-position: -200% center; }
 }
 
 .menu-info {
@@ -1101,6 +1070,14 @@ onUnmounted(() => {
 
   .drag-hint {
     display: none;
+  }
+
+  .center-icon {
+    font-size: 2rem;
+  }
+
+  .center-text {
+    font-size: 1rem;
   }
 }
 </style>
