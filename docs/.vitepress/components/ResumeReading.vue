@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, onUnmounted } from 'vue'
 import { useRoute, useRouter } from 'vitepress'
 import { safeGetItem, safeSetItem, STORAGE_KEYS } from '../utils/localStorage'
 
@@ -80,6 +80,13 @@ onMounted(() => {
 
   // Save on page leave
   window.addEventListener('beforeunload', saveProgress)
+})
+
+onUnmounted(() => {
+  // Cleanup timeout and event listeners
+  if (saveTimeout) clearTimeout(saveTimeout)
+  window.removeEventListener('scroll', handleScroll)
+  window.removeEventListener('beforeunload', saveProgress)
 })
 </script>
 

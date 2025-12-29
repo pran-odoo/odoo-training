@@ -121,13 +121,13 @@ function getOptionClass(index: number) {
 }
 
 .quiz-option.correct {
-  border-color: var(--vp-c-green-1);
-  background: var(--vp-c-green-soft);
+  border-color: var(--color-success);
+  background: var(--color-success-soft);
 }
 
 .quiz-option.incorrect {
-  border-color: var(--vp-c-red-1);
-  background: var(--vp-c-red-soft);
+  border-color: var(--color-danger);
+  background: var(--color-danger-soft);
 }
 
 .quiz-option.dimmed {
