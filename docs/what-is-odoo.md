@@ -1,5 +1,44 @@
 # What is Odoo?
 
+**Odoo** (formerly known as **OpenERP** and originally **TinyERP**) is a comprehensive suite of open-source business applications. The name "Odoo" doesn't stand for anything - it was chosen in 2014 as a distinctive, easy-to-pronounce brand name when the company rebranded from OpenERP.
+
+## Overview
+
+Odoo is an all-in-one business management software that covers:
+
+- **CRM** - Customer Relationship Management
+- **Sales** - Quotations, orders, and customer portal
+- **Inventory** - Stock management, warehousing, and logistics
+- **Manufacturing** - MRP, work orders, and BOMs
+- **Accounting** - Invoicing, payments, and financial reports
+- **HR** - Employees, recruitment, expenses, and timesheets
+- **Website & eCommerce** - Website builder and online store
+- **Project Management** - Tasks, timesheets, and planning
+- **And 40+ more apps** - All integrated seamlessly
+
+### Editions
+
+| Edition | Description | Licensing |
+| :--- | :--- | :--- |
+| **Community** | Free and open-source with core features | LGPL v3 |
+| **Enterprise** | Adds advanced features like Studio, IoT, mobile apps | Proprietary (paid) |
+| **Odoo.sh** | Cloud hosting platform with CI/CD and staging | Subscription-based |
+| **Odoo Online** | SaaS version hosted by Odoo SA | Subscription-based |
+
+### A Brief History
+
+| Year | Milestone |
+| :--- | :--- |
+| 2005 | **TinyERP** founded by Fabien Pinckaers in Belgium |
+| 2009 | Renamed to **OpenERP** |
+| 2014 | Rebranded to **Odoo** with version 8 |
+| 2024 | **Odoo 18** released |
+| 2025 | **Odoo 19** (current version covered in this guide) |
+
+Odoo SA is headquartered in Belgium with offices worldwide and has over 12 million users globally.
+
+---
+
 ## The Technology Stack
 
 Understanding what powers Odoo helps you troubleshoot issues and communicate with developers.
