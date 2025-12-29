@@ -263,7 +263,7 @@ const filteredCommands = computed(() => {
     .sort((a, b) => b.score - a.score)
     .slice(0, 10)
 
-  // Always add a "Search content" option when there's a query
+  // Always add a "Search content" option at the TOP when there's a query
   const searchContentCmd: Command = {
     id: 'search-content',
     type: 'search',
@@ -273,7 +273,8 @@ const filteredCommands = computed(() => {
     keywords: []
   }
 
-  return [...matchedCommands, searchContentCmd]
+  // Put search content first so it's the default action
+  return [searchContentCmd, ...matchedCommands]
 })
 
 function open() {
@@ -341,27 +342,11 @@ function handleKeydown(e: KeyboardEvent) {
   }
 }
 
-// Reset selection when query changes - select "Search content" when no command matches well
-watch(query, (newQuery) => {
-  if (!newQuery) {
-    selectedIndex.value = 0
-    return
-  }
-
-  // If query doesn't match any commands well, pre-select "Search content"
-  nextTick(() => {
-    const cmds = filteredCommands.value
-    const hasGoodMatch = cmds.some(c => c.id !== 'search-content' && c.title.toLowerCase().includes(newQuery.toLowerCase()))
-    if (!hasGoodMatch && cmds.length > 0) {
-      // Select the search-content option
-      const searchIdx = cmds.findIndex(c => c.id === 'search-content')
-      if (searchIdx !== -1) {
-        selectedIndex.value = searchIdx
-      }
-    } else {
-      selectedIndex.value = 0
-    }
-  })
+// Reset selection when query changes - "Search content" is now always first
+watch(query, () => {
+  // "Search content" is always at index 0 when there's a query
+  // So just reset to 0 - this makes Enter immediately search content
+  selectedIndex.value = 0
 })
 
 onMounted(() => {
