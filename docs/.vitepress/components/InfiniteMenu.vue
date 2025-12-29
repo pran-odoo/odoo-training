@@ -17,6 +17,19 @@ const canvasRef = ref<HTMLCanvasElement | null>(null)
 const activeItem = ref<MenuItem | null>(null)
 const isMoving = ref(false)
 
+// Screen positions for disc labels
+interface DiscLabel {
+  x: number
+  y: number
+  text: string
+  icon: string
+  opacity: number
+  scale: number
+  category: string
+  depth: number
+}
+const discLabels = ref<DiscLabel[]>([])
+
 // Menu items from sidebar - using category colors
 const menuItems: MenuItem[] = [
   // Getting Started
@@ -733,6 +746,90 @@ function getVertexWorldPosition(index: number): vec3 {
   return vec3.transformQuat(vec3.create(), nearestVertexPos, control.orientation)
 }
 
+// Project 3D world position to 2D screen coordinates
+function projectToScreen(worldPos: vec3): { x: number, y: number, depth: number } | null {
+  if (!gl || !canvasRef.value) return null
+
+  const canvas = canvasRef.value
+
+  // Create view-projection matrix
+  const viewProjection = mat4.multiply(mat4.create(), camera.matrices.projection, camera.matrices.view)
+
+  // Transform to clip space (homogeneous coordinates)
+  const clipSpace = [
+    worldPos[0] * viewProjection[0] + worldPos[1] * viewProjection[4] + worldPos[2] * viewProjection[8] + viewProjection[12],
+    worldPos[0] * viewProjection[1] + worldPos[1] * viewProjection[5] + worldPos[2] * viewProjection[9] + viewProjection[13],
+    worldPos[0] * viewProjection[2] + worldPos[1] * viewProjection[6] + worldPos[2] * viewProjection[10] + viewProjection[14],
+    worldPos[0] * viewProjection[3] + worldPos[1] * viewProjection[7] + worldPos[2] * viewProjection[11] + viewProjection[15]
+  ]
+
+  // Behind camera check
+  if (clipSpace[3] <= 0) return null
+
+  // Perspective divide to get NDC
+  const ndcX = clipSpace[0] / clipSpace[3]
+  const ndcY = clipSpace[1] / clipSpace[3]
+  const ndcZ = clipSpace[2] / clipSpace[3]
+
+  // Convert NDC (-1 to 1) to screen coordinates
+  const x = (ndcX * 0.5 + 0.5) * canvas.clientWidth
+  const y = (1 - (ndcY * 0.5 + 0.5)) * canvas.clientHeight
+
+  return { x, y, depth: ndcZ }
+}
+
+// Update all disc labels with screen positions
+function updateDiscLabels() {
+  if (!control || !canvasRef.value) return
+
+  const labels: DiscLabel[] = []
+  const canvas = canvasRef.value
+
+  for (let i = 0; i < instancePositions.length; i++) {
+    const worldPos = vec3.transformQuat(vec3.create(), instancePositions[i], control.orientation)
+
+    // Only show labels for discs facing the camera (positive z means facing us)
+    if (worldPos[2] <= 0.3) continue // Threshold to hide edge discs
+
+    const screenPos = projectToScreen(worldPos)
+    if (!screenPos) continue
+
+    // Check if on screen with margin
+    const margin = 30
+    if (screenPos.x < margin || screenPos.x > canvas.clientWidth - margin ||
+        screenPos.y < margin || screenPos.y > canvas.clientHeight - margin) {
+      continue
+    }
+
+    const itemIndex = i % menuItems.length
+    const item = menuItems[itemIndex]
+
+    // Calculate opacity based on z position (front discs more visible)
+    // worldPos[2] ranges from -SPHERE_RADIUS to +SPHERE_RADIUS
+    const normalizedZ = Math.max(0, worldPos[2] / SPHERE_RADIUS) // 0 to 1
+    const opacity = 0.4 + normalizedZ * 0.6 // Range from 0.4 to 1.0
+
+    // Scale based on proximity to front
+    const scale = 0.7 + normalizedZ * 0.3 // Range from 0.7 to 1.0
+
+    labels.push({
+      x: screenPos.x,
+      y: screenPos.y,
+      text: item.text,
+      icon: item.icon || '',
+      opacity,
+      scale,
+      category: item.category,
+      depth: worldPos[2] // Store depth for z-index sorting
+    })
+  }
+
+  // Sort by depth so front labels render on top (higher z-index)
+  labels.sort((a, b) => (a as any).depth - (b as any).depth)
+
+  discLabels.value = labels
+}
+
 function animate(deltaTime: number) {
   if (!gl || !control) return
 
@@ -769,6 +866,9 @@ function animate(deltaTime: number) {
   gl.bindBuffer(gl.ARRAY_BUFFER, null)
 
   smoothRotationVelocity = control.rotationVelocity
+
+  // Update label positions for overlay
+  updateDiscLabels()
 }
 
 function render() {
@@ -863,6 +963,25 @@ onUnmounted(() => {
       class="infinite-menu-canvas"
     />
 
+    <!-- Disc labels overlay - always visible -->
+    <div class="disc-labels-container">
+      <div
+        v-for="(label, index) in discLabels"
+        :key="index"
+        class="disc-label"
+        :style="{
+          left: label.x + 'px',
+          top: label.y + 'px',
+          opacity: label.opacity,
+          transform: `translate(-50%, -50%) scale(${label.scale})`,
+          zIndex: index + 1,
+          '--category-color': categoryColors[label.category]
+        }"
+      >
+        <span class="disc-label-text">{{ label.text }}</span>
+      </div>
+    </div>
+
     <!-- Large center display showing active topic -->
     <div class="center-label" :class="{ hidden: isMoving }">
       <span class="center-icon">{{ activeItem?.icon }}</span>
@@ -908,6 +1027,42 @@ onUnmounted(() => {
 
 .infinite-menu-canvas:active {
   cursor: grabbing;
+}
+
+/* Disc labels overlay */
+.disc-labels-container {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.disc-label {
+  position: absolute;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+  white-space: nowrap;
+  transition: opacity 0.1s ease;
+}
+
+.disc-label-text {
+  font-size: 11px;
+  font-weight: 600;
+  color: white;
+  background: var(--category-color, rgba(99, 102, 241, 0.95));
+  padding: 4px 10px;
+  border-radius: 12px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(255, 255, 255, 0.1);
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+  backdrop-filter: blur(4px);
+  max-width: 120px;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 /* Center label showing current topic */
@@ -1102,6 +1257,12 @@ onUnmounted(() => {
   .menu-info {
     bottom: 16px;
     left: 16px;
+  }
+
+  .disc-label-text {
+    font-size: 9px;
+    padding: 3px 7px;
+    max-width: 90px;
   }
 
   .drag-hint {
