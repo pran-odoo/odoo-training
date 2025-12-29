@@ -11,8 +11,6 @@ const fontFamilies = ['system', 'serif', 'mono']
 const lineHeights = ['tight', 'normal', 'relaxed', 'loose']
 const linkStyles = ['always', 'hover', 'never']
 const densities = ['compact', 'default', 'relaxed']
-const sidebarWidths = ['narrow', 'default', 'wide']
-const contentWidths = ['narrow', 'default', 'wide', 'full']
 const animationLevels = ['normal', 'reduced', 'none']
 
 // Active tab
@@ -191,36 +189,6 @@ const activeTab = ref<'appearance' | 'typography' | 'layout' | 'accessibility'>(
                     @click="updateSetting('density', density)"
                   >
                     {{ density }}
-                  </button>
-                </div>
-              </div>
-
-              <div class="settings-group">
-                <label class="settings-label">Sidebar Width</label>
-                <div class="settings-options">
-                  <button
-                    v-for="width in sidebarWidths"
-                    :key="width"
-                    class="option-btn"
-                    :class="{ active: settings.sidebarWidth === width }"
-                    @click="updateSetting('sidebarWidth', width)"
-                  >
-                    {{ width }}
-                  </button>
-                </div>
-              </div>
-
-              <div class="settings-group">
-                <label class="settings-label">Content Width</label>
-                <div class="settings-options">
-                  <button
-                    v-for="width in contentWidths"
-                    :key="width"
-                    class="option-btn"
-                    :class="{ active: settings.contentWidth === width }"
-                    @click="updateSetting('contentWidth', width)"
-                  >
-                    {{ width }}
                   </button>
                 </div>
               </div>

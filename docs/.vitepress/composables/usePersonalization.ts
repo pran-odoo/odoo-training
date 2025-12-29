@@ -21,8 +21,6 @@ const DEFAULT_SETTINGS = {
   // Layout
   linkStyle: 'hover',        // always | hover | never
   density: 'default',        // compact | default | relaxed
-  sidebarWidth: 'default',   // narrow | default | wide
-  contentWidth: 'wide',      // narrow | default | wide | full
 
   // Motion
   animations: 'normal',      // normal | reduced | none
@@ -58,19 +56,6 @@ const LINE_HEIGHTS = {
   normal: '1.6',
   relaxed: '1.8',
   loose: '2.0'
-}
-
-const SIDEBAR_WIDTHS = {
-  narrow: '240px',
-  default: '280px',
-  wide: '320px'
-}
-
-const CONTENT_WIDTHS = {
-  narrow: '800px',
-  default: '1000px',
-  wide: '1200px',
-  full: 'none'
 }
 
 export type PersonalizationSettings = typeof DEFAULT_SETTINGS
@@ -140,9 +125,6 @@ function applySettings(): void {
   if (settings.density !== 'default') {
     body.classList.add(`density-${settings.density}`)
   }
-
-  root.style.setProperty('--sidebar-width', SIDEBAR_WIDTHS[settings.sidebarWidth as keyof typeof SIDEBAR_WIDTHS] || SIDEBAR_WIDTHS.default)
-  root.style.setProperty('--content-max-width', CONTENT_WIDTHS[settings.contentWidth as keyof typeof CONTENT_WIDTHS] || CONTENT_WIDTHS.wide)
 
   // Motion
   body.classList.remove('animations-normal', 'animations-reduced', 'animations-none')
