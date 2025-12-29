@@ -74,6 +74,7 @@ const navSections = [
   { id: 'nav-constraints', path: '/25-constraints', title: 'Constraints', keywords: ['constraint', 'validation', 'check'] },
   { id: 'nav-ai', path: '/26-ai', title: 'AI in Odoo 19', keywords: ['ai', 'artificial', 'intelligence', 'enterprise'] },
   { id: 'nav-edi', path: '/27-edi', title: 'EDI Order Exchange', keywords: ['edi', 'ubl', 'peppol', 'electronic'] },
+  { id: 'nav-removal', path: '/28-removal-strategies', title: 'Removal Strategies', keywords: ['removal', 'fifo', 'lifo', 'fefo', 'inventory', 'warehouse'] },
 ]
 
 function toggleDarkMode() {
@@ -110,12 +111,22 @@ function searchContent(searchQuery?: string) {
     searchBtn?.click()
     // Wait for modal to open, then fill in the query
     setTimeout(() => {
-      const searchInput = document.querySelector('.VPLocalSearchBox input') as HTMLInputElement
+      // VitePress 1.x uses .search-input class
+      const searchInput = document.querySelector('.VPLocalSearchBox .search-input, .VPLocalSearchBox input') as HTMLInputElement
       if (searchInput && q) {
-        searchInput.value = q
+        // Focus the input first
+        searchInput.focus()
+        // Set the value using Object.getOwnPropertyDescriptor to trigger Vue reactivity
+        const nativeInputValueSetter = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, 'value')?.set
+        if (nativeInputValueSetter) {
+          nativeInputValueSetter.call(searchInput, q)
+        } else {
+          searchInput.value = q
+        }
+        // Dispatch input event to trigger Vue's v-model update
         searchInput.dispatchEvent(new Event('input', { bubbles: true }))
       }
-    }, 100)
+    }, 150)
   })
 }
 
@@ -136,7 +147,11 @@ function cycleFontSize(direction: number) {
 
 function navigateTo(path: string) {
   close()
-  router.go(path)
+  // VitePress router.go expects a full path with base
+  // Using window.location for reliable navigation
+  const base = import.meta.env.BASE_URL || '/odoo-training/'
+  const fullPath = path.startsWith('/') ? `${base.replace(/\/$/, '')}${path}` : path
+  window.location.href = fullPath
 }
 
 // Command definitions - uses reactive state from VitePress and personalization
