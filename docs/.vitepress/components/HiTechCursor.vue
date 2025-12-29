@@ -30,7 +30,16 @@ function init() {
   ctx = canvas.getContext('2d', { alpha: true })
   if (!ctx) return
 
-  resize()
+  // Initial sizing
+  const dpr = Math.min(window.devicePixelRatio || 1, 2)
+  width = window.innerWidth
+  height = window.innerHeight
+  canvas.width = width * dpr
+  canvas.height = height * dpr
+  canvas.style.width = width + 'px'
+  canvas.style.height = height + 'px'
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0)
+
   window.addEventListener('resize', resize)
   document.addEventListener('mousemove', onMouseMove)
   document.addEventListener('mouseenter', () => mouse.active = true)
@@ -41,7 +50,7 @@ function init() {
 
 function resize() {
   const canvas = canvasRef.value
-  if (!canvas) return
+  if (!canvas || !ctx) return
 
   const dpr = Math.min(window.devicePixelRatio || 1, 2)
   width = window.innerWidth
@@ -50,9 +59,8 @@ function resize() {
   canvas.height = height * dpr
   canvas.style.width = width + 'px'
   canvas.style.height = height + 'px'
-  if (ctx) {
-    ctx.scale(dpr, dpr)
-  }
+  // Reset transform before applying new scale
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0)
 }
 
 function onMouseMove(e: MouseEvent) {
