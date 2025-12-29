@@ -2,6 +2,12 @@ import { defineConfig } from 'vitepress'
 import { withPwa } from '@vite-pwa/vitepress'
 
 export default withPwa(defineConfig({
+  vite: {
+    build: {
+      chunkSizeWarningLimit: 1000
+    }
+  },
+
   title: 'Odoo Functional Training',
   description: 'Free Odoo 19 training guide for functional consultants',
 

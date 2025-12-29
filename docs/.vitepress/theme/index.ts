@@ -1,5 +1,6 @@
 import DefaultTheme from 'vitepress/theme'
 import type { Theme } from 'vitepress'
+import { defineAsyncComponent } from 'vue'
 import Layout from './Layout.vue'
 import './custom.css'
 
@@ -16,7 +17,9 @@ import BackToTop from '../components/BackToTop.vue'
 import KeyboardHelp from '../components/KeyboardHelp.vue'
 import ResumeReading from '../components/ResumeReading.vue'
 import GlossaryProvider from '../components/GlossaryProvider.vue'
-import InfiniteMenu from '../components/InfiniteMenu.vue'
+
+// Lazy load heavy WebGL component
+const InfiniteMenu = defineAsyncComponent(() => import('../components/InfiniteMenu.vue'))
 
 export default {
   extends: DefaultTheme,
