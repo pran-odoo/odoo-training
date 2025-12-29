@@ -736,6 +736,15 @@ function getVertexWorldPosition(index: number): vec3 {
 function animate(deltaTime: number) {
   if (!gl || !control) return
 
+  // Add gentle idle rotation when not dragging
+  if (!control.isPointerDown && Math.abs(smoothRotationVelocity) < 0.01) {
+    const rotSpeed = deltaTime * 0.00015
+    const idleQuat = quat.create()
+    quat.setAxisAngle(idleQuat, [0.1, 1, 0.2], rotSpeed)
+    quat.multiply(control.orientation, idleQuat, control.orientation)
+    quat.normalize(control.orientation, control.orientation)
+  }
+
   control.update(deltaTime, TARGET_FRAME_DURATION)
 
   const positions = instancePositions.map(p => vec3.transformQuat(vec3.create(), p, control!.orientation))
