@@ -174,23 +174,88 @@ graph LR
 
 **Expiration Date Fields:**
 
-The Product Expiry module adds several date fields to lots:
+The Product Expiry module adds **four date fields** to lots/serial numbers. These dates are automatically calculated based on the product's configuration when a lot is created (typically at goods receipt).
 
-| Field | Purpose | Calculation |
-| :--- | :--- | :--- |
-| **Expiration Date** | Product is dangerous/unusable after this | Base date for all calculations |
-| **Best Before Date** | Quality deteriorates after this | Expiration - Use Time |
-| **Removal Date** | Remove from stock (used by FEFO) | Expiration - Removal Time |
-| **Alert Date** | Trigger warnings/alerts | Expiration - Alert Time |
+| Field | Technical Name | Purpose | When It's Used |
+| :--- | :--- | :--- | :--- |
+| **Expiration Date** | `expiration_date` | Product becomes dangerous/unusable | Legal compliance, cannot be sold after |
+| **Best Before Date** | `use_date` | Quality starts to deteriorate | Customer-facing date on packaging |
+| **Removal Date** | `removal_date` | Should be removed from sellable stock | **Used by FEFO** for picking order |
+| **Alert Date** | `alert_date` | Triggers warnings for action | Internal alerts, markdown decisions |
 
-**Configuration on Product:**
+::: info How Dates Are Calculated
+All dates are calculated **backwards from the Expiration Date** using the time values configured on the product template:
+
+```
+Receipt Date: January 1st
+Expiration Time on Product: 30 days
+→ Expiration Date = January 31st
+
+Use Time: 5 days → Best Before = January 26th (31 - 5)
+Removal Time: 7 days → Removal Date = January 24th (31 - 7)
+Alert Time: 10 days → Alert Date = January 21st (31 - 10)
+```
+:::
+
+**Product Template Configuration:**
+
+The time values are set on the **Product Template** form under the Inventory tab:
+
+| Field | Technical Name | Meaning | Example Value |
+| :--- | :--- | :--- | :--- |
+| **Expiration Time** | `expiration_time` | Days from receipt until product expires | 30 days |
+| **Best Before Time** | `use_time` | Days before expiration when quality declines | 5 days |
+| **Removal Time** | `removal_time` | Days before expiration to remove from stock | 7 days |
+| **Alert Time** | `alert_time` | Days before expiration to raise alerts | 10 days |
+
+**Real-World Example: Fresh Milk**
+
 ```
 Product: Fresh Milk
-├── Use Expiration Date: ✓
+├── Use Expiration Date: ✓ (enabled)
 ├── Expiration Time: 14 days
-├── Best Before Date: 7 days before expiration
-├── Removal Date: 2 days before expiration
-└── Alert Date: 5 days before expiration
+├── Best Before Time: 3 days (shows "Best Before" 3 days before expiry)
+├── Removal Time: 2 days (stop selling 2 days before expiry)
+└── Alert Time: 5 days (alert warehouse 5 days before expiry)
+
+Scenario: Milk received on January 1st
+├── Expiration Date: January 15th (14 days later)
+├── Best Before Date: January 12th (15 - 3)
+├── Removal Date: January 13th (15 - 2) ← FEFO uses this!
+└── Alert Date: January 10th (15 - 5)
+```
+
+::: warning Critical: FEFO Uses Removal Date, Not Expiration Date
+The FEFO strategy sorts by **Removal Date**, not Expiration Date. This is intentional:
+- Products should leave stock **before** they expire
+- Gives buffer time for shipping to customer
+- Customer receives product with remaining shelf life
+
+If Removal Date is not set, FEFO falls back to Expiration Date.
+:::
+
+**What Happens When Removal Date Passes?**
+
+When a lot's removal date passes:
+1. **Available Quantity becomes 0** - the lot is no longer considered "fresh"
+2. **Stock On Hand remains unchanged** - product is still physically there
+3. **Picking will skip this lot** - FEFO moves to next available lot
+4. **Alerts may trigger** - depending on your automation setup
+
+This prevents accidentally shipping products that are too close to expiration.
+
+**Timeline Visualization:**
+
+```
+Receipt                Alert    Removal  Best Before  Expiration
+   │                     │         │         │            │
+   ▼                     ▼         ▼         ▼            ▼
+───┬─────────────────────┬─────────┬─────────┬────────────┬───►
+   │                     │         │         │            │
+Day 1                  Day 10   Day 13    Day 12       Day 15
+                         │         │         │            │
+                    Raise alert  Stop    Quality      Product
+                    for review  selling  declines     expires
 ```
 
 **Use Cases:**
