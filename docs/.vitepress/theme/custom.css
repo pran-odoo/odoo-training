@@ -941,6 +941,48 @@ html {
   border: 1px solid var(--vp-c-border);
 }
 
+/* Mermaid diagram text colors for light mode */
+.mermaid .node rect,
+.mermaid .node polygon,
+.mermaid .node circle,
+.mermaid .node ellipse {
+  fill: var(--vp-c-bg) !important;
+  stroke: var(--vp-c-brand-1) !important;
+}
+
+.mermaid .nodeLabel,
+.mermaid .label,
+.mermaid text {
+  fill: var(--vp-c-text-1) !important;
+  color: var(--vp-c-text-1) !important;
+}
+
+.mermaid .edgeLabel {
+  background: var(--vp-c-bg) !important;
+  color: var(--vp-c-text-1) !important;
+}
+
+.mermaid .edgePath path {
+  stroke: var(--vp-c-text-3) !important;
+}
+
+.mermaid .cluster rect {
+  fill: var(--vp-c-bg-mute) !important;
+  stroke: var(--vp-c-border) !important;
+}
+
+/* Dark mode mermaid adjustments */
+.dark .mermaid .node rect,
+.dark .mermaid .node polygon,
+.dark .mermaid .node circle,
+.dark .mermaid .node ellipse {
+  fill: var(--vp-c-bg-soft) !important;
+}
+
+.dark .mermaid .edgeLabel {
+  background: var(--vp-c-bg-soft) !important;
+}
+
 /* ============================================
    27. HR / DIVIDERS
    ============================================ */
