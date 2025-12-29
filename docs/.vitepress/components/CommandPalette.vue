@@ -1,13 +1,14 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, onUnmounted, nextTick, watch } from 'vue'
-import { useRouter, useData } from 'vitepress'
+import { useData } from 'vitepress'
 import { usePersonalization } from '../composables/usePersonalization'
 
 interface Command {
   id: string
-  type: string
+  type: 'action' | 'page'
   icon: string
   title: string
+  description?: string
   shortcut?: string
   action: () => void
   keywords: string[]
@@ -17,7 +18,6 @@ const isOpen = ref(false)
 const query = ref('')
 const selectedIndex = ref(0)
 const inputRef = ref<HTMLInputElement | null>(null)
-const router = useRouter()
 const { isDark } = useData()
 const { settings, updateSetting, toggleSetting } = usePersonalization()
 
@@ -42,92 +42,52 @@ function trackCommand(id: string) {
   } catch (e) {}
 }
 
-// Navigation sections for command palette - matches sidebar routes in config.ts
-const navSections = [
-  { id: 'nav-home', path: '/', title: 'Home', keywords: ['home', 'start', 'index'] },
-  { id: 'nav-odoo', path: '/what-is-odoo', title: 'What is Odoo?', keywords: ['odoo', 'technology', 'stack'] },
-  { id: 'nav-intro', path: '/introduction', title: 'Introduction', keywords: ['intro', 'begin', 'philosophy'] },
-  { id: 'nav-models', path: '/01-models', title: 'Models', keywords: ['model', 'database', 'table', 'orm'] },
-  { id: 'nav-fields', path: '/02-field-types', title: 'Field Types', keywords: ['field', 'char', 'integer', 'boolean', 'selection'] },
-  { id: 'nav-relations', path: '/03-relationships', title: 'Relationships', keywords: ['many2one', 'one2many', 'many2many', 'relation'] },
-  { id: 'nav-storage', path: '/04-storage', title: 'Field Storage', keywords: ['store', 'storage', 'database'] },
-  { id: 'nav-computed', path: '/05-computed', title: 'Computed Fields', keywords: ['compute', 'depends', 'calculate'] },
-  { id: 'nav-related', path: '/06-related', title: 'Related Fields', keywords: ['related', 'delegation'] },
-  { id: 'nav-groupby', path: '/07-groupby', title: 'Group By & Stored Fields', keywords: ['group', 'aggregate', 'pivot'] },
-  { id: 'nav-views', path: '/08-views', title: 'Views', keywords: ['view', 'form', 'list', 'kanban', 'tree'] },
-  { id: 'nav-widgets', path: '/09-widgets', title: 'Widgets', keywords: ['widget', 'display', 'statusbar'] },
-  { id: 'nav-domains', path: '/10-domains', title: 'Domain Filters', keywords: ['domain', 'filter', 'search'] },
-  { id: 'nav-properties', path: '/11-field-properties', title: 'Field Properties', keywords: ['property', 'readonly', 'required', 'invisible'] },
-  { id: 'nav-access', path: '/12-access-rights', title: 'Access Rights', keywords: ['security', 'permission', 'acl', 'record rules'] },
-  { id: 'nav-workflows', path: '/13-workflows', title: 'Workflows', keywords: ['workflow', 'state', 'status'] },
-  { id: 'nav-actions', path: '/14-actions', title: 'Actions', keywords: ['action', 'automation', 'server'] },
-  { id: 'nav-integration', path: '/15-integration', title: 'Integration', keywords: ['api', 'xml-rpc', 'json-rpc', 'external'] },
-  { id: 'nav-studio', path: '/16-studio', title: 'Odoo Studio', keywords: ['studio', 'customize', 'no-code'] },
-  { id: 'nav-performance', path: '/17-performance', title: 'Performance', keywords: ['performance', 'speed', 'optimization'] },
-  { id: 'nav-decision', path: '/18-decision-matrix', title: 'Decision Matrix', keywords: ['decision', 'when', 'choose'] },
-  { id: 'nav-examples', path: '/19-examples', title: 'Real-World Examples', keywords: ['example', 'scenario', 'case'] },
-  { id: 'nav-mistakes', path: '/20-mistakes', title: 'Common Mistakes', keywords: ['mistake', 'error', 'avoid'] },
-  { id: 'nav-odoosh', path: '/21-odoosh', title: 'Odoo.sh', keywords: ['odoosh', 'cloud', 'hosting', 'deploy'] },
-  { id: 'nav-chatter', path: '/22-chatter', title: 'Chatter', keywords: ['chatter', 'message', 'follower', 'activity'] },
-  { id: 'nav-email', path: '/23-email', title: 'Email', keywords: ['email', 'mail', 'smtp', 'template'] },
-  { id: 'nav-context', path: '/24-context', title: 'Context', keywords: ['context', 'default', 'parameter'] },
-  { id: 'nav-constraints', path: '/25-constraints', title: 'Constraints', keywords: ['constraint', 'validation', 'check'] },
-  { id: 'nav-ai', path: '/26-ai', title: 'AI in Odoo 19', keywords: ['ai', 'artificial', 'intelligence', 'enterprise'] },
-  { id: 'nav-edi', path: '/27-edi', title: 'EDI Order Exchange', keywords: ['edi', 'ubl', 'peppol', 'electronic'] },
-  { id: 'nav-removal', path: '/28-removal-strategies', title: 'Removal Strategies', keywords: ['removal', 'fifo', 'lifo', 'fefo', 'inventory', 'warehouse'] },
+// All pages for search - comprehensive keywords for each section
+const pages = [
+  { id: 'page-home', path: '/', title: 'Home', description: 'Start page', keywords: ['home', 'start', 'index', 'welcome'] },
+  { id: 'page-odoo', path: '/what-is-odoo', title: 'What is Odoo?', description: 'Technology stack & history', keywords: ['odoo', 'technology', 'stack', 'postgresql', 'python', 'owl', 'history', 'openerp', 'tinyerp'] },
+  { id: 'page-intro', path: '/introduction', title: 'Introduction', description: 'Getting started guide', keywords: ['intro', 'begin', 'philosophy', 'start', 'guide'] },
+  { id: 'page-models', path: '/01-models', title: 'Models', description: 'Database tables & ORM', keywords: ['model', 'database', 'table', 'orm', 'res.partner', 'sale.order', 'product'] },
+  { id: 'page-fields', path: '/02-field-types', title: 'Field Types', description: 'Char, Integer, Selection...', keywords: ['field', 'char', 'integer', 'boolean', 'selection', 'text', 'float', 'date', 'datetime', 'binary', 'html'] },
+  { id: 'page-relations', path: '/03-relationships', title: 'Relationships', description: 'Many2one, One2many, Many2many', keywords: ['many2one', 'one2many', 'many2many', 'relation', 'foreign key', 'link', 'reference'] },
+  { id: 'page-storage', path: '/04-storage', title: 'Field Storage', description: 'Stored vs computed fields', keywords: ['store', 'storage', 'database', 'stored', 'transient'] },
+  { id: 'page-computed', path: '/05-computed', title: 'Computed Fields', description: 'Automatic calculations', keywords: ['compute', 'depends', 'calculate', 'automatic', 'formula', 'onchange'] },
+  { id: 'page-related', path: '/06-related', title: 'Related Fields', description: 'Field delegation', keywords: ['related', 'delegation', 'inherited', 'shortcut'] },
+  { id: 'page-groupby', path: '/07-groupby', title: 'Group By & Stored Fields', description: 'Aggregation & pivots', keywords: ['group', 'aggregate', 'pivot', 'sum', 'count', 'average', 'reporting'] },
+  { id: 'page-views', path: '/08-views', title: 'Views', description: 'Form, List, Kanban, Graph...', keywords: ['view', 'form', 'list', 'kanban', 'tree', 'graph', 'calendar', 'gantt', 'pivot', 'xml'] },
+  { id: 'page-widgets', path: '/09-widgets', title: 'Widgets', description: 'UI display components', keywords: ['widget', 'display', 'statusbar', 'progressbar', 'badge', 'image', 'priority'] },
+  { id: 'page-domains', path: '/10-domains', title: 'Domain Filters', description: 'Record filtering syntax', keywords: ['domain', 'filter', 'search', 'condition', 'operator', 'and', 'or'] },
+  { id: 'page-properties', path: '/11-field-properties', title: 'Field Properties', description: 'Readonly, required, invisible...', keywords: ['property', 'readonly', 'required', 'invisible', 'attrs', 'states', 'groups'] },
+  { id: 'page-access', path: '/12-access-rights', title: 'Access Rights', description: 'Security & permissions', keywords: ['security', 'permission', 'acl', 'record rules', 'ir.model.access', 'ir.rule', 'groups'] },
+  { id: 'page-workflows', path: '/13-workflows', title: 'Workflows', description: 'State management', keywords: ['workflow', 'state', 'status', 'stage', 'transition', 'draft', 'confirm', 'done'] },
+  { id: 'page-actions', path: '/14-actions', title: 'Actions', description: 'Server actions & automation', keywords: ['action', 'automation', 'server', 'scheduled', 'cron', 'automated', 'trigger'] },
+  { id: 'page-integration', path: '/15-integration', title: 'Integration', description: 'APIs & external systems', keywords: ['api', 'xml-rpc', 'json-rpc', 'external', 'integration', 'webhook', 'rest'] },
+  { id: 'page-studio', path: '/16-studio', title: 'Odoo Studio', description: 'No-code customization', keywords: ['studio', 'customize', 'no-code', 'low-code', 'drag', 'drop', 'enterprise'] },
+  { id: 'page-performance', path: '/17-performance', title: 'Performance', description: 'Optimization tips', keywords: ['performance', 'speed', 'optimization', 'slow', 'fast', 'cache', 'prefetch', 'index'] },
+  { id: 'page-decision', path: '/18-decision-matrix', title: 'Decision Matrix', description: 'When to use what', keywords: ['decision', 'when', 'choose', 'matrix', 'comparison', 'vs'] },
+  { id: 'page-examples', path: '/19-examples', title: 'Real-World Examples', description: 'Practical scenarios', keywords: ['example', 'scenario', 'case', 'real', 'practical', 'use case'] },
+  { id: 'page-mistakes', path: '/20-mistakes', title: 'Common Mistakes', description: 'Pitfalls to avoid', keywords: ['mistake', 'error', 'avoid', 'pitfall', 'wrong', 'common', 'bug'] },
+  { id: 'page-odoosh', path: '/21-odoosh', title: 'Odoo.sh', description: 'Cloud platform', keywords: ['odoosh', 'cloud', 'hosting', 'deploy', 'git', 'staging', 'production', 'paas'] },
+  { id: 'page-chatter', path: '/22-chatter', title: 'Chatter', description: 'Messages & activities', keywords: ['chatter', 'message', 'follower', 'activity', 'mail', 'thread', 'note', 'log'] },
+  { id: 'page-email', path: '/23-email', title: 'Email', description: 'SMTP & templates', keywords: ['email', 'mail', 'smtp', 'template', 'outgoing', 'incoming', 'fetchmail'] },
+  { id: 'page-context', path: '/24-context', title: 'Context', description: 'Parameters & defaults', keywords: ['context', 'default', 'parameter', 'lang', 'tz', 'active_id', 'search_default'] },
+  { id: 'page-constraints', path: '/25-constraints', title: 'Constraints', description: 'Validation rules', keywords: ['constraint', 'validation', 'check', 'sql', 'python', 'unique', 'required'] },
+  { id: 'page-ai', path: '/26-ai', title: 'AI in Odoo 19', description: 'Enterprise AI features', keywords: ['ai', 'artificial', 'intelligence', 'enterprise', 'machine learning', 'gpt', 'copilot'] },
+  { id: 'page-edi', path: '/27-edi', title: 'EDI Order Exchange', description: 'UBL & Peppol', keywords: ['edi', 'ubl', 'peppol', 'electronic', 'invoice', 'order', 'exchange', 'b2b'] },
+  { id: 'page-removal', path: '/28-removal-strategies', title: 'Removal Strategies', description: 'FIFO, LIFO, FEFO', keywords: ['removal', 'fifo', 'lifo', 'fefo', 'inventory', 'warehouse', 'stock', 'picking'] },
 ]
 
 function toggleDarkMode() {
-  // Use VitePress's built-in appearance toggle
-  // This properly persists the preference and syncs with useData().isDark
   const htmlEl = document.documentElement
   const currentIsDark = htmlEl.classList.contains('dark')
   htmlEl.classList.toggle('dark', !currentIsDark)
-  // Persist to localStorage to sync with VitePress
   localStorage.setItem('vitepress-theme-appearance', currentIsDark ? 'light' : 'dark')
   close()
 }
 
 function toggleFocusMode() {
-  // Use personalization state for persistence
   toggleSetting('focusMode')
   close()
-}
-
-function focusSearch() {
-  close()
-  nextTick(() => {
-    const searchBtn = document.querySelector('.VPNavBarSearch button') as HTMLButtonElement
-    searchBtn?.click()
-  })
-}
-
-function searchContent(searchQuery?: string) {
-  const q = searchQuery || query.value
-  close()
-  nextTick(() => {
-    // Open VitePress search modal
-    const searchBtn = document.querySelector('.VPNavBarSearch button') as HTMLButtonElement
-    searchBtn?.click()
-    // Wait for modal to open, then fill in the query
-    setTimeout(() => {
-      // VitePress 1.x uses .search-input class
-      const searchInput = document.querySelector('.VPLocalSearchBox .search-input, .VPLocalSearchBox input') as HTMLInputElement
-      if (searchInput && q) {
-        // Focus the input first
-        searchInput.focus()
-        // Set the value using Object.getOwnPropertyDescriptor to trigger Vue reactivity
-        const nativeInputValueSetter = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, 'value')?.set
-        if (nativeInputValueSetter) {
-          nativeInputValueSetter.call(searchInput, q)
-        } else {
-          searchInput.value = q
-        }
-        // Dispatch input event to trigger Vue's v-model update
-        searchInput.dispatchEvent(new Event('input', { bubbles: true }))
-      }
-    }, 150)
-  })
 }
 
 function showKeyboardHelp() {
@@ -147,149 +107,147 @@ function cycleFontSize(direction: number) {
 
 function navigateTo(path: string) {
   close()
-  // VitePress router.go expects a full path with base
-  // Using window.location for reliable navigation
   const base = import.meta.env.BASE_URL || '/odoo-training/'
   const fullPath = path.startsWith('/') ? `${base.replace(/\/$/, '')}${path}` : path
   window.location.href = fullPath
 }
 
-// Command definitions - uses reactive state from VitePress and personalization
-function getCommands(): Command[] {
-  const actionCommands: Command[] = [
-    {
-      id: 'dark-mode',
-      type: 'action',
-      icon: isDark.value ? '☀️' : '🌙',
-      title: isDark.value ? 'Switch to Light Mode' : 'Switch to Dark Mode',
-      shortcut: 'D',
-      action: toggleDarkMode,
-      keywords: ['dark', 'light', 'theme', 'mode', 'night']
-    },
-    {
-      id: 'focus-mode',
-      type: 'action',
-      icon: settings.focusMode ? '📄' : '📖',
-      title: settings.focusMode ? 'Exit Focus Mode' : 'Enter Focus Mode',
-      shortcut: 'F',
-      action: toggleFocusMode,
-      keywords: ['focus', 'reading', 'distraction', 'zen']
-    },
-    {
-      id: 'search',
-      type: 'action',
-      icon: '🔍',
-      title: 'Focus Search',
-      shortcut: '/',
-      action: focusSearch,
-      keywords: ['search', 'find', 'lookup']
-    },
-    {
-      id: 'top',
-      type: 'action',
-      icon: '⬆️',
-      title: 'Back to Top',
-      action: () => { close(); window.scrollTo({ top: 0, behavior: 'smooth' }) },
-      keywords: ['top', 'scroll', 'up', 'beginning']
-    },
-    {
-      id: 'keyboard',
-      type: 'action',
-      icon: '⌨️',
-      title: 'Keyboard Shortcuts',
-      shortcut: '?',
-      action: showKeyboardHelp,
-      keywords: ['keyboard', 'shortcuts', 'help', 'keys']
-    },
-    {
-      id: 'font-up',
-      type: 'action',
-      icon: '🔠',
-      title: 'Increase Font Size',
-      action: () => cycleFontSize(1),
-      keywords: ['font', 'larger', 'bigger', 'text', 'zoom']
-    },
-    {
-      id: 'font-down',
-      type: 'action',
-      icon: '🔡',
-      title: 'Decrease Font Size',
-      action: () => cycleFontSize(-1),
-      keywords: ['font', 'smaller', 'text', 'zoom']
-    },
-    {
-      id: 'print',
-      type: 'action',
-      icon: '🖨️',
-      title: 'Print Page',
-      action: () => { close(); window.print() },
-      keywords: ['print', 'pdf', 'export']
-    },
-  ]
-
-  const navCommands: Command[] = navSections.map(section => ({
-    id: section.id,
-    type: 'nav',
+// Action commands (non-navigation)
+const actionCommands: Command[] = [
+  {
+    id: 'dark-mode',
+    type: 'action',
+    icon: '🌓',
+    title: 'Toggle Dark Mode',
+    shortcut: 'D',
+    action: toggleDarkMode,
+    keywords: ['dark', 'light', 'theme', 'mode', 'night']
+  },
+  {
+    id: 'focus-mode',
+    type: 'action',
     icon: '📖',
-    title: `Go to: ${section.title}`,
-    action: () => navigateTo(section.path),
-    keywords: section.keywords
-  }))
+    title: 'Toggle Focus Mode',
+    shortcut: 'F',
+    action: toggleFocusMode,
+    keywords: ['focus', 'reading', 'distraction', 'zen']
+  },
+  {
+    id: 'top',
+    type: 'action',
+    icon: '⬆️',
+    title: 'Back to Top',
+    action: () => { close(); window.scrollTo({ top: 0, behavior: 'smooth' }) },
+    keywords: ['top', 'scroll', 'up', 'beginning']
+  },
+  {
+    id: 'keyboard',
+    type: 'action',
+    icon: '⌨️',
+    title: 'Keyboard Shortcuts',
+    shortcut: '?',
+    action: showKeyboardHelp,
+    keywords: ['keyboard', 'shortcuts', 'help', 'keys']
+  },
+  {
+    id: 'font-up',
+    type: 'action',
+    icon: '🔠',
+    title: 'Increase Font Size',
+    action: () => cycleFontSize(1),
+    keywords: ['font', 'larger', 'bigger', 'text', 'zoom']
+  },
+  {
+    id: 'font-down',
+    type: 'action',
+    icon: '🔡',
+    title: 'Decrease Font Size',
+    action: () => cycleFontSize(-1),
+    keywords: ['font', 'smaller', 'text', 'zoom']
+  },
+  {
+    id: 'print',
+    type: 'action',
+    icon: '🖨️',
+    title: 'Print Page',
+    action: () => { close(); window.print() },
+    keywords: ['print', 'pdf', 'export']
+  },
+]
 
-  return [...actionCommands, ...navCommands]
+// Page commands (navigation)
+const pageCommands: Command[] = pages.map(page => ({
+  id: page.id,
+  type: 'page',
+  icon: '📄',
+  title: page.title,
+  description: page.description,
+  action: () => navigateTo(page.path),
+  keywords: page.keywords
+}))
+
+const allCommands = [...actionCommands, ...pageCommands]
+
+// Fuzzy matching score
+function getMatchScore(text: string, query: string): number {
+  const textLower = text.toLowerCase()
+  const queryLower = query.toLowerCase()
+
+  if (textLower === queryLower) return 1000
+  if (textLower.startsWith(queryLower)) return 800
+  if (textLower.includes(queryLower)) return 600
+
+  // Word boundary match
+  const words = textLower.split(/\s+/)
+  for (const word of words) {
+    if (word.startsWith(queryLower)) return 500
+  }
+
+  return 0
 }
-
-// Computed that calls the function
-const commands = computed(() => getCommands())
 
 // Filtered and sorted commands
 const filteredCommands = computed(() => {
-  const allCommands = commands.value
-
-  if (!query.value) {
-    // Show recent commands first, then actions
+  if (!query.value.trim()) {
+    // Show recent commands first, then all actions
     const recent = recentCommands.value
       .map(id => allCommands.find(c => c.id === id))
       .filter((c): c is Command => c !== undefined)
-    const actions = allCommands.filter(c => c.type === 'action' && !recent.some(r => r.id === c.id))
-    return [...recent, ...actions].slice(0, 12)
+    const actions = actionCommands.filter(c => !recent.some(r => r.id === c.id))
+    return [...recent, ...actions].slice(0, 10)
   }
 
-  const q = query.value.toLowerCase()
-  const matchedCommands = allCommands
-    .map(cmd => {
-      let score = 0
-      const titleLower = cmd.title.toLowerCase()
+  const q = query.value.toLowerCase().trim()
 
-      // Exact match
-      if (titleLower === q) score = 1000
-      // Starts with query
-      else if (titleLower.startsWith(q)) score = 800
-      // Contains query
-      else if (titleLower.includes(q)) score = 600
-      // Keyword match
-      else if (cmd.keywords.some(k => k.includes(q))) score = 400
-      // Partial keyword match
-      else if (cmd.keywords.some(k => k.startsWith(q))) score = 300
+  const scored = allCommands.map(cmd => {
+    let score = 0
 
-      return { ...cmd, score }
-    })
-    .filter(cmd => cmd.score > 0)
-    .sort((a, b) => b.score - a.score)
-    .slice(0, 10)
+    // Title match (highest priority)
+    score = Math.max(score, getMatchScore(cmd.title, q))
 
-  // Always add a "Search content" option at the TOP when there's a query
-  const searchContentCmd: Command = {
-    id: 'search-content',
-    type: 'search',
-    icon: '🔎',
-    title: `Search content for "${query.value}"`,
-    action: () => searchContent(),
-    keywords: []
-  }
+    // Description match
+    if (cmd.description) {
+      score = Math.max(score, getMatchScore(cmd.description, q) * 0.8)
+    }
 
-  // Put search content first so it's the default action
-  return [searchContentCmd, ...matchedCommands]
+    // Keyword match
+    for (const keyword of cmd.keywords) {
+      const keywordScore = getMatchScore(keyword, q) * 0.7
+      score = Math.max(score, keywordScore)
+    }
+
+    return { ...cmd, score }
+  })
+  .filter(cmd => cmd.score > 0)
+  .sort((a, b) => {
+    // Sort by score, then by type (actions first), then alphabetically
+    if (b.score !== a.score) return b.score - a.score
+    if (a.type !== b.type) return a.type === 'action' ? -1 : 1
+    return a.title.localeCompare(b.title)
+  })
+  .slice(0, 12)
+
+  return scored
 })
 
 function open() {
@@ -357,10 +315,8 @@ function handleKeydown(e: KeyboardEvent) {
   }
 }
 
-// Reset selection when query changes - "Search content" is now always first
+// Reset selection when query changes
 watch(query, () => {
-  // "Search content" is always at index 0 when there's a query
-  // So just reset to 0 - this makes Enter immediately search content
   selectedIndex.value = 0
 })
 
@@ -392,16 +348,18 @@ onUnmounted(() => {
               v-model="query"
               type="text"
               class="command-input"
-              placeholder="Type a command or search..."
+              placeholder="Search pages or type a command..."
             />
-            <button class="command-close-mobile" @click="close" aria-label="Close">
-              ×
-            </button>
+            <kbd class="command-shortcut-hint">esc</kbd>
           </div>
 
           <div class="command-results">
-            <div v-if="!query && recentCommands.length > 0" class="command-group">
-              <div class="command-group-title">Recent</div>
+            <div v-if="filteredCommands.length === 0" class="command-empty">
+              No results found for "{{ query }}"
+            </div>
+
+            <div v-if="!query && recentCommands.length > 0" class="command-group-title">
+              Recent
             </div>
 
             <button
@@ -413,20 +371,21 @@ onUnmounted(() => {
               @mouseenter="selectedIndex = index"
             >
               <span class="command-icon">{{ cmd.icon }}</span>
-              <span class="command-title">{{ cmd.title }}</span>
+              <div class="command-content">
+                <span class="command-title">{{ cmd.title }}</span>
+                <span v-if="cmd.description" class="command-description">{{ cmd.description }}</span>
+              </div>
               <span v-if="cmd.shortcut" class="command-shortcut">
                 <kbd>{{ cmd.shortcut }}</kbd>
               </span>
-              <span class="command-type">{{ cmd.type }}</span>
+              <span class="command-type" :class="cmd.type">{{ cmd.type }}</span>
             </button>
-
           </div>
 
           <div class="command-footer">
             <span><kbd>↑↓</kbd> Navigate</span>
-            <span><kbd>↵</kbd> Select</span>
-            <span><kbd>Esc</kbd> Close</span>
-            <span v-if="query" class="footer-hint">Type to search content</span>
+            <span><kbd>↵</kbd> Open</span>
+            <span><kbd>esc</kbd> Close</span>
           </div>
         </div>
       </div>
@@ -438,11 +397,11 @@ onUnmounted(() => {
 .command-palette-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.5);
+  background: rgba(0, 0, 0, 0.6);
   display: flex;
   align-items: flex-start;
   justify-content: center;
-  padding-top: 15vh;
+  padding-top: 12vh;
   z-index: 9999;
   backdrop-filter: blur(4px);
 }
@@ -450,10 +409,10 @@ onUnmounted(() => {
 .command-palette {
   background: var(--vp-c-bg);
   border: 1px solid var(--vp-c-divider);
-  border-radius: 16px;
+  border-radius: 12px;
   width: 100%;
-  max-width: 600px;
-  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+  max-width: 560px;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.4);
   overflow: hidden;
   margin: 0 16px;
 }
@@ -462,7 +421,7 @@ onUnmounted(() => {
   display: flex;
   align-items: center;
   gap: 12px;
-  padding: 16px 20px;
+  padding: 14px 16px;
   border-bottom: 1px solid var(--vp-c-divider);
 }
 
@@ -476,7 +435,7 @@ onUnmounted(() => {
   flex: 1;
   border: none;
   background: transparent;
-  font-size: 16px;
+  font-size: 15px;
   color: var(--vp-c-text-1);
   outline: none;
 }
@@ -485,19 +444,27 @@ onUnmounted(() => {
   color: var(--vp-c-text-3);
 }
 
-.command-close-mobile {
-  display: none;
-  background: transparent;
-  border: none;
-  font-size: 24px;
+.command-shortcut-hint {
+  background: var(--vp-c-bg-soft);
+  border: 1px solid var(--vp-c-divider);
+  border-radius: 4px;
+  padding: 2px 6px;
+  font-size: 11px;
   color: var(--vp-c-text-3);
-  cursor: pointer;
+  font-family: inherit;
 }
 
 .command-results {
-  max-height: 400px;
+  max-height: 360px;
   overflow-y: auto;
-  padding: 8px;
+  padding: 6px;
+}
+
+.command-empty {
+  padding: 24px;
+  text-align: center;
+  color: var(--vp-c-text-3);
+  font-size: 14px;
 }
 
 .command-group-title {
@@ -514,7 +481,7 @@ onUnmounted(() => {
   align-items: center;
   gap: 12px;
   width: 100%;
-  padding: 12px 16px;
+  padding: 10px 12px;
   border: none;
   background: transparent;
   color: var(--vp-c-text-1);
@@ -522,7 +489,6 @@ onUnmounted(() => {
   text-align: left;
   border-radius: 8px;
   transition: background 0.1s;
-  font-size: 14px;
 }
 
 .command-item:hover,
@@ -535,21 +501,37 @@ onUnmounted(() => {
 }
 
 .command-icon {
-  font-size: 18px;
+  font-size: 16px;
   width: 24px;
   text-align: center;
   flex-shrink: 0;
 }
 
-.command-title {
+.command-content {
   flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.command-title {
+  font-size: 14px;
+  font-weight: 500;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.command-description {
+  font-size: 12px;
+  color: var(--vp-c-text-3);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
 .command-shortcut {
-  margin-right: 8px;
   flex-shrink: 0;
 }
 
@@ -563,33 +545,38 @@ onUnmounted(() => {
 }
 
 .command-type {
-  font-size: 11px;
-  color: var(--vp-c-text-3);
+  font-size: 10px;
+  padding: 2px 6px;
+  border-radius: 4px;
   text-transform: uppercase;
   letter-spacing: 0.5px;
   flex-shrink: 0;
 }
 
+.command-type.action {
+  background: var(--vp-c-indigo-soft);
+  color: var(--vp-c-indigo-1);
+}
+
+.command-type.page {
+  background: var(--vp-c-green-soft);
+  color: var(--vp-c-green-1);
+}
+
 .command-footer {
   display: flex;
-  gap: 20px;
-  padding: 12px 20px;
+  gap: 16px;
+  padding: 10px 16px;
   border-top: 1px solid var(--vp-c-divider);
   font-size: 12px;
   color: var(--vp-c-text-3);
-}
-
-.footer-hint {
-  margin-left: auto;
-  color: var(--vp-c-brand-1);
-  font-style: italic;
 }
 
 .command-footer kbd {
   background: var(--vp-c-bg-soft);
   border: 1px solid var(--vp-c-divider);
   border-radius: 4px;
-  padding: 2px 6px;
+  padding: 1px 5px;
   font-size: 11px;
   font-family: inherit;
   margin-right: 4px;
@@ -615,15 +602,19 @@ onUnmounted(() => {
   .command-palette {
     max-width: none;
     border-radius: 16px 16px 0 0;
-    max-height: 80vh;
+    max-height: 70vh;
     margin: 0;
   }
 
-  .command-close-mobile {
-    display: block;
+  .command-shortcut-hint {
+    display: none;
   }
 
   .command-footer {
+    display: none;
+  }
+
+  .command-description {
     display: none;
   }
 }
