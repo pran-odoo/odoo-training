@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted, computed } from 'vue'
-import { mat4, quat, vec2, vec3 } from 'gl-matrix'
+import { mat4, quat, vec2, vec3, vec4 } from 'gl-matrix'
 
 interface MenuItem {
   text: string
@@ -14,6 +14,7 @@ const props = defineProps<{
 }>()
 
 const canvasRef = ref<HTMLCanvasElement | null>(null)
+const textCanvasRef = ref<HTMLCanvasElement | null>(null)
 const activeItem = ref<MenuItem | null>(null)
 const isMoving = ref(false)
 
@@ -23,39 +24,39 @@ const menuItems: MenuItem[] = [
   { text: 'What is Odoo?', link: '/what-is-odoo', category: 'Getting Started', icon: '🚀' },
   { text: 'Introduction', link: '/introduction', category: 'Getting Started', icon: '📖' },
   // Core Concepts
-  { text: 'Understanding Models', link: '/01-models', category: 'Core Concepts', icon: '🏗️' },
+  { text: 'Models', link: '/01-models', category: 'Core Concepts', icon: '🏗️' },
   { text: 'Field Types', link: '/02-field-types', category: 'Core Concepts', icon: '📝' },
   { text: 'Relationships', link: '/03-relationships', category: 'Core Concepts', icon: '🔗' },
-  { text: 'Field Storage', link: '/04-storage', category: 'Core Concepts', icon: '💾' },
-  { text: 'Computed Fields', link: '/05-computed', category: 'Core Concepts', icon: '⚡' },
-  { text: 'Related Fields', link: '/06-related', category: 'Core Concepts', icon: '🔄' },
+  { text: 'Storage', link: '/04-storage', category: 'Core Concepts', icon: '💾' },
+  { text: 'Computed', link: '/05-computed', category: 'Core Concepts', icon: '⚡' },
+  { text: 'Related', link: '/06-related', category: 'Core Concepts', icon: '🔄' },
   { text: 'Group By', link: '/07-groupby', category: 'Core Concepts', icon: '📊' },
   // Views & UI
   { text: 'Views', link: '/08-views', category: 'Views & UI', icon: '👁️' },
   { text: 'Widgets', link: '/09-widgets', category: 'Views & UI', icon: '🧩' },
-  { text: 'Domain Filters', link: '/10-domains', category: 'Views & UI', icon: '🔍' },
-  { text: 'Field Properties', link: '/11-field-properties', category: 'Views & UI', icon: '⚙️' },
+  { text: 'Domains', link: '/10-domains', category: 'Views & UI', icon: '🔍' },
+  { text: 'Properties', link: '/11-field-properties', category: 'Views & UI', icon: '⚙️' },
   // Security & Workflows
   { text: 'Access Rights', link: '/12-access-rights', category: 'Security', icon: '🔐' },
   { text: 'Workflows', link: '/13-workflows', category: 'Security', icon: '🔄' },
   { text: 'Actions', link: '/14-actions', category: 'Security', icon: '▶️' },
   // Advanced
   { text: 'Integration', link: '/15-integration', category: 'Advanced', icon: '🔌' },
-  { text: 'Odoo Studio', link: '/16-studio', category: 'Advanced', icon: '🎨' },
+  { text: 'Studio', link: '/16-studio', category: 'Advanced', icon: '🎨' },
   { text: 'Performance', link: '/17-performance', category: 'Advanced', icon: '🚀' },
-  { text: 'Decision Matrix', link: '/18-decision-matrix', category: 'Advanced', icon: '📋' },
-  { text: 'Real-World Examples', link: '/19-examples', category: 'Advanced', icon: '💼' },
-  { text: 'Common Mistakes', link: '/20-mistakes', category: 'Advanced', icon: '⚠️' },
+  { text: 'Decision', link: '/18-decision-matrix', category: 'Advanced', icon: '📋' },
+  { text: 'Examples', link: '/19-examples', category: 'Advanced', icon: '💼' },
+  { text: 'Mistakes', link: '/20-mistakes', category: 'Advanced', icon: '⚠️' },
   // Platform & Tools
   { text: 'Odoo.sh', link: '/21-odoosh', category: 'Platform', icon: '☁️' },
   { text: 'Chatter', link: '/22-chatter', category: 'Platform', icon: '💬' },
   { text: 'Email', link: '/23-email', category: 'Platform', icon: '📧' },
   { text: 'Context', link: '/24-context', category: 'Platform', icon: '🎯' },
   { text: 'Constraints', link: '/25-constraints', category: 'Platform', icon: '🚧' },
-  { text: 'AI in Odoo 19', link: '/26-ai', category: 'Platform', icon: '🤖' },
-  { text: 'EDI Order Exchange', link: '/27-edi', category: 'Platform', icon: '📦' },
+  { text: 'AI', link: '/26-ai', category: 'Platform', icon: '🤖' },
+  { text: 'EDI', link: '/27-edi', category: 'Platform', icon: '📦' },
   // Inventory & Stock
-  { text: 'Removal Strategies', link: '/28-removal-strategies', category: 'Inventory', icon: '📤' },
+  { text: 'Removal', link: '/28-removal-strategies', category: 'Inventory', icon: '📤' },
 ]
 
 // Category colors
@@ -72,13 +73,14 @@ const categoryColors: Record<string, string> = {
 const activeCategory = computed(() => activeItem.value?.category || '')
 const activeCategoryColor = computed(() => categoryColors[activeCategory.value] || '#6366f1')
 
-// WebGL Shaders
+// WebGL Shaders with electric glow effect
 const discVertShaderSource = `#version 300 es
 uniform mat4 uWorldMatrix;
 uniform mat4 uViewMatrix;
 uniform mat4 uProjectionMatrix;
 uniform vec3 uCameraPosition;
 uniform vec4 uRotationAxisVelocity;
+uniform float uTime;
 
 in vec3 aModelPosition;
 in vec3 aModelNormal;
@@ -87,6 +89,7 @@ in mat4 aInstanceMatrix;
 
 out vec2 vUvs;
 out float vAlpha;
+out float vGlow;
 flat out int vInstanceId;
 
 void main() {
@@ -108,7 +111,9 @@ void main() {
     worldPosition.xyz = radius * normalize(worldPosition.xyz);
     gl_Position = uProjectionMatrix * uViewMatrix * worldPosition;
 
-    vAlpha = smoothstep(0.5, 1., normalize(worldPosition.xyz).z) * .9 + .1;
+    float zNorm = normalize(worldPosition.xyz).z;
+    vAlpha = smoothstep(0.5, 1., zNorm) * .9 + .1;
+    vGlow = sin(uTime * 3.0 + float(gl_InstanceID) * 0.5) * 0.3 + 0.7;
     vUvs = aModelUvs;
     vInstanceId = gl_InstanceID;
 }
@@ -120,19 +125,22 @@ precision highp float;
 uniform int uItemCount;
 uniform vec3 uCategoryColors[10];
 uniform int uCategoryIndices[42];
+uniform float uTime;
+uniform sampler2D uTextAtlas;
+uniform int uAtlasSize;
 
 out vec4 outColor;
 
 in vec2 vUvs;
 in float vAlpha;
+in float vGlow;
 flat in int vInstanceId;
 
 void main() {
     int itemIndex = vInstanceId % uItemCount;
     int categoryIndex = uCategoryIndices[itemIndex];
-    vec3 color = uCategoryColors[categoryIndex];
+    vec3 baseColor = uCategoryColors[categoryIndex];
 
-    // Create circular disc with gradient
     vec2 centered = vUvs * 2.0 - 1.0;
     float dist = length(centered);
 
@@ -140,13 +148,43 @@ void main() {
         discard;
     }
 
-    // Add subtle gradient from center
-    float gradient = 1.0 - dist * 0.3;
-    color *= gradient;
+    // Electric glow edge effect
+    float edgeDist = 1.0 - dist;
+    float electricPulse = sin(uTime * 5.0 + dist * 10.0 + float(vInstanceId) * 0.3) * 0.5 + 0.5;
+    float glowIntensity = smoothstep(0.0, 0.3, edgeDist) * (1.0 - smoothstep(0.3, 0.5, edgeDist));
+    glowIntensity *= electricPulse * 0.5 + 0.5;
 
-    // Add edge glow
-    float edge = smoothstep(0.8, 1.0, dist);
-    color += vec3(0.2) * edge;
+    // Inner disc with gradient
+    float innerGradient = 1.0 - dist * 0.4;
+    vec3 color = baseColor * innerGradient * 0.7;
+
+    // Add electric glow at edges
+    vec3 glowColor = baseColor * 1.5;
+    color += glowColor * glowIntensity * vGlow;
+
+    // Sharp edge glow (electric border)
+    float edgeGlow = smoothstep(0.85, 0.95, dist) * (1.0 - smoothstep(0.95, 1.0, dist));
+    color += glowColor * edgeGlow * (electricPulse * 0.5 + 0.5) * 2.0;
+
+    // Sample text from atlas
+    int cellsPerRow = uAtlasSize;
+    int cellX = itemIndex % cellsPerRow;
+    int cellY = itemIndex / cellsPerRow;
+    vec2 cellSize = vec2(1.0) / vec2(float(cellsPerRow));
+    vec2 cellOffset = vec2(float(cellX), float(cellY)) * cellSize;
+
+    // Scale UVs for text (center portion of disc)
+    vec2 textUv = (vUvs - 0.2) / 0.6; // Use center 60% of disc
+    textUv.y = 1.0 - textUv.y; // Flip Y
+    textUv = clamp(textUv, 0.0, 1.0);
+    textUv = textUv * cellSize + cellOffset;
+
+    vec4 textSample = texture(uTextAtlas, textUv);
+
+    // Blend text with shiny effect
+    float textShine = sin(uTime * 2.0 + vUvs.x * 5.0) * 0.2 + 0.8;
+    vec3 textColor = vec3(1.0) * textSample.a * textShine;
+    color = mix(color, textColor, textSample.a * 0.9);
 
     outColor = vec4(color, vAlpha);
 }
@@ -492,6 +530,8 @@ let discProgram: WebGLProgram | null = null
 let discVAO: WebGLVertexArrayObject | null = null
 let control: ArcballControl | null = null
 let animationId: number | null = null
+let textAtlasTexture: WebGLTexture | null = null
+let atlasSize = 6 // 6x6 grid for 30+ items
 
 const worldMatrix = mat4.create()
 const camera = {
@@ -537,6 +577,42 @@ let discLocations: {
   uItemCount: WebGLUniformLocation | null
   uCategoryColors: WebGLUniformLocation | null
   uCategoryIndices: WebGLUniformLocation | null
+  uTime: WebGLUniformLocation | null
+  uTextAtlas: WebGLUniformLocation | null
+  uAtlasSize: WebGLUniformLocation | null
+}
+
+// Create text atlas texture
+function createTextAtlas(): HTMLCanvasElement {
+  const cellSize = 128
+  const canvas = document.createElement('canvas')
+  canvas.width = atlasSize * cellSize
+  canvas.height = atlasSize * cellSize
+  const ctx = canvas.getContext('2d')!
+
+  ctx.fillStyle = 'transparent'
+  ctx.fillRect(0, 0, canvas.width, canvas.height)
+
+  menuItems.forEach((item, i) => {
+    const cellX = i % atlasSize
+    const cellY = Math.floor(i / atlasSize)
+    const x = cellX * cellSize + cellSize / 2
+    const y = cellY * cellSize + cellSize / 2
+
+    // Draw icon
+    ctx.font = '32px serif'
+    ctx.textAlign = 'center'
+    ctx.textBaseline = 'middle'
+    ctx.fillStyle = '#ffffff'
+    ctx.fillText(item.icon || '📄', x, y - 15)
+
+    // Draw text
+    ctx.font = 'bold 14px system-ui, sans-serif'
+    ctx.fillStyle = '#ffffff'
+    ctx.fillText(item.text, x, y + 20)
+  })
+
+  return canvas
 }
 
 function initWebGL(canvas: HTMLCanvasElement) {
@@ -567,7 +643,20 @@ function initWebGL(canvas: HTMLCanvasElement) {
     uItemCount: gl.getUniformLocation(discProgram, 'uItemCount'),
     uCategoryColors: gl.getUniformLocation(discProgram, 'uCategoryColors'),
     uCategoryIndices: gl.getUniformLocation(discProgram, 'uCategoryIndices'),
+    uTime: gl.getUniformLocation(discProgram, 'uTime'),
+    uTextAtlas: gl.getUniformLocation(discProgram, 'uTextAtlas'),
+    uAtlasSize: gl.getUniformLocation(discProgram, 'uAtlasSize'),
   }
+
+  // Create text atlas texture
+  const textAtlasCanvas = createTextAtlas()
+  textAtlasTexture = gl.createTexture()
+  gl.bindTexture(gl.TEXTURE_2D, textAtlasTexture)
+  gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, textAtlasCanvas)
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE)
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE)
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR)
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR)
 
   const discGeo = new DiscGeometry(56, 1)
   discBuffers = {
@@ -774,6 +863,13 @@ function render() {
   )
 
   gl.uniform1i(discLocations.uItemCount, menuItems.length)
+  gl.uniform1f(discLocations.uTime, _frames * 0.016) // Time in seconds
+  gl.uniform1i(discLocations.uAtlasSize, atlasSize)
+
+  // Bind text atlas
+  gl.activeTexture(gl.TEXTURE0)
+  gl.bindTexture(gl.TEXTURE_2D, textAtlasTexture)
+  gl.uniform1i(discLocations.uTextAtlas, 0)
 
   // Category colors as vec3 array
   const categoryList = Object.keys(categoryColors)
@@ -842,14 +938,14 @@ onUnmounted(() => {
     />
 
     <div v-if="activeItem" class="menu-info" :class="{ hidden: isMoving }">
-      <div class="category-badge" :style="{ backgroundColor: activeCategoryColor }">
+      <div class="category-badge" :style="{ backgroundColor: activeCategoryColor, boxShadow: `0 0 20px ${activeCategoryColor}` }">
         {{ activeCategory }}
       </div>
       <h3 class="item-title">
         <span class="item-icon">{{ activeItem.icon }}</span>
-        {{ activeItem.text }}
+        <span class="shiny-text">{{ activeItem.text }}</span>
       </h3>
-      <button class="go-button" @click="handleClick" :style="{ borderColor: activeCategoryColor }">
+      <button class="go-button" @click="handleClick" :style="{ borderColor: activeCategoryColor, boxShadow: `0 0 15px ${activeCategoryColor}40` }">
         <span>Start Learning</span>
         <span class="arrow">&#x2197;</span>
       </button>
@@ -908,6 +1004,12 @@ onUnmounted(() => {
   width: fit-content;
   text-transform: uppercase;
   letter-spacing: 0.5px;
+  animation: pulse-glow 2s ease-in-out infinite;
+}
+
+@keyframes pulse-glow {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.8; }
 }
 
 .item-title {
@@ -922,6 +1024,27 @@ onUnmounted(() => {
 
 .item-icon {
   font-size: 1.2rem;
+}
+
+.shiny-text {
+  background: linear-gradient(
+    120deg,
+    var(--vp-c-text-1) 0%,
+    var(--vp-c-text-1) 35%,
+    var(--vp-c-brand-1) 50%,
+    var(--vp-c-text-1) 65%,
+    var(--vp-c-text-1) 100%
+  );
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: shine 3s linear infinite;
+}
+
+@keyframes shine {
+  0% { background-position: 200% center; }
+  100% { background-position: -200% center; }
 }
 
 .go-button {
