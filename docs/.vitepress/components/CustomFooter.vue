@@ -118,12 +118,31 @@ onMounted(() => {
 .heart {
   display: inline-block;
   margin-right: 4px;
-  animation: heartbeat 1.5s ease-in-out infinite;
+  animation: heartbeat 1.2s ease-in-out infinite;
+  font-style: normal;
 }
 
 @keyframes heartbeat {
-  0%, 100% { transform: scale(1); }
-  50% { transform: scale(1.1); }
+  0%, 100% {
+    transform: scale(1);
+    filter: brightness(1);
+  }
+  15% {
+    transform: scale(1.25);
+    filter: brightness(1.2);
+  }
+  30% {
+    transform: scale(1);
+    filter: brightness(1);
+  }
+  45% {
+    transform: scale(1.25);
+    filter: brightness(1.2);
+  }
+  60%, 100% {
+    transform: scale(1);
+    filter: brightness(1);
+  }
 }
 
 .footer-author {

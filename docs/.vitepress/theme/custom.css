@@ -933,54 +933,132 @@ html {
    26. MERMAID DIAGRAM STYLING
    ============================================ */
 
+/* Light mode mermaid - force light theme */
+:root {
+  --mermaid-bg: #FFFFFF;
+  --mermaid-node-bg: #F8FAFC;
+  --mermaid-node-border: #4338CA;
+  --mermaid-text: #0F172A;
+  --mermaid-edge: #64748B;
+  --mermaid-label-bg: #FFFFFF;
+}
+
+/* Dark mode mermaid variables */
+.dark {
+  --mermaid-bg: #1A1A1A;
+  --mermaid-node-bg: #262626;
+  --mermaid-node-border: #A5B4FC;
+  --mermaid-text: #FAFAFA;
+  --mermaid-edge: #A3A3A3;
+  --mermaid-label-bg: #1A1A1A;
+}
+
 .mermaid {
-  background: var(--vp-c-bg-soft);
+  background: var(--mermaid-bg) !important;
   border-radius: var(--radius-lg);
   padding: 1.5rem;
   margin: 1.5rem 0;
   border: 1px solid var(--vp-c-border);
 }
 
-/* Mermaid diagram text colors for light mode */
+/* Force mermaid SVG background */
+.mermaid svg {
+  background: var(--mermaid-bg) !important;
+}
+
+/* Node shapes */
 .mermaid .node rect,
 .mermaid .node polygon,
 .mermaid .node circle,
-.mermaid .node ellipse {
-  fill: var(--vp-c-bg) !important;
-  stroke: var(--vp-c-brand-1) !important;
+.mermaid .node ellipse,
+.mermaid rect.basic,
+.mermaid .flowchart-link {
+  fill: var(--mermaid-node-bg) !important;
+  stroke: var(--mermaid-node-border) !important;
+  stroke-width: 2px !important;
 }
 
+/* All text in mermaid */
 .mermaid .nodeLabel,
 .mermaid .label,
-.mermaid text {
-  fill: var(--vp-c-text-1) !important;
-  color: var(--vp-c-text-1) !important;
+.mermaid .edgeLabel,
+.mermaid text,
+.mermaid tspan,
+.mermaid .labelText,
+.mermaid .cluster-label,
+.mermaid .messageText,
+.mermaid .loopText,
+.mermaid .noteText,
+.mermaid span {
+  fill: var(--mermaid-text) !important;
+  color: var(--mermaid-text) !important;
 }
 
-.mermaid .edgeLabel {
-  background: var(--vp-c-bg) !important;
-  color: var(--vp-c-text-1) !important;
+/* Edge labels background */
+.mermaid .edgeLabel rect,
+.mermaid .labelBkg {
+  fill: var(--mermaid-label-bg) !important;
+  opacity: 1 !important;
 }
 
-.mermaid .edgePath path {
-  stroke: var(--vp-c-text-3) !important;
+/* Edge/arrow paths */
+.mermaid .edgePath path,
+.mermaid .flowchart-link,
+.mermaid path.path,
+.mermaid .relation,
+.mermaid line {
+  stroke: var(--mermaid-edge) !important;
 }
 
-.mermaid .cluster rect {
-  fill: var(--vp-c-bg-mute) !important;
+/* Arrow markers */
+.mermaid marker path {
+  fill: var(--mermaid-edge) !important;
+  stroke: var(--mermaid-edge) !important;
+}
+
+/* Cluster/subgraph backgrounds */
+.mermaid .cluster rect,
+.mermaid .cluster-label rect {
+  fill: var(--mermaid-node-bg) !important;
   stroke: var(--vp-c-border) !important;
 }
 
-/* Dark mode mermaid adjustments */
-.dark .mermaid .node rect,
-.dark .mermaid .node polygon,
-.dark .mermaid .node circle,
-.dark .mermaid .node ellipse {
-  fill: var(--vp-c-bg-soft) !important;
+/* Sequence diagram specifics */
+.mermaid .actor,
+.mermaid .actor-line {
+  stroke: var(--mermaid-node-border) !important;
 }
 
-.dark .mermaid .edgeLabel {
-  background: var(--vp-c-bg-soft) !important;
+.mermaid .actor rect {
+  fill: var(--mermaid-node-bg) !important;
+}
+
+/* Class diagram specifics */
+.mermaid .classGroup rect {
+  fill: var(--mermaid-node-bg) !important;
+  stroke: var(--mermaid-node-border) !important;
+}
+
+/* Gantt chart specifics */
+.mermaid .task {
+  fill: var(--mermaid-node-bg) !important;
+  stroke: var(--mermaid-node-border) !important;
+}
+
+.mermaid .taskText {
+  fill: var(--mermaid-text) !important;
+}
+
+/* ER diagram specifics */
+.mermaid .er.attributeBoxEven,
+.mermaid .er.attributeBoxOdd {
+  fill: var(--mermaid-node-bg) !important;
+}
+
+/* Pie chart specifics */
+.mermaid .pieTitleText,
+.mermaid .slice {
+  fill: var(--mermaid-text) !important;
 }
 
 /* ============================================

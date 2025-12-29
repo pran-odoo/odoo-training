@@ -86,6 +86,12 @@ export default withPwa(defineConfig({
           { text: '26. AI in Odoo 19', link: '/26-ai' },
           { text: '27. EDI Order Exchange', link: '/27-edi' }
         ]
+      },
+      {
+        text: 'Inventory & Stock',
+        items: [
+          { text: '28. Removal Strategies', link: '/28-removal-strategies' }
+        ]
       }
     ],
 
