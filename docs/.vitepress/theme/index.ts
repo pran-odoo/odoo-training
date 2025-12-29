@@ -16,6 +16,7 @@ import BackToTop from '../components/BackToTop.vue'
 import KeyboardHelp from '../components/KeyboardHelp.vue'
 import ResumeReading from '../components/ResumeReading.vue'
 import GlossaryProvider from '../components/GlossaryProvider.vue'
+import InfiniteMenu from '../components/InfiniteMenu.vue'
 
 export default {
   extends: DefaultTheme,
@@ -34,5 +35,6 @@ export default {
     app.component('KeyboardHelp', KeyboardHelp)
     app.component('ResumeReading', ResumeReading)
     app.component('GlossaryProvider', GlossaryProvider)
+    app.component('InfiniteMenu', InfiniteMenu)
   }
 } satisfies Theme

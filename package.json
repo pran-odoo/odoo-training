@@ -32,6 +32,7 @@
     "workbox-window": "^7.4.0"
   },
   "dependencies": {
+    "gl-matrix": "^3.4.4",
     "three": "^0.182.0"
   }
 }

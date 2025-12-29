@@ -27,6 +27,10 @@ features:
     details: Install as a PWA for offline access anywhere
 ---
 
+## Explore Topics
+
+<InfiniteMenu />
+
 ## Welcome to Odoo Training
 
 This guide covers everything a functional consultant needs to know about configuring Odoo 19, from basic concepts to advanced features.
