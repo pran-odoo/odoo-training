@@ -184,10 +184,21 @@ The Product Expiry module adds **four date fields** to lots/serial numbers. Thes
 | **Alert Date** | `alert_date` | Triggers warnings for action | Internal alerts, markdown decisions |
 
 ::: info How Dates Are Calculated
-All dates are calculated **backwards from the Expiration Date** using the time values configured on the product template:
+When a lot/serial number is created, Odoo calculates the Expiration Date based on the **current date + expiration_time**. The other dates are calculated **backwards from the Expiration Date**:
 
+```python
+# From production_lot.py - when lot is created:
+expiration_date = datetime.now() + timedelta(days=expiration_time)
+
+# Other dates calculated backwards:
+use_date = expiration_date - timedelta(days=use_time)
+removal_date = expiration_date - timedelta(days=removal_time)
+alert_date = expiration_date - timedelta(days=alert_time)
 ```
-Receipt Date: January 1st
+
+**Example:**
+```
+Lot Created: January 1st
 Expiration Time on Product: 30 days
 → Expiration Date = January 31st
 
@@ -236,11 +247,24 @@ If Removal Date is not set, FEFO falls back to Expiration Date.
 
 **What Happens When Removal Date Passes?**
 
-When a lot's removal date passes:
+When a lot's removal date passes, Odoo automatically sets `available_quantity = 0`:
+
+```python
+# From stock_quant.py in product_expiry module:
+@api.depends('removal_date')
+def _compute_available_quantity(self):
+    super()._compute_available_quantity()
+    current_date = fields.Datetime.now()
+    for quant in self:
+        if quant.use_expiration_date and quant.removal_date and quant.removal_date <= current_date:
+            quant.available_quantity = 0
+```
+
+**What this means:**
 1. **Available Quantity becomes 0** - the lot is no longer considered "fresh"
 2. **Stock On Hand remains unchanged** - product is still physically there
 3. **Picking will skip this lot** - FEFO moves to next available lot
-4. **Alerts may trigger** - depending on your automation setup
+4. **Alerts may trigger** - if alert_date was reached and cron job is active
 
 This prevents accidentally shipping products that are too close to expiration.
 
