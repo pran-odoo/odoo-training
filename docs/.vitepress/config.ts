@@ -19,6 +19,8 @@ export default withPwa(defineConfig({
     ['link', { rel: 'icon', type: 'image/png', sizes: '32x32', href: '/odoo-training/icons/icon-32.png' }],
   ],
 
+  appearance: 'dark',
+
   themeConfig: {
     logo: '/icons/icon-192.png',
 
