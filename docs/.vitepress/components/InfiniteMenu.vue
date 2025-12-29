@@ -1053,14 +1053,41 @@ onUnmounted(() => {
   position: absolute;
   bottom: 24px;
   right: 24px;
-  font-size: 12px;
-  color: var(--vp-c-text-3);
-  opacity: 0.7;
-  transition: opacity 0.3s ease;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--vp-c-text-1);
+  background: var(--vp-c-bg);
+  padding: 10px 18px;
+  border-radius: 30px;
+  border: 1px solid var(--vp-c-border);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.3s ease;
+  animation: pulse-hint 2s ease-in-out infinite;
+}
+
+.drag-hint::before {
+  content: '👆';
+  font-size: 18px;
+}
+
+@keyframes pulse-hint {
+  0%, 100% {
+    transform: scale(1);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+  }
+  50% {
+    transform: scale(1.05);
+    box-shadow: 0 6px 25px rgba(99, 102, 241, 0.4);
+  }
 }
 
 .drag-hint.hidden {
   opacity: 0;
+  transform: translateY(10px);
+  pointer-events: none;
 }
 
 @media (max-width: 768px) {
@@ -1078,7 +1105,14 @@ onUnmounted(() => {
   }
 
   .drag-hint {
-    display: none;
+    bottom: 16px;
+    right: 16px;
+    font-size: 12px;
+    padding: 8px 14px;
+  }
+
+  .drag-hint::before {
+    font-size: 14px;
   }
 
   .center-icon {
