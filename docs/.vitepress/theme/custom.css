@@ -82,9 +82,9 @@
   --shadow-glow: 0 0 40px rgba(67, 56, 202, 0.2);
   --shadow-inner: inset 0 2px 4px rgba(15, 23, 42, 0.06);
 
-  /* Code blocks */
-  --vp-code-block-bg: #1E293B;
-  --vp-code-line-highlight-color: rgba(67, 56, 202, 0.15);
+  /* Code blocks - light background for light mode */
+  --vp-code-block-bg: #F8FAFC;
+  --vp-code-line-highlight-color: rgba(67, 56, 202, 0.1);
 
   /* Animation timings */
   --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
