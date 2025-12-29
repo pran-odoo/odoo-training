@@ -555,20 +555,6 @@ onUnmounted(() => {
   flex-shrink: 0;
 }
 
-.command-empty {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 8px;
-  padding: 32px 20px;
-  color: var(--vp-c-text-3);
-  font-size: 14px;
-}
-
-.command-empty-icon {
-  font-size: 32px;
-}
-
 .command-footer {
   display: flex;
   gap: 20px;
@@ -582,18 +568,6 @@ onUnmounted(() => {
   margin-left: auto;
   color: var(--vp-c-brand-1);
   font-style: italic;
-}
-
-/* Search type styling */
-.command-item .command-type[data-type="search"] {
-  color: var(--vp-c-brand-1);
-}
-
-/* Highlight search content option */
-.command-item:has(.command-type):last-child {
-  border-top: 1px solid var(--vp-c-divider);
-  margin-top: 8px;
-  padding-top: 16px;
 }
 
 .command-footer kbd {

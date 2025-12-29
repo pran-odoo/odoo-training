@@ -37,13 +37,7 @@ export function safeRemoveItem(key: string): boolean {
 
 // Storage keys used throughout the app
 export const STORAGE_KEYS = {
-  darkMode: 'odoo_training_dark_mode',
-  fontSize: 'odoo_training_font_size',
   lastSection: 'odoo_training_last_section',
-  lastScrollPos: 'odoo_training_scroll_pos',
-  focusMode: 'odoo_training_focus_mode',
   bookmarks: 'odoo_training_bookmarks',
-  personalization: 'odoo_training_personalization',
-  recentCommands: 'odooTraining_recentCommands',
   quizProgress: 'odoo_training_quiz_progress'
 } as const
