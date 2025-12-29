@@ -18,18 +18,24 @@ Without code, you can make all of this happen. Odoo's action system is one of th
 
 Server Actions are **manual actions** that users trigger from the UI. They appear in the "Actions" menu or can be added as buttons.
 
-### Action Types Available
+### Action Types Available (Odoo 19)
 
-| Action Type | What It Does | Example Use Case |
-| :--- | :--- | :--- |
-| **Update Record** | Modify field values on records | Bulk assign salesperson, Mark as priority |
-| **Create Record** | Create new record with values | Create task from lead, Generate invoice |
-| **Execute Code** | Run custom Python code | Complex calculations, integrations |
-| **Send Email** | Send email using template | Notify customer, Alert manager |
-| **Send Webhook** | POST data to external URL | Notify external system |
-| **Add Followers** | Add users as followers | Include team in discussions |
-| **Create Next Activity** | Schedule follow-up activity | Schedule call in 3 days |
-| **Multi Actions** | Execute multiple actions | Update + email + create task |
+| Action Type | Technical State | What It Does | Example Use Case |
+| :--- | :--- | :--- | :--- |
+| **Update Record** | `object_write` | Modify field values on records | Bulk assign salesperson, Mark as priority |
+| **Create Record** | `object_create` | Create new record with values | Create task from lead |
+| **Duplicate Record** | `object_copy` | Copy an existing record | Clone template records |
+| **Execute Code** | `code` | Run custom Python code | Complex calculations, integrations |
+| **Send Webhook** | `webhook` | POST data to external URL | Notify external system |
+| **Multi Actions** | `multi` | Execute multiple child actions | Update + email + create task |
+
+::: info Additional Action Types (from modules)
+When you install additional modules like Discuss (mail), SMS, or others, more action types become available:
+- **Send Email** - Send email using template (requires `mail` module)
+- **Add Followers** - Add users as followers (requires `mail` module)
+- **Create Next Activity** - Schedule follow-up activity (requires `mail` module)
+- **Send SMS** - Send SMS messages (requires `sms` module)
+:::
 
 ### Example: Mark Leads as High Priority
 
@@ -134,22 +140,28 @@ Scheduled Actions run automatically at specified intervals. Perfect for maintena
 
 Automated Actions trigger automatically when specific events occur. They're the backbone of workflow automation.
 
-### Trigger Types
+### Trigger Types (Odoo 19)
 
-| Trigger | When It Runs | Example Use Case |
-| :--- | :--- | :--- |
-| **On Create** | New record created | Assign leads to salesperson |
-| **On Update** | Record modified | Log changes, notify manager |
-| **On Create or Update** | Either event | Validate data |
-| **On Deletion** | Before record deleted | Archive instead of delete |
-| **Stage is set to** | Specific stage reached | Create project when won |
-| **User is set** | Responsible assigned | Notify assignee |
-| **Tag is added** | Specific tag added | Notify when "urgent" |
-| **State is set to** | State field changes | Create invoice on confirm |
-| **Based on date field** | X days before/after date | Reminder before deadline |
-| **After creation** | X time after created | Follow-up email 7 days later |
-| **On incoming message** | Email received | Auto-reply to customers |
-| **On webhook** | External HTTP request | Receive external data |
+| Trigger | Technical Name | When It Runs | Example Use Case |
+| :--- | :--- | :--- | :--- |
+| **Stage is set to** | `on_stage_set` | Specific stage reached | Create project when won |
+| **User is set** | `on_user_set` | Responsible assigned | Notify assignee |
+| **Tag is added** | `on_tag_set` | Specific tag added | Notify when "urgent" |
+| **State is set to** | `on_state_set` | State field changes | Create invoice on confirm |
+| **Priority is set to** | `on_priority_set` | Priority changes | Alert on high priority |
+| **On archived** | `on_archive` | Record archived | Log archival, cleanup |
+| **On unarchived** | `on_unarchive` | Record restored | Re-enable subscriptions |
+| **On create** | `on_create` | New record created | Assign leads to salesperson |
+| **On create and edit** | `on_create_or_write` | Created or modified | Validate data |
+| **On update** | `on_write` | Record modified (deprecated) | Use "On create and edit" instead |
+| **On deletion** | `on_unlink` | Before record deleted | Archive instead of delete |
+| **On UI change** | `on_change` | Field changed in form | Real-time validation |
+| **Based on date field** | `on_time` | X time before/after date | Reminder before deadline |
+| **After creation** | `on_time_created` | X time after created | Follow-up email 7 days later |
+| **After last update** | `on_time_updated` | X time after modified | Reminder for stale records |
+| **On incoming message** | `on_message_received` | Email/message received | Auto-reply (requires mail) |
+| **On outgoing message** | `on_message_sent` | Email/message sent | Log communications (requires mail) |
+| **On webhook** | `on_webhook` | External HTTP request | Receive external data |
 
 ### Before/After Update Filters
 
@@ -181,7 +193,7 @@ For "On Update" triggers, use these domains to detect specific changes:
 
 ## All Action Types Reference
 
-Odoo has six distinct action types. While automation actions are most common, understanding all types helps with customization:
+Odoo has seven distinct action types. While automation actions are most common, understanding all types helps with customization:
 
 | Action Type | Technical Model | Purpose |
 | :--- | :--- | :--- |
@@ -190,21 +202,113 @@ Odoo has six distinct action types. While automation actions are most common, un
 | **URL Actions** | `ir.actions.act_url` | Open external URLs, downloads |
 | **Client Actions** | `ir.actions.client` | Custom JS widgets, dashboards |
 | **Report Actions** | `ir.actions.report` | Generate PDF/HTML reports |
+| **Window Close Actions** | `ir.actions.act_window_close` | Close dialog windows |
 | **Scheduled Actions** | `ir.cron` | Time-based recurring tasks |
 
-### Window Actions
+### Window Actions (ir.actions.act_window)
 
 Window Actions open views and are used for:
-- Menu items
-- Smart buttons
-- Action buttons that navigate to records
+- Menu items linking to list/form views
+- Smart buttons that navigate to related records
+- Action buttons that open specific records
+- Wizards (transient models in popup)
 
-Key fields:
-- **res_model:** Model to display
-- **domain:** Filter which records
-- **context:** Pass default values
-- **view_mode:** Available views (list, form, kanban)
-- **target:** current, new (popup), fullscreen
+**Key fields:**
+
+| Field | Purpose | Example |
+| :--- | :--- | :--- |
+| **res_model** | Model to display | `sale.order` |
+| **domain** | Filter which records to show | `[('state', '=', 'sale')]` |
+| **context** | Pass default values, flags | `{'default_partner_id': active_id}` |
+| **view_mode** | Available views (comma-separated) | `list,form,kanban,calendar` |
+| **target** | Where to open | `current`, `new` (popup), `fullscreen`, `main` |
+| **res_id** | Specific record ID (form view) | `42` |
+| **limit** | Default list view limit | `80` |
+| **view_id** | Specific view to use | Reference to `ir.ui.view` |
+
+**Target options:**
+- `current` - Replace current view (default)
+- `new` - Open in modal/popup dialog
+- `fullscreen` - Full browser window
+- `main` - Main content area only
+
+### URL Actions (ir.actions.act_url)
+
+URL Actions open external URLs or trigger downloads.
+
+**Key fields:**
+
+| Field | Purpose | Values |
+| :--- | :--- | :--- |
+| **url** | Target URL | Any valid URL or download path |
+| **target** | How to open | `new` (new tab), `self` (same tab), `download` |
+
+**Common use cases:**
+- Open external documentation: `https://docs.example.com`
+- Download files: `/web/content/model/id/field/filename`
+- Open external applications: `mailto:`, `tel:`
+
+**Example - Download attachment:**
+```python
+return {
+    'type': 'ir.actions.act_url',
+    'url': '/web/content/%s/%s/datas/%s' % (model, record.id, filename),
+    'target': 'download',
+}
+```
+
+### Client Actions (ir.actions.client)
+
+Client Actions execute custom JavaScript code in the browser. Used for dashboards, custom widgets, and special interfaces.
+
+**Key fields:**
+
+| Field | Purpose | Example |
+| :--- | :--- | :--- |
+| **tag** | Client-side action identifier | `board.board`, `mail.action_discuss` |
+| **context** | Data passed to JS | `{'default_model': 'sale.order'}` |
+| **params** | Additional parameters | Custom JS configuration |
+| **res_model** | Optional related model | For needaction badges |
+
+**Built-in client actions:**
+- `board.board` - Dashboard display
+- `mail.action_discuss` - Discuss/messaging interface
+- `website.action_website_edit` - Website editor
+- `account_dashboard.action_account_dashboard_main` - Accounting dashboard
+
+### Report Actions (ir.actions.report)
+
+Report Actions generate PDF, HTML, or text reports using QWeb templates.
+
+**Key fields:**
+
+| Field | Purpose | Values/Example |
+| :--- | :--- | :--- |
+| **model** | Model the report applies to | `sale.order` |
+| **report_type** | Output format | `qweb-pdf`, `qweb-html`, `qweb-text` |
+| **report_name** | QWeb template name | `sale.report_saleorder` |
+| **print_report_name** | Downloaded filename | `'SO - %s' % object.name` |
+| **paperformat_id** | Paper size/margins | Reference to `report.paperformat` |
+| **attachment** | Save as attachment | `'SO_%s.pdf' % object.name` |
+| **attachment_use** | Reuse saved attachment | `True/False` |
+
+**Report types:**
+- `qweb-pdf` - PDF via wkhtmltopdf (most common)
+- `qweb-html` - HTML rendered in browser
+- `qweb-text` - Plain text output
+
+**Example - Print Sales Order:**
+```xml
+<record id="action_report_saleorder" model="ir.actions.report">
+    <field name="name">Sales Order</field>
+    <field name="model">sale.order</field>
+    <field name="report_type">qweb-pdf</field>
+    <field name="report_name">sale.report_saleorder</field>
+    <field name="print_report_name">'Sale Order - %s' % (object.name)</field>
+    <field name="binding_model_id" ref="model_sale_order"/>
+    <field name="binding_type">report</field>
+</record>
+```
 
 ## Comparing the Three Automation Types
 
