@@ -37,15 +37,24 @@ const isReady = ref(false)
 
 let gl: WebGLRenderingContext | null = null
 let isMobile = false
+let isLowEndDevice = false
 let program: WebGLProgram | null = null
 let buffer: WebGLBuffer | null = null
 let animationId: number | null = null
 let startTime = 0
 let isVisible = true
+let prefersReducedMotion = false
+let shouldAnimate = true
 let uniforms: Record<string, WebGLUniformLocation | null> = {}
 let lastRenderTime = 0
-const TARGET_FPS = 30 // Limit to 30fps for performance - still smooth for ambient effect
+const TARGET_FPS = 20 // Limit to 20fps for ambient background effect (was 30)
 const FRAME_TIME = 1000 / TARGET_FPS
+
+// Idle detection
+const IDLE_TIMEOUT = 5000 // 5 seconds for background effect
+let lastInputTime = 0
+let isIdle = false
+let reducedMotionQuery: MediaQueryList | null = null
 
 // Mouse tracking with smoothing
 const targetMouse = { x: 0.5, y: 0.5 }
@@ -290,8 +299,15 @@ function resize() {
 
   const width = window.innerWidth
   const height = window.innerHeight
-  // Lower DPR on mobile for performance (cap at 1.0 on mobile, 2 on desktop)
-  const maxDpr = isMobile ? 1.0 : 2
+
+  // Dynamic DPR based on device capability
+  // - Mobile: cap at 1.0
+  // - Low-end (< 4GB RAM or slow device): cap at 1.0
+  // - Desktop: cap at 1.5 (was 2, reduced for performance)
+  let maxDpr = 1.5
+  if (isMobile || isLowEndDevice) {
+    maxDpr = 1.0
+  }
   const dpr = Math.min(window.devicePixelRatio || 1, maxDpr)
 
   const displayWidth = Math.floor(width * dpr)
@@ -305,10 +321,27 @@ function resize() {
 }
 
 function render(timestamp: number = 0) {
-  animationId = requestAnimationFrame(render)
+  if (!gl || !program) {
+    animationId = requestAnimationFrame(render)
+    return
+  }
 
-  if (!gl || !program) return
-  if (!isVisible) return
+  // Don't animate if hidden, reduced motion, or shouldn't animate
+  if (!isVisible || prefersReducedMotion || !shouldAnimate) {
+    animationId = requestAnimationFrame(render)
+    return
+  }
+
+  // Check for idle state - stop loop after IDLE_TIMEOUT of no input
+  const timeSinceInput = timestamp - lastInputTime
+  if (timeSinceInput > IDLE_TIMEOUT) {
+    // Go idle - stop the animation loop entirely
+    isIdle = true
+    animationId = null
+    return
+  }
+
+  animationId = requestAnimationFrame(render)
 
   // Frame rate limiting - skip frame if not enough time has passed
   const elapsed = timestamp - lastRenderTime
@@ -348,7 +381,17 @@ function render(timestamp: number = 0) {
   gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4)
 }
 
+// Wake up from idle when user interacts
+function wakeFromIdle() {
+  lastInputTime = performance.now()
+  if (isIdle && animationId === null && shouldAnimate && !prefersReducedMotion) {
+    isIdle = false
+    render()
+  }
+}
+
 function handleMouseMove(e: MouseEvent) {
+  wakeFromIdle() // Wake up animation on mouse move
   if (!props.mouseInteraction || isMobile) return
   targetMouse.x = e.clientX / window.innerWidth
   targetMouse.y = 1.0 - e.clientY / window.innerHeight
@@ -360,6 +403,7 @@ function handleMouseLeave() {
 }
 
 function handleTouchMove(e: TouchEvent) {
+  wakeFromIdle() // Wake up animation on touch
   if (!props.mouseInteraction || !e.touches.length) return
   const touch = e.touches[0]
   targetMouse.x = touch.clientX / window.innerWidth
@@ -374,6 +418,28 @@ function handleTouchEnd() {
 
 function handleVisibilityChange() {
   isVisible = !document.hidden
+  // Wake up when becoming visible again
+  if (isVisible) {
+    wakeFromIdle()
+  }
+}
+
+function handleReducedMotionChange(e: MediaQueryListEvent) {
+  prefersReducedMotion = e.matches
+  if (e.matches) {
+    // Stop animation loop when reduced motion is enabled
+    shouldAnimate = false
+    if (animationId !== null) {
+      cancelAnimationFrame(animationId)
+      animationId = null
+    }
+  } else {
+    // Resume animation when reduced motion is disabled
+    shouldAnimate = true
+    if (animationId === null) {
+      render()
+    }
+  }
 }
 
 function cleanup() {
@@ -387,6 +453,12 @@ function cleanup() {
   window.removeEventListener('mouseleave', handleMouseLeave)
   window.removeEventListener('touchmove', handleTouchMove)
   window.removeEventListener('touchend', handleTouchEnd)
+
+  // Clean up reduced motion listener
+  if (reducedMotionQuery) {
+    reducedMotionQuery.removeEventListener('change', handleReducedMotionChange)
+    reducedMotionQuery = null
+  }
 
   if (gl && buffer) {
     gl.deleteBuffer(buffer)
@@ -405,8 +477,24 @@ onMounted(() => {
   // Detect mobile
   isMobile = 'ontouchstart' in window || navigator.maxTouchPoints > 0
 
+  // Detect low-end device (< 4GB RAM)
+  const nav = navigator as Navigator & { deviceMemory?: number }
+  isLowEndDevice = (nav.deviceMemory !== undefined && nav.deviceMemory < 4)
+
+  // Check for reduced motion preference FIRST
+  reducedMotionQuery = window.matchMedia('(prefers-reduced-motion: reduce)')
+  prefersReducedMotion = reducedMotionQuery.matches
+  reducedMotionQuery.addEventListener('change', handleReducedMotionChange)
+
+  // If user prefers reduced motion, don't start WebGL at all
+  if (prefersReducedMotion) {
+    shouldAnimate = false
+    return
+  }
+
   if (initWebGL()) {
     startTime = performance.now()
+    lastInputTime = performance.now() // Initialize idle timer
     resize()
     isReady.value = true
     render()

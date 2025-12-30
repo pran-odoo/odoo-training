@@ -58,6 +58,20 @@ let colorUpdateTimer = 0
 let isVisible = true
 let needsResize = false
 
+// Idle detection - stop simulation when pointer not moving
+const IDLE_TIMEOUT = 2000 // 2 seconds of no pointer movement
+let lastPointerMoveTime = 0
+let isIdle = false
+let shouldAnimate = true
+let prefersReducedMotion = false
+let reducedMotionQuery: MediaQueryList | null = null
+let isMobile = false
+let isLowEndDevice = false
+
+// Resolution scaling based on device capability
+let effectiveSimResolution = 128
+let effectiveDyeResolution = 1024
+
 // Buffers to clean up
 let vertexBuffer: WebGLBuffer | null = null
 let indexBuffer: WebGLBuffer | null = null
@@ -634,8 +648,9 @@ function initWebGL(): boolean {
 function initFramebuffers() {
   if (!gl || !ext) return
 
-  const simRes = getResolution(props.simResolution)
-  const dyeRes = getResolution(props.dyeResolution)
+  // Use effective resolutions (scaled based on device capability)
+  const simRes = getResolution(effectiveSimResolution)
+  const dyeRes = getResolution(effectiveDyeResolution)
   const filter = ext.supportLinearFiltering ? gl.LINEAR : gl.NEAREST
 
   gl.disable(gl.BLEND)
@@ -801,9 +816,11 @@ let pendingSplatDx = 0
 let pendingSplatDy = 0
 
 function updateFrame(timestamp: number = 0) {
-  animationId = requestAnimationFrame(updateFrame)
-
-  if (!gl || !isVisible) return
+  // Don't animate if reduced motion is preferred or shouldn't animate
+  if (!gl || !isVisible || prefersReducedMotion || !shouldAnimate) {
+    animationId = requestAnimationFrame(updateFrame)
+    return
+  }
 
   // Always capture pointer input at 60fps to avoid losing mouse movements
   if (pointer.moved) {
@@ -813,7 +830,20 @@ function updateFrame(timestamp: number = 0) {
     pendingSplatY = pointer.texcoordY
     pendingSplatDx = pointer.deltaX * props.splatForce
     pendingSplatDy = pointer.deltaY * props.splatForce
+    lastPointerMoveTime = timestamp // Reset idle timer
   }
+
+  // Check for idle state - stop simulation loop after IDLE_TIMEOUT
+  // Keep the last frame visible (don't clear) by just stopping the loop
+  const timeSincePointerMove = timestamp - lastPointerMoveTime
+  if (timeSincePointerMove > IDLE_TIMEOUT && !pendingSplat) {
+    isIdle = true
+    animationId = null
+    // Don't render() here - keep the last frame visible
+    return
+  }
+
+  animationId = requestAnimationFrame(updateFrame)
 
   // Frame rate limiting - skip rendering if not enough time has passed
   const elapsed = timestamp - lastRenderTime
@@ -848,6 +878,15 @@ function updateFrame(timestamp: number = 0) {
 
   step(dt)
   render()
+}
+
+// Wake up from idle when pointer moves
+function wakeFromIdle() {
+  lastPointerMoveTime = performance.now()
+  if (isIdle && animationId === null && shouldAnimate && !prefersReducedMotion) {
+    isIdle = false
+    updateFrame()
+  }
 }
 
 function scaleByPixelRatio(value: number) {
@@ -889,12 +928,14 @@ function updatePointerDownData(posX: number, posY: number) {
 // ============================================
 
 function handleMouseMove(e: MouseEvent) {
+  wakeFromIdle() // Wake up animation on pointer move
   const posX = scaleByPixelRatio(e.clientX)
   const posY = scaleByPixelRatio(e.clientY)
   updatePointerMoveData(posX, posY)
 }
 
 function handleMouseDown(e: MouseEvent) {
+  wakeFromIdle() // Wake up animation on click
   const posX = scaleByPixelRatio(e.clientX)
   const posY = scaleByPixelRatio(e.clientY)
   updatePointerDownData(posX, posY)
@@ -908,6 +949,7 @@ function handleMouseDown(e: MouseEvent) {
 }
 
 function handleTouchStart(e: TouchEvent) {
+  wakeFromIdle() // Wake up animation on touch
   const touch = e.touches[0]
   if (!touch) return
   const posX = scaleByPixelRatio(touch.clientX)
@@ -916,6 +958,7 @@ function handleTouchStart(e: TouchEvent) {
 }
 
 function handleTouchMove(e: TouchEvent) {
+  wakeFromIdle() // Wake up animation on touch move
   const touch = e.touches[0]
   if (!touch) return
   const posX = scaleByPixelRatio(touch.clientX)
@@ -938,6 +981,24 @@ function handleVisibilityChange() {
   }
 }
 
+function handleReducedMotionChange(e: MediaQueryListEvent) {
+  prefersReducedMotion = e.matches
+  if (e.matches) {
+    // Stop animation loop when reduced motion is enabled
+    shouldAnimate = false
+    if (animationId !== null) {
+      cancelAnimationFrame(animationId)
+      animationId = null
+    }
+  } else {
+    // Resume animation when reduced motion is disabled
+    shouldAnimate = true
+    if (animationId === null) {
+      updateFrame()
+    }
+  }
+}
+
 function cleanup() {
   // Cancel animation
   if (animationId !== null) {
@@ -953,6 +1014,12 @@ function cleanup() {
   window.removeEventListener('touchend', handleTouchEnd)
   window.removeEventListener('resize', handleResize)
   document.removeEventListener('visibilitychange', handleVisibilityChange)
+
+  // Clean up reduced motion listener
+  if (reducedMotionQuery) {
+    reducedMotionQuery.removeEventListener('change', handleReducedMotionChange)
+    reducedMotionQuery = null
+  }
 
   // Clean up WebGL resources
   if (gl) {
@@ -1018,6 +1085,32 @@ function cleanup() {
 onMounted(() => {
   if (typeof window === 'undefined') return
 
+  // Detect mobile and low-end device
+  isMobile = 'ontouchstart' in window || navigator.maxTouchPoints > 0
+  const nav = navigator as Navigator & { deviceMemory?: number }
+  isLowEndDevice = (nav.deviceMemory !== undefined && nav.deviceMemory < 4)
+
+  // Adjust resolutions based on device capability
+  // Low-end devices get lower resolutions for better performance
+  if (isLowEndDevice || isMobile) {
+    effectiveSimResolution = Math.min(props.simResolution, 64)
+    effectiveDyeResolution = Math.min(props.dyeResolution, 512)
+  } else {
+    effectiveSimResolution = props.simResolution
+    effectiveDyeResolution = props.dyeResolution
+  }
+
+  // Check for reduced motion preference FIRST
+  reducedMotionQuery = window.matchMedia('(prefers-reduced-motion: reduce)')
+  prefersReducedMotion = reducedMotionQuery.matches
+  reducedMotionQuery.addEventListener('change', handleReducedMotionChange)
+
+  // If user prefers reduced motion, don't start WebGL at all
+  if (prefersReducedMotion) {
+    shouldAnimate = false
+    return
+  }
+
   if (initWebGL()) {
     resizeCanvas()
     initFramebuffers()
@@ -1025,6 +1118,7 @@ onMounted(() => {
     pointer.color = generateColor()
     isReady.value = true
     lastTime = performance.now()
+    lastPointerMoveTime = performance.now() // Initialize idle timer
 
     // Start render loop
     animationId = requestAnimationFrame(updateFrame)

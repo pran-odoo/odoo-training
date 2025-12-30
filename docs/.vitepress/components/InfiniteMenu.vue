@@ -16,6 +16,9 @@ const props = defineProps<{
 const canvasRef = ref<HTMLCanvasElement | null>(null)
 const activeItem = ref<MenuItem | null>(null)
 const isMoving = ref(false)
+const webglSupported = ref(true) // Track if WebGL2 is available
+const prefersReducedMotion = ref(false) // Track reduced motion preference
+const shouldAnimate = ref(true) // Master flag to control animation loop
 
 // Screen positions for disc labels
 interface DiscLabel {
@@ -412,31 +415,93 @@ class ArcballControl {
   private touchStartPos = vec2.create()
   private hasMoved = false
 
+  // Store bound handlers for cleanup
+  private boundHandlers: {
+    touchStart?: (e: TouchEvent) => void
+    touchMove?: (e: TouchEvent) => void
+    touchEnd?: () => void
+    pointerDown?: (e: PointerEvent) => void
+    pointerUp?: () => void
+    pointerLeave?: () => void
+    pointerMove?: (e: PointerEvent) => void
+  } = {}
+
   constructor(private canvas: HTMLCanvasElement, private updateCallback: (dt: number) => void) {
     // Detect mobile
     this.isMobile = 'ontouchstart' in window || navigator.maxTouchPoints > 0
 
     // Use touch events on mobile for better control
     if (this.isMobile) {
-      canvas.addEventListener('touchstart', this.handleTouchStart.bind(this), { passive: false })
-      canvas.addEventListener('touchmove', this.handleTouchMove.bind(this), { passive: false })
-      canvas.addEventListener('touchend', this.handleTouchEnd.bind(this), { passive: true })
-      canvas.addEventListener('touchcancel', this.handleTouchEnd.bind(this), { passive: true })
+      this.boundHandlers.touchStart = this.handleTouchStart.bind(this)
+      this.boundHandlers.touchMove = this.handleTouchMove.bind(this)
+      this.boundHandlers.touchEnd = this.handleTouchEnd.bind(this)
+
+      canvas.addEventListener('touchstart', this.boundHandlers.touchStart, { passive: false })
+      canvas.addEventListener('touchmove', this.boundHandlers.touchMove, { passive: false })
+      canvas.addEventListener('touchend', this.boundHandlers.touchEnd, { passive: true })
+      canvas.addEventListener('touchcancel', this.boundHandlers.touchEnd, { passive: true })
     } else {
-      canvas.addEventListener('pointerdown', (e: PointerEvent) => {
+      this.boundHandlers.pointerDown = (e: PointerEvent) => {
         vec2.set(this.pointerPos, e.clientX, e.clientY)
         vec2.copy(this.previousPointerPos, this.pointerPos)
         this.isPointerDown = true
-      })
-      canvas.addEventListener('pointerup', () => { this.isPointerDown = false })
-      canvas.addEventListener('pointerleave', () => { this.isPointerDown = false })
-      canvas.addEventListener('pointermove', (e: PointerEvent) => {
+        this.onInput() // Track input for idle detection
+      }
+      this.boundHandlers.pointerUp = () => { this.isPointerDown = false }
+      this.boundHandlers.pointerLeave = () => { this.isPointerDown = false }
+      this.boundHandlers.pointerMove = (e: PointerEvent) => {
+        this.onInput() // Track input for idle detection
         if (this.isPointerDown) {
           vec2.set(this.pointerPos, e.clientX, e.clientY)
         }
-      })
+      }
+
+      canvas.addEventListener('pointerdown', this.boundHandlers.pointerDown)
+      canvas.addEventListener('pointerup', this.boundHandlers.pointerUp)
+      canvas.addEventListener('pointerleave', this.boundHandlers.pointerLeave)
+      canvas.addEventListener('pointermove', this.boundHandlers.pointerMove)
     }
     canvas.style.touchAction = 'none'
+  }
+
+  // Called on any user input to reset idle timer
+  private onInput() {
+    lastInputTime = performance.now()
+    // If we were idle, wake up the animation
+    if (isIdle && animationId === null) {
+      isIdle = false
+      run()
+    }
+  }
+
+  destroy() {
+    // Remove all event listeners
+    if (this.isMobile) {
+      if (this.boundHandlers.touchStart) {
+        this.canvas.removeEventListener('touchstart', this.boundHandlers.touchStart)
+      }
+      if (this.boundHandlers.touchMove) {
+        this.canvas.removeEventListener('touchmove', this.boundHandlers.touchMove)
+      }
+      if (this.boundHandlers.touchEnd) {
+        this.canvas.removeEventListener('touchend', this.boundHandlers.touchEnd)
+        this.canvas.removeEventListener('touchcancel', this.boundHandlers.touchEnd)
+      }
+    } else {
+      if (this.boundHandlers.pointerDown) {
+        this.canvas.removeEventListener('pointerdown', this.boundHandlers.pointerDown)
+      }
+      if (this.boundHandlers.pointerUp) {
+        this.canvas.removeEventListener('pointerup', this.boundHandlers.pointerUp)
+      }
+      if (this.boundHandlers.pointerLeave) {
+        this.canvas.removeEventListener('pointerleave', this.boundHandlers.pointerLeave)
+      }
+      if (this.boundHandlers.pointerMove) {
+        this.canvas.removeEventListener('pointermove', this.boundHandlers.pointerMove)
+      }
+    }
+    this.boundHandlers = {}
   }
 
   private handleTouchStart(e: TouchEvent) {
@@ -454,6 +519,7 @@ class ArcballControl {
     this.isPointerDown = true
     this.hasMoved = false
     this.lastTouchTime = Date.now()
+    this.onInput() // Track input for idle detection
   }
 
   private handleTouchMove(e: TouchEvent) {
@@ -473,6 +539,7 @@ class ArcballControl {
     }
 
     vec2.set(this.pointerPos, x, y)
+    this.onInput() // Track input for idle detection
   }
 
   private handleTouchEnd() {
@@ -619,6 +686,34 @@ let _time = 0
 let _frames = 0
 let movementActive = false
 
+// Pre-allocated reusable objects to avoid per-frame allocations (GC churn)
+const _idleQuat = quat.create()
+const _idleAxis = vec3.fromValues(0.1, 1, 0.2)
+const _tempVec3 = vec3.create()
+const _tempMat4 = mat4.create()
+const _translationMat = mat4.create()
+const _targetToMat = mat4.create()
+const _scalingMat = mat4.create()
+const _negatedPos = vec3.create()
+const _scalingVec = vec3.create()
+const _zeroVec = vec3.fromValues(0, 0, 0)
+const _upVec = vec3.fromValues(0, 1, 0)
+const _sphereTranslation = vec3.fromValues(0, 0, -SPHERE_RADIUS)
+
+// Pre-allocated arrays for render uniforms (avoid creating every frame)
+let _categoryColorArray: Float32Array | null = null
+let _categoryIndices: Int32Array | null = null
+let _categoryList: string[] | null = null
+
+// Idle timer for stopping animation after no input
+const IDLE_TIMEOUT = 3000 // 3 seconds of no input
+let lastInputTime = 0
+let isIdle = false
+
+// Label update cadence (10fps instead of render fps)
+const LABEL_UPDATE_INTERVAL = 100 // ms (10fps)
+let lastLabelUpdateTime = 0
+
 let discLocations: {
   aModelPosition: number
   aModelUvs: number
@@ -699,6 +794,9 @@ function initWebGL(canvas: HTMLCanvasElement) {
   initDiscInstances(DISC_INSTANCE_COUNT)
 
   control = new ArcballControl(canvas, onControlUpdate)
+
+  // Initialize cached uniform arrays (avoids per-frame allocations)
+  initUniformArrays()
 
   updateCameraMatrix()
   updateProjectionMatrix()
@@ -949,33 +1047,52 @@ function updateDiscLabels() {
 function animate(deltaTime: number) {
   if (!gl || !control) return
 
-  // Add gentle idle rotation when not dragging
+  // Add gentle idle rotation when not dragging (using pre-allocated quat)
   if (!control.isPointerDown && Math.abs(smoothRotationVelocity) < 0.01) {
     const rotSpeed = deltaTime * 0.00015
-    const idleQuat = quat.create()
-    quat.setAxisAngle(idleQuat, [0.1, 1, 0.2], rotSpeed)
-    quat.multiply(control.orientation, idleQuat, control.orientation)
+    quat.setAxisAngle(_idleQuat, _idleAxis, rotSpeed)
+    quat.multiply(control.orientation, _idleQuat, control.orientation)
     quat.normalize(control.orientation, control.orientation)
   }
 
   // Note: control.update() is called in run() at 60fps for responsive input
 
-  const positions = instancePositions.map(p => vec3.transformQuat(vec3.create(), p, control!.orientation))
   const scale = 0.25
   const SCALE_INTENSITY = 0.6
 
-  positions.forEach((p, ndx) => {
-    const s = (Math.abs(p[2]) / SPHERE_RADIUS) * SCALE_INTENSITY + (1 - SCALE_INTENSITY)
+  // Transform positions in-place using pre-allocated objects
+  for (let ndx = 0; ndx < instancePositions.length; ndx++) {
+    const p = instancePositions[ndx]
+
+    // Transform position by orientation (reuse _tempVec3)
+    vec3.transformQuat(_tempVec3, p, control.orientation)
+
+    const s = (Math.abs(_tempVec3[2]) / SPHERE_RADIUS) * SCALE_INTENSITY + (1 - SCALE_INTENSITY)
     const finalScale = s * scale
-    const matrix = mat4.create()
 
-    mat4.multiply(matrix, matrix, mat4.fromTranslation(mat4.create(), vec3.negate(vec3.create(), p)))
-    mat4.multiply(matrix, matrix, mat4.targetTo(mat4.create(), [0, 0, 0], p, [0, 1, 0]))
-    mat4.multiply(matrix, matrix, mat4.fromScaling(mat4.create(), [finalScale, finalScale, finalScale]))
-    mat4.multiply(matrix, matrix, mat4.fromTranslation(mat4.create(), [0, 0, -SPHERE_RADIUS]))
+    // Build matrix using pre-allocated matrices
+    mat4.identity(_tempMat4)
 
-    mat4.copy(discInstances.matrices[ndx], matrix)
-  })
+    // Translation by negated position
+    vec3.negate(_negatedPos, _tempVec3)
+    mat4.fromTranslation(_translationMat, _negatedPos)
+    mat4.multiply(_tempMat4, _tempMat4, _translationMat)
+
+    // Target to look at position
+    mat4.targetTo(_targetToMat, _zeroVec, _tempVec3, _upVec)
+    mat4.multiply(_tempMat4, _tempMat4, _targetToMat)
+
+    // Scaling
+    vec3.set(_scalingVec, finalScale, finalScale, finalScale)
+    mat4.fromScaling(_scalingMat, _scalingVec)
+    mat4.multiply(_tempMat4, _tempMat4, _scalingMat)
+
+    // Final translation
+    mat4.fromTranslation(_translationMat, _sphereTranslation)
+    mat4.multiply(_tempMat4, _tempMat4, _translationMat)
+
+    mat4.copy(discInstances.matrices[ndx], _tempMat4)
+  }
 
   gl.bindBuffer(gl.ARRAY_BUFFER, discInstances.buffer)
   gl.bufferSubData(gl.ARRAY_BUFFER, 0, discInstances.matricesArray)
@@ -983,8 +1100,32 @@ function animate(deltaTime: number) {
 
   smoothRotationVelocity = control.rotationVelocity
 
-  // Update label positions for overlay
-  updateDiscLabels()
+  // Update label positions for overlay at lower cadence (10fps)
+  const now = performance.now()
+  if (now - lastLabelUpdateTime >= LABEL_UPDATE_INTERVAL) {
+    lastLabelUpdateTime = now
+    updateDiscLabels()
+  }
+}
+
+// Initialize cached uniform arrays (called once during init)
+function initUniformArrays() {
+  _categoryList = Object.keys(categoryColors)
+  _categoryColorArray = new Float32Array(30)
+  _categoryList.forEach((cat, i) => {
+    const hex = categoryColors[cat]
+    const r = parseInt(hex.slice(1, 3), 16) / 255
+    const g = parseInt(hex.slice(3, 5), 16) / 255
+    const b = parseInt(hex.slice(5, 7), 16) / 255
+    _categoryColorArray![i * 3] = r
+    _categoryColorArray![i * 3 + 1] = g
+    _categoryColorArray![i * 3 + 2] = b
+  })
+
+  _categoryIndices = new Int32Array(42)
+  menuItems.forEach((item, i) => {
+    _categoryIndices![i] = _categoryList!.indexOf(item.category)
+  })
 }
 
 function render() {
@@ -1014,26 +1155,13 @@ function render() {
   gl.uniform1i(discLocations.uItemCount, menuItems.length)
   gl.uniform1f(discLocations.uTime, _frames * 0.016)
 
-  // Category colors as vec3 array
-  const categoryList = Object.keys(categoryColors)
-  const colorArray = new Float32Array(30)
-  categoryList.forEach((cat, i) => {
-    const hex = categoryColors[cat]
-    const r = parseInt(hex.slice(1, 3), 16) / 255
-    const g = parseInt(hex.slice(3, 5), 16) / 255
-    const b = parseInt(hex.slice(5, 7), 16) / 255
-    colorArray[i * 3] = r
-    colorArray[i * 3 + 1] = g
-    colorArray[i * 3 + 2] = b
-  })
-  gl.uniform3fv(discLocations.uCategoryColors, colorArray)
-
-  // Category indices for each menu item
-  const categoryIndices = new Int32Array(42)
-  menuItems.forEach((item, i) => {
-    categoryIndices[i] = categoryList.indexOf(item.category)
-  })
-  gl.uniform1iv(discLocations.uCategoryIndices, categoryIndices)
+  // Use pre-allocated cached arrays (created once in initUniformArrays)
+  if (_categoryColorArray) {
+    gl.uniform3fv(discLocations.uCategoryColors, _categoryColorArray)
+  }
+  if (_categoryIndices) {
+    gl.uniform1iv(discLocations.uCategoryIndices, _categoryIndices)
+  }
 
   gl.bindVertexArray(discVAO)
   gl.drawElementsInstanced(gl.TRIANGLES, discBuffers.indices.length, gl.UNSIGNED_SHORT, 0, DISC_INSTANCE_COUNT)
@@ -1041,10 +1169,22 @@ function render() {
 }
 
 function run(time = 0) {
-  animationId = requestAnimationFrame(run)
-
   // Skip animation when tab is hidden (performance optimization)
-  if (!isVisible) return
+  if (!isVisible) {
+    animationId = requestAnimationFrame(run)
+    return
+  }
+
+  // Check for idle state - stop loop after IDLE_TIMEOUT of no input
+  const timeSinceInput = time - lastInputTime
+  if (timeSinceInput > IDLE_TIMEOUT && !control?.isPointerDown) {
+    // Go idle - stop the animation loop entirely
+    isIdle = true
+    animationId = null
+    return
+  }
+
+  animationId = requestAnimationFrame(run)
 
   const deltaTime = Math.min(32, time - _time)
   _time = time
@@ -1076,16 +1216,29 @@ function handleVisibilityChange() {
   isVisible = !document.hidden
 }
 
-function cleanup() {
-  // Cancel animation
+function stopAnimationLoop() {
   if (animationId !== null) {
     cancelAnimationFrame(animationId)
     animationId = null
   }
+  shouldAnimate.value = false
+}
+
+function cleanup() {
+  // Stop animation loop
+  stopAnimationLoop()
 
   // Remove event listeners
   window.removeEventListener('resize', resize)
   document.removeEventListener('visibilitychange', handleVisibilityChange)
+  if (reducedMotionQuery) {
+    reducedMotionQuery.removeEventListener('change', handleReducedMotionChange)
+  }
+
+  // Clean up ArcballControl event listeners
+  if (control) {
+    control.destroy()
+  }
 
   // Cleanup WebGL resources
   if (gl) {
@@ -1119,12 +1272,52 @@ function cleanup() {
   control = null
 }
 
+// Reduced motion detection
+let reducedMotionQuery: MediaQueryList | null = null
+
+function handleReducedMotionChange(e: MediaQueryListEvent) {
+  prefersReducedMotion.value = e.matches
+  if (e.matches) {
+    // User prefers reduced motion - stop the WebGL loop entirely
+    stopAnimationLoop()
+  } else if (webglSupported.value && canvasRef.value) {
+    // Motion is OK again - restart animation
+    shouldAnimate.value = true
+    run()
+  }
+}
+
 onMounted(() => {
-  if (canvasRef.value) {
+  if (!canvasRef.value) return
+
+  // Check for reduced motion preference FIRST
+  reducedMotionQuery = window.matchMedia('(prefers-reduced-motion: reduce)')
+  prefersReducedMotion.value = reducedMotionQuery.matches
+  reducedMotionQuery.addEventListener('change', handleReducedMotionChange)
+
+  // If user prefers reduced motion, don't start WebGL at all
+  if (prefersReducedMotion.value) {
+    webglSupported.value = false // Treat as unsupported to show static fallback
+    shouldAnimate.value = false
+    // Set a default active item for the static display
+    activeItem.value = menuItems[0]
+    return
+  }
+
+  // Try to initialize WebGL2 with graceful fallback
+  try {
     initWebGL(canvasRef.value)
+    shouldAnimate.value = true
+    lastInputTime = performance.now() // Initialize idle timer
     run()
     window.addEventListener('resize', resize, { passive: true })
     document.addEventListener('visibilitychange', handleVisibilityChange)
+  } catch (error) {
+    console.warn('WebGL2 not supported, falling back to static display:', error)
+    webglSupported.value = false
+    shouldAnimate.value = false
+    // Set a default active item for the static fallback
+    activeItem.value = menuItems[0]
   }
 })
 
@@ -1135,13 +1328,31 @@ onUnmounted(() => {
 
 <template>
   <div class="infinite-menu-container">
+    <!-- WebGL Canvas (only when supported) -->
     <canvas
+      v-show="webglSupported"
       ref="canvasRef"
       class="infinite-menu-canvas"
     />
 
-    <!-- Disc labels overlay - always visible -->
-    <div class="disc-labels-container">
+    <!-- Static fallback when WebGL is not supported or reduced motion is preferred -->
+    <div v-if="!webglSupported" class="static-fallback">
+      <div class="static-grid">
+        <a
+          v-for="(item, index) in menuItems.slice(0, 12)"
+          :key="index"
+          :href="`${$router?.options?.history?.base || ''}${item.link}`"
+          class="static-item"
+          :style="{ '--category-color': categoryColors[item.category] }"
+        >
+          <span class="static-icon">{{ item.icon }}</span>
+          <span class="static-text">{{ item.text }}</span>
+        </a>
+      </div>
+    </div>
+
+    <!-- Disc labels overlay - only when WebGL is active -->
+    <div v-if="webglSupported" class="disc-labels-container">
       <div
         v-for="(label, index) in discLabels"
         :key="index"
@@ -1159,13 +1370,13 @@ onUnmounted(() => {
       </div>
     </div>
 
-    <!-- Large center display showing active topic -->
-    <div class="center-label" :class="{ hidden: isMoving }">
+    <!-- Large center display showing active topic (WebGL mode only) -->
+    <div v-if="webglSupported" class="center-label" :class="{ hidden: isMoving }">
       <span class="center-icon">{{ activeItem?.icon }}</span>
       <span class="center-text">{{ activeItem?.text }}</span>
     </div>
 
-    <div v-if="activeItem" class="menu-info" :class="{ hidden: isMoving }">
+    <div v-if="activeItem && webglSupported" class="menu-info" :class="{ hidden: isMoving }">
       <div class="category-badge" :style="{ backgroundColor: activeCategoryColor, boxShadow: `0 0 20px ${activeCategoryColor}` }">
         {{ activeCategory }}
       </div>
@@ -1179,7 +1390,7 @@ onUnmounted(() => {
       </button>
     </div>
 
-    <div class="drag-hint" :class="{ hidden: isMoving }">
+    <div v-if="webglSupported" class="drag-hint" :class="{ hidden: isMoving }">
       Drag to explore topics
     </div>
   </div>
@@ -1518,6 +1729,94 @@ onUnmounted(() => {
   .center-text,
   .drag-hint {
     animation: none;
+  }
+}
+
+/* Static fallback styles for WebGL2 unsupported or reduced motion */
+.static-fallback {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  box-sizing: border-box;
+}
+
+.static-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+  max-width: 600px;
+  width: 100%;
+}
+
+.static-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 16px 8px;
+  background: var(--category-color, rgba(99, 102, 241, 0.2));
+  border-radius: 12px;
+  text-decoration: none;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.static-item:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+}
+
+.static-icon {
+  font-size: 1.5rem;
+  margin-bottom: 6px;
+}
+
+.static-text {
+  font-size: 11px;
+  font-weight: 600;
+  color: white;
+  text-align: center;
+  line-height: 1.2;
+}
+
+@media (max-width: 768px) {
+  .static-grid {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+  }
+
+  .static-item {
+    padding: 12px 6px;
+  }
+
+  .static-icon {
+    font-size: 1.2rem;
+  }
+
+  .static-text {
+    font-size: 10px;
+  }
+}
+
+@media (max-width: 480px) {
+  .static-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 8px;
+  }
+
+  .static-item {
+    padding: 10px 6px;
+  }
+
+  .static-icon {
+    font-size: 1rem;
+  }
+
+  .static-text {
+    font-size: 9px;
   }
 }
 </style>
