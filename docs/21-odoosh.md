@@ -289,14 +289,35 @@ $ find ~/data -size +100M -exec ls -lh {} \;
 
 ### Dedicated Hosting Only: SQL External Access
 
-For dedicated hosting plans, you can enable external PostgreSQL access:
+For dedicated hosting plans, you can enable **read-only** external PostgreSQL access for BI tools:
 
 ```bash
-$ odoosh-sql-access --enable
-# Returns connection details for external tools like DBeaver, pgAdmin
+$ odoosh-sql-access <command>
 ```
 
-This allows connecting database tools directly for complex reporting queries.
+| Command | Description |
+| :--- | :--- |
+| `status` | Display current status and connected clients |
+| `init` | Initialize external access and generate password |
+| `reset` | Reset the external access password |
+| `disable` | Disable external access (clears password) |
+| `kill` | Force-kill all existing external connections |
+
+**Setting up external access:**
+```bash
+$ odoosh-sql-access init
+# Returns connection details: host, port, database, user, password
+```
+
+::: warning Limitations
+- **Read-only access** - Cannot modify data
+- **Dedicated hosting only** - Not available on shared plans
+- **SSL required** - Client must support SSL connections
+- **Incompatible clients** - PgAdmin and Qlik Sense don't work
+- **May disconnect** - Platform updates can interrupt connections
+
+**Compatible tools:** DBeaver, Metabase, Tableau, Power BI, custom scripts
+:::
 
 ## Understanding Builds
 
