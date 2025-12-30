@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted, computed } from 'vue'
+import { useRouter } from 'vitepress'
 import { mat4, quat, vec2, vec3 } from 'gl-matrix'
 
 interface MenuItem {
@@ -87,6 +88,9 @@ const categoryColors: Record<string, string> = {
 
 const activeCategory = computed(() => activeItem.value?.category || '')
 const activeCategoryColor = computed(() => categoryColors[activeCategory.value] || '#6366f1')
+
+// Use VitePress router for client-side navigation
+const router = useRouter()
 
 // WebGL Shaders with electric glow
 const discVertShaderSource = `#version 300 es
@@ -1224,11 +1228,15 @@ function run(time = 0) {
   render()
 }
 
-function handleClick() {
+function handleClick(event: MouseEvent) {
   if (!activeItem.value) return
-  // Use dynamic base path - works on both Vercel (/) and GitHub Pages (/odoo-training/)
-  const base = import.meta.env.BASE_URL.replace(/\/$/, '')
-  window.location.href = `${base}${activeItem.value.link}`
+
+  // Blur the button to release focus (fixes scroll issue after navigation)
+  const button = event.currentTarget as HTMLButtonElement
+  button?.blur()
+
+  // Use VitePress router for smooth client-side navigation
+  router.go(activeItem.value.link)
 }
 
 function handleVisibilityChange() {
