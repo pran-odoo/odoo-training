@@ -958,7 +958,7 @@ function animate(deltaTime: number) {
     quat.normalize(control.orientation, control.orientation)
   }
 
-  control.update(deltaTime, TARGET_FRAME_DURATION)
+  // Note: control.update() is called in run() at 60fps for responsive input
 
   const positions = instancePositions.map(p => vec3.transformQuat(vec3.create(), p, control!.orientation))
   const scale = 0.25
@@ -1046,13 +1046,19 @@ function run(time = 0) {
   // Skip animation when tab is hidden (performance optimization)
   if (!isVisible) return
 
-  // Frame rate limiting - skip frame if not enough time has passed
+  const deltaTime = Math.min(32, time - _time)
+  _time = time
+
+  // Always update control for responsive input handling
+  if (control) {
+    control.update(deltaTime, TARGET_FRAME_DURATION)
+  }
+
+  // Frame rate limiting for rendering only
   const elapsed = time - lastRenderTime
   if (elapsed < FRAME_TIME) return
   lastRenderTime = time - (elapsed % FRAME_TIME)
 
-  const deltaTime = Math.min(32, time - _time)
-  _time = time
   _frames += deltaTime / TARGET_FRAME_DURATION
 
   animate(deltaTime)
