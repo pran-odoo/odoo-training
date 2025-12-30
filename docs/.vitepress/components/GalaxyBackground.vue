@@ -1,55 +1,54 @@
 <script setup lang="ts">
 /**
- * Galaxy Background Effect - WebGL Shader Implementation
- * Animated star field with twinkling effect
- *
- * REQUIREMENTS:
- * - Must show immediately on page load (no flicker)
- * - Must cover full viewport at all times
- * - Must work on scroll (fixed position)
- * - Must be behind all content (z-index: 0)
- * - Must have dark fallback background
- * - Must pause when tab is hidden (performance)
- * - Must clean up properly on unmount
+ * Galaxy Background Effect - Enhanced WebGL Shader
+ * Based on React Bits Galaxy component by @BalintFerenczy
+ * https://codepen.io/BalintFerenczy/pen/KwdoyEN
  */
 import { ref, onMounted, onUnmounted } from 'vue'
 
-// Props for customization
 interface Props {
   density?: number
   speed?: number
   glowIntensity?: number
   twinkleIntensity?: number
   rotationSpeed?: number
+  hueShift?: number
+  saturation?: number
+  mouseInteraction?: boolean
+  mouseRepulsion?: boolean
+  repulsionStrength?: number
 }
 
 const props = withDefaults(defineProps<Props>(), {
-  density: 1.0,
-  speed: 0.8,
-  glowIntensity: 0.5,
-  twinkleIntensity: 0.5,
-  rotationSpeed: 0.05
+  density: 1.5,
+  speed: 1.0,
+  glowIntensity: 0.3,
+  twinkleIntensity: 0.3,
+  rotationSpeed: 0.1,
+  hueShift: 140,
+  saturation: 0.0,
+  mouseInteraction: true,
+  mouseRepulsion: true,
+  repulsionStrength: 2
 })
 
-// Refs
 const canvasRef = ref<HTMLCanvasElement | null>(null)
 const isReady = ref(false)
-const webglSupported = ref(true)
 
-// WebGL state (not reactive - internal only)
 let gl: WebGLRenderingContext | null = null
 let program: WebGLProgram | null = null
 let buffer: WebGLBuffer | null = null
-let vertShader: WebGLShader | null = null
-let fragShader: WebGLShader | null = null
 let animationId: number | null = null
 let startTime = 0
 let isVisible = true
-
-// Uniforms cache
 let uniforms: Record<string, WebGLUniformLocation | null> = {}
 
-// Shaders
+// Mouse tracking with smoothing
+const targetMouse = { x: 0.5, y: 0.5 }
+const smoothMouse = { x: 0.5, y: 0.5 }
+let mouseActive = 0
+let targetMouseActive = 0
+
 const VERTEX_SHADER = `
 attribute vec2 aPosition;
 varying vec2 vUv;
@@ -64,91 +63,101 @@ precision highp float;
 
 uniform float uTime;
 uniform vec2 uResolution;
+uniform vec2 uFocal;
+uniform float uStarSpeed;
 uniform float uDensity;
+uniform float uHueShift;
 uniform float uSpeed;
-uniform float uGlow;
-uniform float uTwinkle;
-uniform float uRotation;
+uniform vec2 uMouse;
+uniform float uGlowIntensity;
+uniform float uSaturation;
+uniform bool uMouseRepulsion;
+uniform float uTwinkleIntensity;
+uniform float uRotationSpeed;
+uniform float uRepulsionStrength;
+uniform float uMouseActiveFactor;
 
 varying vec2 vUv;
 
-#define NUM_LAYERS 4.0
-#define PI 3.14159265359
+#define NUM_LAYER 4.0
+#define STAR_COLOR_CUTOFF 0.2
+#define MAT45 mat2(0.7071, -0.7071, 0.7071, 0.7071)
+#define PERIOD 3.0
 
-// Hash function for randomness
-float hash(vec2 p) {
+float Hash21(vec2 p) {
   p = fract(p * vec2(123.34, 456.21));
   p += dot(p, p + 45.32);
   return fract(p.x * p.y);
 }
 
-// Triangle wave for smooth oscillation
 float tri(float x) {
   return abs(fract(x) * 2.0 - 1.0);
 }
 
-// Smooth triangle wave
-float smoothTri(float x) {
+float tris(float x) {
   float t = fract(x);
   return 1.0 - smoothstep(0.0, 1.0, abs(2.0 * t - 1.0));
 }
 
-// Star shape with glow and rays
-float star(vec2 uv, float flare) {
+float trisn(float x) {
+  float t = fract(x);
+  return 2.0 * (1.0 - smoothstep(0.0, 1.0, abs(2.0 * t - 1.0))) - 1.0;
+}
+
+vec3 hsv2rgb(vec3 c) {
+  vec4 K = vec4(1.0, 2.0 / 3.0, 1.0 / 3.0, 3.0);
+  vec3 p = abs(fract(c.xxx + K.xyz) * 6.0 - K.www);
+  return c.z * mix(K.xxx, clamp(p - K.xxx, 0.0, 1.0), c.y);
+}
+
+float Star(vec2 uv, float flare) {
   float d = length(uv);
-  float m = (0.05 * uGlow) / d;
-
-  // Cross rays
-  float rays = max(0.0, 1.0 - abs(uv.x * uv.y * 1000.0));
-  m += rays * flare * uGlow * 0.5;
-
-  // Diagonal rays (rotated 45 degrees)
-  vec2 uvRot = uv * mat2(0.707, -0.707, 0.707, 0.707);
-  rays = max(0.0, 1.0 - abs(uvRot.x * uvRot.y * 1000.0));
-  m += rays * flare * uGlow * 0.25;
-
-  // Fade at edges
+  float m = (0.05 * uGlowIntensity) / d;
+  float rays = smoothstep(0.0, 1.0, 1.0 - abs(uv.x * uv.y * 1000.0));
+  m += rays * flare * uGlowIntensity;
+  uv *= MAT45;
+  rays = smoothstep(0.0, 1.0, 1.0 - abs(uv.x * uv.y * 1000.0));
+  m += rays * 0.3 * flare * uGlowIntensity;
   m *= smoothstep(1.0, 0.2, d);
-
   return m;
 }
 
-// Generate a layer of stars
-vec3 starLayer(vec2 uv, float layerOffset) {
+vec3 StarLayer(vec2 uv) {
   vec3 col = vec3(0.0);
 
   vec2 gv = fract(uv) - 0.5;
   vec2 id = floor(uv);
 
-  // Check 3x3 neighborhood for stars
   for (int y = -1; y <= 1; y++) {
     for (int x = -1; x <= 1; x++) {
       vec2 offset = vec2(float(x), float(y));
-      vec2 cellId = id + offset;
+      vec2 si = id + vec2(float(x), float(y));
+      float seed = Hash21(si);
+      float size = fract(seed * 345.32);
+      float glossLocal = tri(uStarSpeed / (PERIOD * seed + 1.0));
+      float flareSize = smoothstep(0.9, 1.0, size) * glossLocal;
 
-      float h = hash(cellId + layerOffset);
-      float size = fract(h * 345.32);
+      float red = smoothstep(STAR_COLOR_CUTOFF, 1.0, Hash21(si + 1.0)) + STAR_COLOR_CUTOFF;
+      float blu = smoothstep(STAR_COLOR_CUTOFF, 1.0, Hash21(si + 3.0)) + STAR_COLOR_CUTOFF;
+      float grn = min(red, blu) * seed;
+      vec3 base = vec3(red, grn, blu);
 
-      // Skip small stars for performance
-      if (size < 0.3) continue;
+      float hue = atan(base.g - base.r, base.b - base.r) / (2.0 * 3.14159) + 0.5;
+      hue = fract(hue + uHueShift / 360.0);
+      float sat = length(base - vec3(dot(base, vec3(0.299, 0.587, 0.114)))) * uSaturation;
+      float val = max(max(base.r, base.g), base.b);
+      base = hsv2rgb(vec3(hue, sat, val));
 
-      // Star position jitter
-      vec2 jitter = vec2(hash(cellId * 1.1), hash(cellId * 2.3)) - 0.5;
-      jitter *= 0.8;
+      vec2 pad = vec2(tris(seed * 34.0 + uTime * uSpeed / 10.0), tris(seed * 38.0 + uTime * uSpeed / 30.0)) - 0.5;
 
-      // Twinkle effect
-      float twinkle = smoothTri(uTime * uSpeed * 0.5 + h * 6.283) * uTwinkle;
-      twinkle = mix(0.5, 1.0, twinkle);
+      float star = Star(gv - offset - pad, flareSize);
+      vec3 color = base;
 
-      // Flare for larger stars
-      float flare = smoothstep(0.8, 1.0, size) * tri(uTime * 0.2 + h);
+      float twinkle = trisn(uTime * uSpeed + seed * 6.2831) * 0.5 + 1.0;
+      twinkle = mix(1.0, twinkle, uTwinkleIntensity);
+      star *= twinkle;
 
-      // Star color (slight blue/white tint)
-      vec3 starCol = vec3(0.8 + h * 0.2, 0.85 + h * 0.15, 1.0);
-
-      // Compute star
-      float s = star(gv - offset - jitter, flare);
-      col += s * size * twinkle * starCol;
+      col += star * size * color;
     }
   }
 
@@ -156,51 +165,52 @@ vec3 starLayer(vec2 uv, float layerOffset) {
 }
 
 void main() {
-  // Normalized coordinates centered
-  vec2 uv = (vUv - 0.5) * vec2(uResolution.x / uResolution.y, 1.0);
+  vec2 focalPx = uFocal * uResolution;
+  vec2 uv = (vUv * uResolution - focalPx) / uResolution.y;
 
-  // Slow rotation
-  float angle = uTime * uRotation;
-  float c = cos(angle);
-  float s = sin(angle);
-  uv = mat2(c, -s, s, c) * uv;
+  vec2 mouseNorm = uMouse - vec2(0.5);
 
-  // Accumulate star layers
-  vec3 col = vec3(0.0);
-
-  for (float i = 0.0; i < NUM_LAYERS; i++) {
-    float depth = (i + 1.0) / NUM_LAYERS;
-    float scale = mix(30.0, 5.0, depth) * uDensity;
-    float brightness = depth * 0.7 + 0.3;
-
-    col += starLayer(uv * scale + i * 100.0, i) * brightness;
+  if (uMouseRepulsion) {
+    vec2 mousePosUV = (uMouse * uResolution - focalPx) / uResolution.y;
+    float mouseDist = length(uv - mousePosUV);
+    vec2 repulsion = normalize(uv - mousePosUV) * (uRepulsionStrength / (mouseDist + 0.1));
+    uv += repulsion * 0.05 * uMouseActiveFactor;
+  } else {
+    vec2 mouseOffset = mouseNorm * 0.1 * uMouseActiveFactor;
+    uv += mouseOffset;
   }
 
-  // Subtle vignette
-  float vignette = 1.0 - length(vUv - 0.5) * 0.5;
-  col *= vignette;
+  float autoRotAngle = uTime * uRotationSpeed;
+  mat2 autoRot = mat2(cos(autoRotAngle), -sin(autoRotAngle), sin(autoRotAngle), cos(autoRotAngle));
+  uv = autoRot * uv;
 
-  // Output with alpha
-  float alpha = min(length(col) * 2.0, 1.0);
+  vec3 col = vec3(0.0);
+
+  for (float i = 0.0; i < 1.0; i += 1.0 / NUM_LAYER) {
+    float depth = fract(i + uStarSpeed * uSpeed);
+    float scale = mix(20.0 * uDensity, 0.5 * uDensity, depth);
+    float fade = depth * smoothstep(1.0, 0.9, depth);
+    col += StarLayer(uv * scale + i * 453.32) * fade;
+  }
+
+  float alpha = length(col);
+  alpha = smoothstep(0.0, 0.3, alpha);
+  alpha = min(alpha, 1.0);
   gl_FragColor = vec4(col, alpha);
 }
 `
 
 function createShader(type: number, source: string): WebGLShader | null {
   if (!gl) return null
-
   const shader = gl.createShader(type)
   if (!shader) return null
-
   gl.shaderSource(shader, source)
   gl.compileShader(shader)
-
   if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
     console.error('Galaxy shader error:', gl.getShaderInfoLog(shader))
     gl.deleteShader(shader)
     return null
   }
-
   return shader
 }
 
@@ -208,7 +218,6 @@ function initWebGL(): boolean {
   const canvas = canvasRef.value
   if (!canvas) return false
 
-  // Get WebGL context
   gl = canvas.getContext('webgl', {
     alpha: true,
     premultipliedAlpha: false,
@@ -218,17 +227,13 @@ function initWebGL(): boolean {
 
   if (!gl) {
     console.warn('WebGL not supported')
-    webglSupported.value = false
     return false
   }
 
-  // Create shaders
-  vertShader = createShader(gl.VERTEX_SHADER, VERTEX_SHADER)
-  fragShader = createShader(gl.FRAGMENT_SHADER, FRAGMENT_SHADER)
-
+  const vertShader = createShader(gl.VERTEX_SHADER, VERTEX_SHADER)
+  const fragShader = createShader(gl.FRAGMENT_SHADER, FRAGMENT_SHADER)
   if (!vertShader || !fragShader) return false
 
-  // Create program
   program = gl.createProgram()
   if (!program) return false
 
@@ -241,30 +246,34 @@ function initWebGL(): boolean {
     return false
   }
 
-  // Create fullscreen quad
   const positions = new Float32Array([-1, -1, 1, -1, -1, 1, 1, 1])
   buffer = gl.createBuffer()
   gl.bindBuffer(gl.ARRAY_BUFFER, buffer)
   gl.bufferData(gl.ARRAY_BUFFER, positions, gl.STATIC_DRAW)
 
-  // Setup attribute
   const posLoc = gl.getAttribLocation(program, 'aPosition')
   gl.enableVertexAttribArray(posLoc)
   gl.vertexAttribPointer(posLoc, 2, gl.FLOAT, false, 0, 0)
 
-  // Get uniform locations
   gl.useProgram(program)
   uniforms = {
     uTime: gl.getUniformLocation(program, 'uTime'),
     uResolution: gl.getUniformLocation(program, 'uResolution'),
+    uFocal: gl.getUniformLocation(program, 'uFocal'),
+    uStarSpeed: gl.getUniformLocation(program, 'uStarSpeed'),
     uDensity: gl.getUniformLocation(program, 'uDensity'),
+    uHueShift: gl.getUniformLocation(program, 'uHueShift'),
     uSpeed: gl.getUniformLocation(program, 'uSpeed'),
-    uGlow: gl.getUniformLocation(program, 'uGlow'),
-    uTwinkle: gl.getUniformLocation(program, 'uTwinkle'),
-    uRotation: gl.getUniformLocation(program, 'uRotation')
+    uMouse: gl.getUniformLocation(program, 'uMouse'),
+    uGlowIntensity: gl.getUniformLocation(program, 'uGlowIntensity'),
+    uSaturation: gl.getUniformLocation(program, 'uSaturation'),
+    uMouseRepulsion: gl.getUniformLocation(program, 'uMouseRepulsion'),
+    uTwinkleIntensity: gl.getUniformLocation(program, 'uTwinkleIntensity'),
+    uRotationSpeed: gl.getUniformLocation(program, 'uRotationSpeed'),
+    uRepulsionStrength: gl.getUniformLocation(program, 'uRepulsionStrength'),
+    uMouseActiveFactor: gl.getUniformLocation(program, 'uMouseActiveFactor')
   }
 
-  // Setup blending
   gl.enable(gl.BLEND)
   gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA)
 
@@ -275,7 +284,6 @@ function resize() {
   const canvas = canvasRef.value
   if (!canvas || !gl) return
 
-  // Use actual viewport size
   const width = window.innerWidth
   const height = window.innerHeight
   const dpr = Math.min(window.devicePixelRatio || 1, 2)
@@ -291,91 +299,102 @@ function resize() {
 }
 
 function render() {
-  if (!gl || !program || !isVisible) {
+  if (!gl || !program) {
+    animationId = requestAnimationFrame(render)
+    return
+  }
+
+  if (!isVisible) {
     animationId = requestAnimationFrame(render)
     return
   }
 
   const time = (performance.now() - startTime) * 0.001
 
+  // Smooth mouse interpolation
+  const lerpFactor = 0.05
+  smoothMouse.x += (targetMouse.x - smoothMouse.x) * lerpFactor
+  smoothMouse.y += (targetMouse.y - smoothMouse.y) * lerpFactor
+  mouseActive += (targetMouseActive - mouseActive) * lerpFactor
+
   gl.clearColor(0, 0, 0, 0)
   gl.clear(gl.COLOR_BUFFER_BIT)
 
   gl.useProgram(program)
 
-  // Update uniforms
   gl.uniform1f(uniforms.uTime, time)
   gl.uniform2f(uniforms.uResolution, canvasRef.value!.width, canvasRef.value!.height)
+  gl.uniform2f(uniforms.uFocal, 0.5, 0.5)
+  gl.uniform1f(uniforms.uStarSpeed, time * 0.5 / 10.0)
   gl.uniform1f(uniforms.uDensity, props.density)
+  gl.uniform1f(uniforms.uHueShift, props.hueShift)
   gl.uniform1f(uniforms.uSpeed, props.speed)
-  gl.uniform1f(uniforms.uGlow, props.glowIntensity)
-  gl.uniform1f(uniforms.uTwinkle, props.twinkleIntensity)
-  gl.uniform1f(uniforms.uRotation, props.rotationSpeed)
+  gl.uniform2f(uniforms.uMouse, smoothMouse.x, smoothMouse.y)
+  gl.uniform1f(uniforms.uGlowIntensity, props.glowIntensity)
+  gl.uniform1f(uniforms.uSaturation, props.saturation)
+  gl.uniform1i(uniforms.uMouseRepulsion, props.mouseRepulsion ? 1 : 0)
+  gl.uniform1f(uniforms.uTwinkleIntensity, props.twinkleIntensity)
+  gl.uniform1f(uniforms.uRotationSpeed, props.rotationSpeed)
+  gl.uniform1f(uniforms.uRepulsionStrength, props.repulsionStrength)
+  gl.uniform1f(uniforms.uMouseActiveFactor, mouseActive)
 
   gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4)
 
   animationId = requestAnimationFrame(render)
 }
 
+function handleMouseMove(e: MouseEvent) {
+  if (!props.mouseInteraction) return
+  targetMouse.x = e.clientX / window.innerWidth
+  targetMouse.y = 1.0 - e.clientY / window.innerHeight
+  targetMouseActive = 1.0
+}
+
+function handleMouseLeave() {
+  targetMouseActive = 0.0
+}
+
 function handleVisibilityChange() {
   isVisible = !document.hidden
 }
 
-function handleResize() {
-  resize()
-}
-
 function cleanup() {
-  // Cancel animation
   if (animationId !== null) {
     cancelAnimationFrame(animationId)
     animationId = null
   }
-
-  // Remove listeners
   document.removeEventListener('visibilitychange', handleVisibilityChange)
-  window.removeEventListener('resize', handleResize)
+  window.removeEventListener('resize', resize)
+  window.removeEventListener('mousemove', handleMouseMove)
+  window.removeEventListener('mouseleave', handleMouseLeave)
 
-  // Clean up WebGL resources
-  if (gl) {
-    if (buffer) {
-      gl.deleteBuffer(buffer)
-      buffer = null
-    }
-    if (vertShader) {
-      gl.deleteShader(vertShader)
-      vertShader = null
-    }
-    if (fragShader) {
-      gl.deleteShader(fragShader)
-      fragShader = null
-    }
-    if (program) {
-      gl.deleteProgram(program)
-      program = null
-    }
+  if (gl && buffer) {
+    gl.deleteBuffer(buffer)
   }
-
+  if (gl && program) {
+    gl.deleteProgram(program)
+  }
   gl = null
-  uniforms = {}
+  program = null
+  buffer = null
 }
 
 onMounted(() => {
-  // SSR guard
   if (typeof window === 'undefined') return
 
-  // Initialize immediately - canvas should be ready
   if (initWebGL()) {
     startTime = performance.now()
     resize()
     isReady.value = true
-
-    // Start render loop
     render()
 
-    // Add listeners
-    window.addEventListener('resize', handleResize, { passive: true })
+    window.addEventListener('resize', resize, { passive: true })
     document.addEventListener('visibilitychange', handleVisibilityChange)
+
+    if (props.mouseInteraction) {
+      window.addEventListener('mousemove', handleMouseMove, { passive: true })
+      window.addEventListener('mouseleave', handleMouseLeave)
+    }
   }
 })
 
@@ -401,7 +420,6 @@ onUnmounted(() => {
   inset: 0;
   z-index: 0;
   pointer-events: none;
-  /* Dark background fallback - visible before WebGL loads */
   background: #0a0a0f;
 }
 
@@ -418,13 +436,10 @@ onUnmounted(() => {
   opacity: 1;
 }
 
-/* Respect reduced motion preference */
 @media (prefers-reduced-motion: reduce) {
   .galaxy-container {
-    /* Show static dark background instead */
     background: radial-gradient(ellipse at 50% 50%, #0f0f1a 0%, #050508 100%);
   }
-
   .galaxy-canvas {
     display: none;
   }

@@ -11,21 +11,9 @@ hero:
     - theme: alt
       text: View on GitHub
       link: https://github.com/pran-odoo/odoo-training
-
-features:
-  - icon: 📚
-    title: 27 In-Depth Sections
-    details: From models and fields to AI features and EDI integration
-  - icon: 🎯
-    title: Real-World Examples
-    details: Practical scenarios from actual Odoo implementations
-  - icon: 🧪
-    title: Interactive Quizzes
-    details: Test your knowledge with built-in assessments
-  - icon: 📱
-    title: Works Offline
-    details: Install as a PWA for offline access anywhere
 ---
+
+<FeatureCards />
 
 ## Explore Topics
 

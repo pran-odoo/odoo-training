@@ -17,6 +17,8 @@ import BackToTop from '../components/BackToTop.vue'
 import KeyboardHelp from '../components/KeyboardHelp.vue'
 import ResumeReading from '../components/ResumeReading.vue'
 import GlossaryProvider from '../components/GlossaryProvider.vue'
+import ElectricBorder from '../components/ElectricBorder.vue'
+import FeatureCards from '../components/FeatureCards.vue'
 
 // Lazy load heavy WebGL component
 const InfiniteMenu = defineAsyncComponent(() => import('../components/InfiniteMenu.vue'))
@@ -39,5 +41,7 @@ export default {
     app.component('ResumeReading', ResumeReading)
     app.component('GlossaryProvider', GlossaryProvider)
     app.component('InfiniteMenu', InfiniteMenu)
+    app.component('ElectricBorder', ElectricBorder)
+    app.component('FeatureCards', FeatureCards)
   }
 } satisfies Theme
