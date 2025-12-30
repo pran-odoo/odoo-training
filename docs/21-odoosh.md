@@ -124,6 +124,180 @@ When a build is yellow or red, check the logs:
 | **Online Editor** | Edit code in browser | Quick fixes without local setup |
 | **GitHub Integration** | Direct link to repository | Seamless code management |
 
+## Shell Access (SSH)
+
+Odoo.sh provides SSH access to your instances, giving you direct command-line access. This is powerful for debugging, data analysis, and advanced operations.
+
+### Connecting to Shell
+
+1. Go to your Odoo.sh project dashboard
+2. Select the branch (Production, Staging, or Development)
+3. Click the **Shell** tab
+4. A terminal opens in your browser
+
+Or connect via SSH client:
+```bash
+ssh <project>-<branch>-<user>@<project>.odoo.com
+```
+
+### Essential Shell Commands
+
+When you connect, you'll see a prompt like:
+```
+yourproject-main-12345678 [production/17.0]:~$
+```
+
+| Command | Description | Example |
+| :--- | :--- | :--- |
+| `odoo-bin shell` | Open interactive Odoo shell (Python) | Access ORM directly |
+| `odoo-update` | Update modules in the database | `odoo-update -m sale,purchase` |
+| `odoosh-restart` | Restart Odoo.sh services | After config changes |
+| `psql` | Open PostgreSQL database shell | Direct SQL queries |
+| `lnav ~/logs/odoo.log` | Navigate logs with search/filter | Debug issues |
+| `odoosh-storage` | Check container storage usage | Monitor disk space |
+
+### The Odoo Shell (`odoo-bin shell`)
+
+The Odoo shell gives you interactive Python access to the ORM:
+
+```python
+# Connect to the shell
+$ odoo-bin shell
+
+# Now you're in a Python environment with 'env' available
+>>> partners = env['res.partner'].search([('is_company', '=', True)])
+>>> len(partners)
+42
+
+>>> # Update records directly
+>>> env['res.config.settings'].create({}).execute()
+
+>>> # Run a method on records
+>>> so = env['sale.order'].browse(123)
+>>> so.action_confirm()
+
+>>> # Commit changes (important!)
+>>> env.cr.commit()
+```
+
+::: warning Always Commit or Rollback
+In the shell, changes aren't automatically saved. Use `env.cr.commit()` to save or `env.cr.rollback()` to discard changes before exiting.
+:::
+
+### Updating Modules (`odoo-update`)
+
+```bash
+# Update a single module
+$ odoo-update -m sale
+
+# Update multiple modules
+$ odoo-update -m sale,purchase,stock
+
+# Update all modules (use with caution!)
+$ odoo-update --all
+```
+
+::: tip When to Use odoo-update
+- After a developer updates module code
+- When module data files changed
+- To recompute stored fields
+- **Note:** This runs in the background - check logs for progress
+:::
+
+### Database Shell (`psql`)
+
+Direct PostgreSQL access for advanced queries:
+
+```bash
+$ psql
+
+# You're now in psql
+yourdb=> SELECT id, name FROM res_partner LIMIT 5;
+yourdb=> SELECT COUNT(*) FROM sale_order WHERE state = 'sale';
+yourdb=> \dt res_*    -- List tables starting with res_
+yourdb=> \q          -- Exit psql
+```
+
+::: danger Production Database Caution
+Direct SQL can bypass Odoo's business logic and break data integrity. Only use for **reading** data in production. For writes, use the Odoo shell instead.
+:::
+
+### Log Navigation (`lnav`)
+
+The `lnav` tool makes reading logs much easier than `tail` or `cat`:
+
+```bash
+$ lnav ~/logs/odoo.log
+```
+
+**Inside lnav:**
+| Key | Action |
+| :--- | :--- |
+| `/` | Search for text |
+| `n` / `N` | Next/previous match |
+| `e` / `E` | Jump to next/previous error |
+| `w` / `W` | Jump to next/previous warning |
+| `g` / `G` | Go to top/bottom |
+| `q` | Quit |
+
+::: tip Quick Error Finding
+Press `e` to jump directly to the next ERROR line. Much faster than scrolling through thousands of log lines!
+:::
+
+### Storage Management (`odoosh-storage`)
+
+Check how much disk space your instance is using:
+
+```bash
+$ odoosh-storage
+
+Container filesystem usage:
+  Used: 2.1 GB / 10 GB (21%)
+
+Breakdown:
+  /home/odoo/data/filestore: 1.8 GB
+  /home/odoo/logs: 245 MB
+  /home/odoo/src: 89 MB
+```
+
+If storage is full, common culprits are:
+- Large attachments in filestore
+- Accumulated log files
+- Temporary files from failed imports
+
+### Other Useful Commands
+
+```bash
+# View environment info
+$ env | grep ODOO
+
+# Check Python packages
+$ pip list | grep odoo
+
+# View running processes
+$ ps aux | grep odoo
+
+# Check memory usage
+$ free -h
+
+# View disk space
+$ df -h
+
+# Find large files
+$ find ~/data -size +100M -exec ls -lh {} \;
+```
+
+### Dedicated Hosting Only: SQL External Access
+
+For dedicated hosting plans, you can enable external PostgreSQL access:
+
+```bash
+$ odoosh-sql-access --enable
+# Returns connection details for external tools like DBeaver, pgAdmin
+```
+
+This allows connecting database tools directly for complex reporting queries.
+
 ## Understanding Builds
 
 Every time code is pushed to Odoo.sh, a "build" happens.
