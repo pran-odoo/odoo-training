@@ -206,6 +206,10 @@ body {
   backdrop-filter: var(--glass-blur) !important;
   -webkit-backdrop-filter: var(--glass-blur) !important;
   border-right: 1px solid var(--glass-border) !important;
+  /* Ensure sidebar is always scrollable */
+  overflow-y: auto !important;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
 }
 
 /* Local nav */
