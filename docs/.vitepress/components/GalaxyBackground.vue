@@ -78,7 +78,7 @@ uniform float uMouseActiveFactor;
 
 varying vec2 vUv;
 
-#define NUM_LAYER 3.0
+#define NUM_LAYER 4.0
 #define STAR_COLOR_CUTOFF 0.2
 #define MAT45 mat2(0.7071, -0.7071, 0.7071, 0.7071)
 #define PERIOD 3.0
@@ -297,8 +297,8 @@ function init() {
 function resize() {
   if (!canvasRef.value || !gl) return
 
-  // Use lower resolution for better performance (0.75 of device pixel ratio)
-  const dpr = Math.min(1.0, (window.devicePixelRatio || 1) * 0.75)
+  // Use proper resolution for crisp stars
+  const dpr = Math.min(2, window.devicePixelRatio || 1)
   const width = canvasRef.value.clientWidth
   const height = canvasRef.value.clientHeight
 

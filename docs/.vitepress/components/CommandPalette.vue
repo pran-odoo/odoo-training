@@ -1,5 +1,7 @@
 <script setup lang="ts">
-import { ref, computed, onMounted, onUnmounted, nextTick, watch } from 'vue'
+import localSearchIndex from '@localSearchIndex'
+import MiniSearch, { type SearchResult } from 'minisearch'
+import { ref, computed, onMounted, onUnmounted, nextTick, watch, shallowRef } from 'vue'
 import { useData } from 'vitepress'
 import { usePersonalization } from '../composables/usePersonalization'
 
@@ -14,12 +16,24 @@ interface Command {
   keywords: string[]
 }
 
+interface SearchRecord {
+  id: string
+  title: string
+  titles: string[]
+  text?: string
+}
+
 const isOpen = ref(false)
 const query = ref('')
 const selectedIndex = ref(0)
 const inputRef = ref<HTMLInputElement | null>(null)
-const { isDark } = useData()
+const { localeIndex, theme } = useData()
 const { settings, updateSetting, toggleSetting } = usePersonalization()
+
+const searchIndexData = shallowRef(localSearchIndex)
+const searchIndex = shallowRef<MiniSearch<SearchRecord> | null>(null)
+const isIndexLoading = ref(false)
+const maxResults = 16
 
 // Recent commands tracking
 const recentCommands = ref<string[]>([])
@@ -42,40 +56,49 @@ function trackCommand(id: string) {
   } catch (e) {}
 }
 
-// All pages for search - comprehensive keywords for each section
-const pages = [
-  { id: 'page-home', path: '/', title: 'Home', description: 'Start page', keywords: ['home', 'start', 'index', 'welcome'] },
-  { id: 'page-odoo', path: '/what-is-odoo', title: 'What is Odoo?', description: 'Technology stack & history', keywords: ['odoo', 'technology', 'stack', 'postgresql', 'python', 'owl', 'history', 'openerp', 'tinyerp'] },
-  { id: 'page-intro', path: '/introduction', title: 'Introduction', description: 'Getting started guide', keywords: ['intro', 'begin', 'philosophy', 'start', 'guide'] },
-  { id: 'page-models', path: '/01-models', title: 'Models', description: 'Database tables & ORM', keywords: ['model', 'database', 'table', 'orm', 'res.partner', 'sale.order', 'product'] },
-  { id: 'page-fields', path: '/02-field-types', title: 'Field Types', description: 'Char, Integer, Selection...', keywords: ['field', 'char', 'integer', 'boolean', 'selection', 'text', 'float', 'date', 'datetime', 'binary', 'html'] },
-  { id: 'page-relations', path: '/03-relationships', title: 'Relationships', description: 'Many2one, One2many, Many2many', keywords: ['many2one', 'one2many', 'many2many', 'relation', 'foreign key', 'link', 'reference'] },
-  { id: 'page-storage', path: '/04-storage', title: 'Field Storage', description: 'Stored vs computed fields', keywords: ['store', 'storage', 'database', 'stored', 'transient'] },
-  { id: 'page-computed', path: '/05-computed', title: 'Computed Fields', description: 'Automatic calculations', keywords: ['compute', 'depends', 'calculate', 'automatic', 'formula', 'onchange'] },
-  { id: 'page-related', path: '/06-related', title: 'Related Fields', description: 'Field delegation', keywords: ['related', 'delegation', 'inherited', 'shortcut'] },
-  { id: 'page-groupby', path: '/07-groupby', title: 'Group By & Stored Fields', description: 'Aggregation & pivots', keywords: ['group', 'aggregate', 'pivot', 'sum', 'count', 'average', 'reporting'] },
-  { id: 'page-views', path: '/08-views', title: 'Views', description: 'Form, List, Kanban, Graph...', keywords: ['view', 'form', 'list', 'kanban', 'tree', 'graph', 'calendar', 'gantt', 'pivot', 'xml'] },
-  { id: 'page-widgets', path: '/09-widgets', title: 'Widgets', description: 'UI display components', keywords: ['widget', 'display', 'statusbar', 'progressbar', 'badge', 'image', 'priority'] },
-  { id: 'page-domains', path: '/10-domains', title: 'Domain Filters', description: 'Record filtering syntax', keywords: ['domain', 'filter', 'search', 'condition', 'operator', 'and', 'or'] },
-  { id: 'page-properties', path: '/11-field-properties', title: 'Field Properties', description: 'Readonly, required, invisible...', keywords: ['property', 'readonly', 'required', 'invisible', 'attrs', 'states', 'groups'] },
-  { id: 'page-access', path: '/12-access-rights', title: 'Access Rights', description: 'Security & permissions', keywords: ['security', 'permission', 'acl', 'record rules', 'ir.model.access', 'ir.rule', 'groups'] },
-  { id: 'page-workflows', path: '/13-workflows', title: 'Workflows', description: 'State management', keywords: ['workflow', 'state', 'status', 'stage', 'transition', 'draft', 'confirm', 'done'] },
-  { id: 'page-actions', path: '/14-actions', title: 'Actions', description: 'Server actions & automation', keywords: ['action', 'automation', 'server', 'scheduled', 'cron', 'automated', 'trigger'] },
-  { id: 'page-integration', path: '/15-integration', title: 'Integration', description: 'APIs & external systems', keywords: ['api', 'xml-rpc', 'json-rpc', 'external', 'integration', 'webhook', 'rest'] },
-  { id: 'page-studio', path: '/16-studio', title: 'Odoo Studio', description: 'No-code customization', keywords: ['studio', 'customize', 'no-code', 'low-code', 'drag', 'drop', 'enterprise'] },
-  { id: 'page-performance', path: '/17-performance', title: 'Performance', description: 'Optimization tips', keywords: ['performance', 'speed', 'optimization', 'slow', 'fast', 'cache', 'prefetch', 'index'] },
-  { id: 'page-decision', path: '/18-decision-matrix', title: 'Decision Matrix', description: 'When to use what', keywords: ['decision', 'when', 'choose', 'matrix', 'comparison', 'vs'] },
-  { id: 'page-examples', path: '/19-examples', title: 'Real-World Examples', description: 'Practical scenarios', keywords: ['example', 'scenario', 'case', 'real', 'practical', 'use case'] },
-  { id: 'page-mistakes', path: '/20-mistakes', title: 'Common Mistakes', description: 'Pitfalls to avoid', keywords: ['mistake', 'error', 'avoid', 'pitfall', 'wrong', 'common', 'bug'] },
-  { id: 'page-odoosh', path: '/21-odoosh', title: 'Odoo.sh', description: 'Cloud platform', keywords: ['odoosh', 'cloud', 'hosting', 'deploy', 'git', 'staging', 'production', 'paas'] },
-  { id: 'page-chatter', path: '/22-chatter', title: 'Chatter', description: 'Messages & activities', keywords: ['chatter', 'message', 'follower', 'activity', 'mail', 'thread', 'note', 'log'] },
-  { id: 'page-email', path: '/23-email', title: 'Email', description: 'SMTP & templates', keywords: ['email', 'mail', 'smtp', 'template', 'outgoing', 'incoming', 'fetchmail'] },
-  { id: 'page-context', path: '/24-context', title: 'Context', description: 'Parameters & defaults', keywords: ['context', 'default', 'parameter', 'lang', 'tz', 'active_id', 'search_default'] },
-  { id: 'page-constraints', path: '/25-constraints', title: 'Constraints', description: 'Validation rules', keywords: ['constraint', 'validation', 'check', 'sql', 'python', 'unique', 'required'] },
-  { id: 'page-ai', path: '/26-ai', title: 'AI in Odoo 19', description: 'Enterprise AI features', keywords: ['ai', 'artificial', 'intelligence', 'enterprise', 'machine learning', 'gpt', 'copilot'] },
-  { id: 'page-edi', path: '/27-edi', title: 'EDI Order Exchange', description: 'UBL & Peppol', keywords: ['edi', 'ubl', 'peppol', 'electronic', 'invoice', 'order', 'exchange', 'b2b'] },
-  { id: 'page-removal', path: '/28-removal-strategies', title: 'Removal Strategies', description: 'FIFO, LIFO, FEFO', keywords: ['removal', 'fifo', 'lifo', 'fefo', 'inventory', 'warehouse', 'stock', 'picking'] },
-]
+async function loadSearchIndex(): Promise<void> {
+  if (typeof window === 'undefined') return
+  if (isIndexLoading.value || searchIndex.value) return
+
+  isIndexLoading.value = true
+  try {
+    const loader = searchIndexData.value[localeIndex.value]
+    if (!loader) return
+    const rawIndex = (await loader())?.default
+    if (!rawIndex) return
+    searchIndex.value = MiniSearch.loadJSON<SearchRecord>(rawIndex, {
+      fields: ['title', 'titles', 'text'],
+      storeFields: ['title', 'titles'],
+      searchOptions: {
+        fuzzy: 0.2,
+        prefix: true,
+        boost: { title: 4, text: 2, titles: 1 },
+        ...(theme.value.search?.provider === 'local' &&
+          theme.value.search.options?.miniSearch?.searchOptions)
+      },
+      ...(theme.value.search?.provider === 'local' &&
+        theme.value.search.options?.miniSearch?.options)
+    })
+  } catch (error) {
+    console.warn('Failed to load local search index:', error)
+  } finally {
+    isIndexLoading.value = false
+  }
+}
+
+if (import.meta.hot) {
+  import.meta.hot.accept('/@localSearchIndex', (mod) => {
+    if (!mod?.default) return
+    searchIndexData.value = mod.default
+    searchIndex.value = null
+    loadSearchIndex()
+  })
+}
+
+watch(() => localeIndex.value, () => {
+  searchIndex.value = null
+  loadSearchIndex()
+})
 
 function toggleDarkMode() {
   const htmlEl = document.documentElement
@@ -105,11 +128,20 @@ function cycleFontSize(direction: number) {
   close()
 }
 
+function resolvePath(path: string): string {
+  if (path.startsWith('http://') || path.startsWith('https://') || path.startsWith('//')) {
+    return path
+  }
+  const base = import.meta.env.BASE_URL || '/'
+  const normalizedBase = base.endsWith('/') ? base : `${base}/`
+  if (path.startsWith(normalizedBase)) return path
+  if (path.startsWith('/')) return `${normalizedBase.replace(/\/$/, '')}${path}`
+  return `${normalizedBase}${path}`
+}
+
 function navigateTo(path: string) {
   close()
-  const base = import.meta.env.BASE_URL || '/odoo-training/'
-  const fullPath = path.startsWith('/') ? `${base.replace(/\/$/, '')}${path}` : path
-  window.location.href = fullPath
+  window.location.href = resolvePath(path)
 }
 
 // Action commands (non-navigation)
@@ -175,19 +207,6 @@ const actionCommands: Command[] = [
   },
 ]
 
-// Page commands (navigation)
-const pageCommands: Command[] = pages.map(page => ({
-  id: page.id,
-  type: 'page',
-  icon: '📄',
-  title: page.title,
-  description: page.description,
-  action: () => navigateTo(page.path),
-  keywords: page.keywords
-}))
-
-const allCommands = [...actionCommands, ...pageCommands]
-
 // Fuzzy matching score
 function getMatchScore(text: string, query: string): number {
   const textLower = text.toLowerCase()
@@ -206,48 +225,61 @@ function getMatchScore(text: string, query: string): number {
   return 0
 }
 
+function buildActionMatches(queryText: string): Command[] {
+  const scored = actionCommands.map(cmd => {
+    let score = getMatchScore(cmd.title, queryText)
+
+    for (const keyword of cmd.keywords) {
+      score = Math.max(score, getMatchScore(keyword, queryText) * 0.8)
+    }
+
+    return { cmd, score }
+  })
+
+  return scored
+    .filter(entry => entry.score > 0)
+    .sort((a, b) => b.score - a.score)
+    .map(entry => entry.cmd)
+}
+
+function buildPageMatches(queryText: string): Command[] {
+  if (!searchIndex.value) return []
+
+  const results = searchIndex.value.search(queryText) as Array<SearchResult & SearchRecord>
+
+  return results.slice(0, maxResults).map(result => {
+    const title = result.title || result.titles?.[result.titles.length - 1] || 'Untitled'
+    const description = result.titles?.length ? result.titles.join(' > ') : result.id
+    return {
+      id: result.id,
+      type: 'page',
+      icon: '📄',
+      title,
+      description,
+      action: () => navigateTo(result.id),
+      keywords: []
+    }
+  })
+}
+
+const isSearching = computed(() => query.value.trim().length > 0)
+const isSearchReady = computed(() => !!searchIndex.value)
+
 // Filtered and sorted commands
 const filteredCommands = computed(() => {
-  if (!query.value.trim()) {
+  const q = query.value.trim()
+  if (!q) {
     // Show recent commands first, then all actions
     const recent = recentCommands.value
-      .map(id => allCommands.find(c => c.id === id))
+      .map(id => actionCommands.find(c => c.id === id))
       .filter((c): c is Command => c !== undefined)
     const actions = actionCommands.filter(c => !recent.some(r => r.id === c.id))
     return [...recent, ...actions].slice(0, 10)
   }
 
-  const q = query.value.toLowerCase().trim()
-
-  const scored = allCommands.map(cmd => {
-    let score = 0
-
-    // Title match (highest priority)
-    score = Math.max(score, getMatchScore(cmd.title, q))
-
-    // Description match
-    if (cmd.description) {
-      score = Math.max(score, getMatchScore(cmd.description, q) * 0.8)
-    }
-
-    // Keyword match
-    for (const keyword of cmd.keywords) {
-      const keywordScore = getMatchScore(keyword, q) * 0.7
-      score = Math.max(score, keywordScore)
-    }
-
-    return { ...cmd, score }
-  })
-  .filter(cmd => cmd.score > 0)
-  .sort((a, b) => {
-    // Sort by score, then by type (actions first), then alphabetically
-    if (b.score !== a.score) return b.score - a.score
-    if (a.type !== b.type) return a.type === 'action' ? -1 : 1
-    return a.title.localeCompare(b.title)
-  })
-  .slice(0, 12)
-
-  return scored
+  const pageMatches = buildPageMatches(q)
+  const actionMatches = buildActionMatches(q)
+  return [...pageMatches, ...actionMatches].slice(0, maxResults)
 })
 
 function open() {
@@ -255,6 +287,7 @@ function open() {
   query.value = ''
   selectedIndex.value = 0
   loadRecentCommands()
+  loadSearchIndex()
   nextTick(() => inputRef.value?.focus())
 }
 
@@ -318,6 +351,9 @@ function handleKeydown(e: KeyboardEvent) {
 // Reset selection when query changes
 watch(query, () => {
   selectedIndex.value = 0
+  if (query.value.trim() && !searchIndex.value) {
+    loadSearchIndex()
+  }
 })
 
 onMounted(() => {
@@ -354,7 +390,10 @@ onUnmounted(() => {
           </div>
 
           <div class="command-results">
-            <div v-if="filteredCommands.length === 0" class="command-empty">
+            <div v-if="isSearching && !isSearchReady && isIndexLoading" class="command-empty">
+              Loading search index...
+            </div>
+            <div v-else-if="filteredCommands.length === 0" class="command-empty">
               No results found for "{{ query }}"
             </div>
 
