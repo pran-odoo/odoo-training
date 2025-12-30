@@ -253,8 +253,9 @@ function resize() {
   if (!canvasRef.value || !gl) return
 
   const dpr = Math.min(2, window.devicePixelRatio || 1)
-  const width = canvasRef.value.clientWidth
-  const height = canvasRef.value.clientHeight
+  // Use window dimensions directly for fixed position element
+  const width = window.innerWidth
+  const height = window.innerHeight
 
   canvasRef.value.width = width * dpr
   canvasRef.value.height = height * dpr
@@ -325,20 +326,36 @@ function cleanup() {
   gl = null
 }
 
+function startGalaxy() {
+  if (!canvasRef.value) return false
+
+  init()
+  if (gl && program) {
+    lastFrameTime = performance.now()
+    render(lastFrameTime)
+    window.addEventListener('resize', handleResize, { passive: true })
+    return true
+  }
+  return false
+}
+
 onMounted(async () => {
   if (typeof window !== 'undefined') {
     isClient.value = true
     await nextTick()
-    await nextTick()
 
-    setTimeout(() => {
-      init()
-      if (gl && program) {
-        lastFrameTime = performance.now()
-        render(lastFrameTime)
-        window.addEventListener('resize', handleResize, { passive: true })
-      }
-    }, 100)
+    // Try to start immediately
+    if (startGalaxy()) return
+
+    // If canvas not ready, wait for next frame
+    requestAnimationFrame(() => {
+      if (startGalaxy()) return
+
+      // Final fallback with short delay
+      setTimeout(() => {
+        startGalaxy()
+      }, 50)
+    })
   }
 })
 
