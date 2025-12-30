@@ -321,14 +321,15 @@ function resize() {
 }
 
 function render(timestamp: number = 0) {
+  // Stop the loop entirely if WebGL isn't ready or animation should be stopped
   if (!gl || !program) {
-    animationId = requestAnimationFrame(render)
+    animationId = null
     return
   }
 
-  // Don't animate if hidden, reduced motion, or shouldn't animate
+  // Don't animate if hidden, reduced motion, or shouldn't animate - stop loop entirely
   if (!isVisible || prefersReducedMotion || !shouldAnimate) {
-    animationId = requestAnimationFrame(render)
+    animationId = null
     return
   }
 
@@ -418,9 +419,11 @@ function handleTouchEnd() {
 
 function handleVisibilityChange() {
   isVisible = !document.hidden
-  // Wake up when becoming visible again
-  if (isVisible) {
-    wakeFromIdle()
+  // Wake up when becoming visible again - restart the stopped loop
+  if (isVisible && shouldAnimate && !prefersReducedMotion && animationId === null) {
+    lastInputTime = performance.now() // Reset idle timer
+    isIdle = false
+    render()
   }
 }
 

@@ -816,9 +816,9 @@ let pendingSplatDx = 0
 let pendingSplatDy = 0
 
 function updateFrame(timestamp: number = 0) {
-  // Don't animate if reduced motion is preferred or shouldn't animate
+  // Stop the loop entirely if WebGL isn't ready or animation should be stopped
   if (!gl || !isVisible || prefersReducedMotion || !shouldAnimate) {
-    animationId = requestAnimationFrame(updateFrame)
+    animationId = null
     return
   }
 
@@ -976,8 +976,12 @@ function handleResize() {
 
 function handleVisibilityChange() {
   isVisible = !document.hidden
-  if (isVisible) {
+  // Wake up when becoming visible again - restart the stopped loop
+  if (isVisible && shouldAnimate && !prefersReducedMotion && animationId === null) {
     lastTime = performance.now()
+    lastPointerMoveTime = performance.now() // Reset idle timer
+    isIdle = false
+    updateFrame()
   }
 }
 
@@ -1090,9 +1094,16 @@ onMounted(() => {
   const nav = navigator as Navigator & { deviceMemory?: number }
   isLowEndDevice = (nav.deviceMemory !== undefined && nav.deviceMemory < 4)
 
+  // Skip initialization entirely on mobile - CSS hides the component anyway
+  // This saves WebGL context creation and event listener overhead
+  if (isMobile) {
+    shouldAnimate = false
+    return
+  }
+
   // Adjust resolutions based on device capability
   // Low-end devices get lower resolutions for better performance
-  if (isLowEndDevice || isMobile) {
+  if (isLowEndDevice) {
     effectiveSimResolution = Math.min(props.simResolution, 64)
     effectiveDyeResolution = Math.min(props.dyeResolution, 512)
   } else {

@@ -700,6 +700,15 @@ const _zeroVec = vec3.fromValues(0, 0, 0)
 const _upVec = vec3.fromValues(0, 1, 0)
 const _sphereTranslation = vec3.fromValues(0, 0, -SPHERE_RADIUS)
 
+// Pre-allocated for control.update() hot path (onControlUpdate, findNearestVertexIndex)
+const _snapDirectionVec = vec3.create()
+const _inverseOrientation = quat.create()
+const _ntVec = vec3.create()
+
+// Pre-allocated for updateDiscLabels() hot path
+const _labelWorldPos = vec3.create()
+const _viewProjection = mat4.create()
+
 // Pre-allocated arrays for render uniforms (avoid creating every frame)
 let _categoryColorArray: Float32Array | null = null
 let _categoryIndices: Int32Array | null = null
@@ -879,8 +888,10 @@ function onControlUpdate(deltaTime: number) {
     const nearestVertexIndex = findNearestVertexIndex()
     const itemIndex = nearestVertexIndex % Math.max(1, menuItems.length)
     activeItem.value = menuItems[itemIndex]
-    const snapDirection = vec3.normalize(vec3.create(), getVertexWorldPosition(nearestVertexIndex))
-    control.snapTargetDirection = snapDirection
+    // Reuse pre-allocated vec3 for snap direction
+    getVertexWorldPosition(nearestVertexIndex, _snapDirectionVec)
+    vec3.normalize(_snapDirectionVec, _snapDirectionVec)
+    control.snapTargetDirection = _snapDirectionVec
   } else {
     cameraTargetZ += control.rotationVelocity * 80 + 2.5
     damping = 7 / timeScale
@@ -893,13 +904,14 @@ function onControlUpdate(deltaTime: number) {
 function findNearestVertexIndex(): number {
   if (!control) return 0
   const n = control.snapDirection
-  const inversOrientation = quat.conjugate(quat.create(), control.orientation)
-  const nt = vec3.transformQuat(vec3.create(), n, inversOrientation)
+  // Reuse pre-allocated objects instead of creating new ones each frame
+  quat.conjugate(_inverseOrientation, control.orientation)
+  vec3.transformQuat(_ntVec, n, _inverseOrientation)
 
   let maxD = -1
   let nearestVertexIndex = 0
   for (let i = 0; i < instancePositions.length; ++i) {
-    const d = vec3.dot(nt, instancePositions[i])
+    const d = vec3.dot(_ntVec, instancePositions[i])
     if (d > maxD) {
       maxD = d
       nearestVertexIndex = i
@@ -908,10 +920,15 @@ function findNearestVertexIndex(): number {
   return nearestVertexIndex
 }
 
-function getVertexWorldPosition(index: number): vec3 {
-  if (!control) return vec3.create()
+function getVertexWorldPosition(index: number, out?: vec3): vec3 {
+  const result = out || vec3.create()
+  if (!control) {
+    vec3.zero(result)
+    return result
+  }
   const nearestVertexPos = instancePositions[index]
-  return vec3.transformQuat(vec3.create(), nearestVertexPos, control.orientation)
+  vec3.transformQuat(result, nearestVertexPos, control.orientation)
+  return result
 }
 
 // Project 3D world position to 2D screen coordinates
@@ -958,7 +975,9 @@ function updateDiscLabels() {
   const potentialLabels: (DiscLabel & { distToCenter: number })[] = []
 
   for (let i = 0; i < instancePositions.length; i++) {
-    const worldPos = vec3.transformQuat(vec3.create(), instancePositions[i], control.orientation)
+    // Reuse pre-allocated vec3 for world position calculation
+    vec3.transformQuat(_labelWorldPos, instancePositions[i], control.orientation)
+    const worldPos = _labelWorldPos
 
     // Only show labels for discs clearly facing the camera
     if (worldPos[2] <= 0.5) continue // Higher threshold to reduce clutter
@@ -1169,9 +1188,9 @@ function render() {
 }
 
 function run(time = 0) {
-  // Skip animation when tab is hidden (performance optimization)
+  // Stop the loop entirely when tab is hidden (performance optimization)
   if (!isVisible) {
-    animationId = requestAnimationFrame(run)
+    animationId = null
     return
   }
 
@@ -1214,6 +1233,12 @@ function handleClick() {
 
 function handleVisibilityChange() {
   isVisible = !document.hidden
+  // Wake up when becoming visible again - restart the stopped loop
+  if (isVisible && shouldAnimate.value && !prefersReducedMotion.value && animationId === null) {
+    lastInputTime = performance.now() // Reset idle timer
+    isIdle = false
+    run()
+  }
 }
 
 function stopAnimationLoop() {
