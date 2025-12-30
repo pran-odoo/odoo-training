@@ -36,12 +36,16 @@ const canvasRef = ref<HTMLCanvasElement | null>(null)
 const isReady = ref(false)
 
 let gl: WebGLRenderingContext | null = null
+let isMobile = false
 let program: WebGLProgram | null = null
 let buffer: WebGLBuffer | null = null
 let animationId: number | null = null
 let startTime = 0
 let isVisible = true
 let uniforms: Record<string, WebGLUniformLocation | null> = {}
+let lastRenderTime = 0
+const TARGET_FPS = 30 // Limit to 30fps for performance - still smooth for ambient effect
+const FRAME_TIME = 1000 / TARGET_FPS
 
 // Mouse tracking with smoothing
 const targetMouse = { x: 0.5, y: 0.5 }
@@ -286,7 +290,9 @@ function resize() {
 
   const width = window.innerWidth
   const height = window.innerHeight
-  const dpr = Math.min(window.devicePixelRatio || 1, 2)
+  // Lower DPR on mobile for performance (cap at 1.0 on mobile, 2 on desktop)
+  const maxDpr = isMobile ? 1.0 : 2
+  const dpr = Math.min(window.devicePixelRatio || 1, maxDpr)
 
   const displayWidth = Math.floor(width * dpr)
   const displayHeight = Math.floor(height * dpr)
@@ -298,16 +304,16 @@ function resize() {
   }
 }
 
-function render() {
-  if (!gl || !program) {
-    animationId = requestAnimationFrame(render)
-    return
-  }
+function render(timestamp: number = 0) {
+  animationId = requestAnimationFrame(render)
 
-  if (!isVisible) {
-    animationId = requestAnimationFrame(render)
-    return
-  }
+  if (!gl || !program) return
+  if (!isVisible) return
+
+  // Frame rate limiting - skip frame if not enough time has passed
+  const elapsed = timestamp - lastRenderTime
+  if (elapsed < FRAME_TIME) return
+  lastRenderTime = timestamp - (elapsed % FRAME_TIME)
 
   const time = (performance.now() - startTime) * 0.001
 
@@ -338,19 +344,31 @@ function render() {
   gl.uniform1f(uniforms.uRepulsionStrength, props.repulsionStrength)
   gl.uniform1f(uniforms.uMouseActiveFactor, mouseActive)
 
+  // Draw the stars
   gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4)
-
-  animationId = requestAnimationFrame(render)
 }
 
 function handleMouseMove(e: MouseEvent) {
-  if (!props.mouseInteraction) return
+  if (!props.mouseInteraction || isMobile) return
   targetMouse.x = e.clientX / window.innerWidth
   targetMouse.y = 1.0 - e.clientY / window.innerHeight
   targetMouseActive = 1.0
 }
 
 function handleMouseLeave() {
+  targetMouseActive = 0.0
+}
+
+function handleTouchMove(e: TouchEvent) {
+  if (!props.mouseInteraction || !e.touches.length) return
+  const touch = e.touches[0]
+  targetMouse.x = touch.clientX / window.innerWidth
+  targetMouse.y = 1.0 - touch.clientY / window.innerHeight
+  targetMouseActive = 1.0
+}
+
+function handleTouchEnd() {
+  // Gradually fade out the effect
   targetMouseActive = 0.0
 }
 
@@ -367,6 +385,8 @@ function cleanup() {
   window.removeEventListener('resize', resize)
   window.removeEventListener('mousemove', handleMouseMove)
   window.removeEventListener('mouseleave', handleMouseLeave)
+  window.removeEventListener('touchmove', handleTouchMove)
+  window.removeEventListener('touchend', handleTouchEnd)
 
   if (gl && buffer) {
     gl.deleteBuffer(buffer)
@@ -382,6 +402,9 @@ function cleanup() {
 onMounted(() => {
   if (typeof window === 'undefined') return
 
+  // Detect mobile
+  isMobile = 'ontouchstart' in window || navigator.maxTouchPoints > 0
+
   if (initWebGL()) {
     startTime = performance.now()
     resize()
@@ -394,6 +417,9 @@ onMounted(() => {
     if (props.mouseInteraction) {
       window.addEventListener('mousemove', handleMouseMove, { passive: true })
       window.addEventListener('mouseleave', handleMouseLeave)
+      // Touch events for mobile
+      window.addEventListener('touchmove', handleTouchMove, { passive: true })
+      window.addEventListener('touchend', handleTouchEnd, { passive: true })
     }
   }
 })

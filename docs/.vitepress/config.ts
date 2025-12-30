@@ -127,6 +127,7 @@ export default withPwa(defineConfig({
 
   pwa: {
     registerType: 'prompt',
+    injectRegister: 'script-defer', // Defer service worker registration for better LCP
     manifest: {
       name: 'Odoo Functional Training',
       short_name: 'Odoo Training',

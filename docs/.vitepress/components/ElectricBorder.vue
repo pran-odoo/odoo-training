@@ -21,6 +21,7 @@ const props = withDefaults(defineProps<Props>(), {
 const canvasRef = ref<HTMLCanvasElement | null>(null)
 const containerRef = ref<HTMLDivElement | null>(null)
 const isHovered = ref(false)
+const isMobile = ref(false)
 
 let animationId: number | null = null
 let time = 0
@@ -295,19 +296,37 @@ function stopAnimation() {
 }
 
 function handleMouseEnter() {
+  if (isMobile.value) return
   isHovered.value = true
   startAnimation()
 }
 
 function handleMouseLeave() {
+  if (isMobile.value) return
   isHovered.value = false
   stopAnimation()
+}
+
+function handleTouchStart() {
+  isHovered.value = true
+  startAnimation()
+}
+
+function handleTouchEnd() {
+  // Keep the effect visible briefly on mobile after touch
+  setTimeout(() => {
+    isHovered.value = false
+    stopAnimation()
+  }, 1500)
 }
 
 onMounted(() => {
   const canvas = canvasRef.value
   const container = containerRef.value
   if (!canvas || !container) return
+
+  // Detect mobile/touch device
+  isMobile.value = 'ontouchstart' in window || navigator.maxTouchPoints > 0
 
   ctx = canvas.getContext('2d')
   if (!ctx) return
@@ -335,6 +354,8 @@ onUnmounted(() => {
     }"
     @mouseenter="handleMouseEnter"
     @mouseleave="handleMouseLeave"
+    @touchstart.passive="handleTouchStart"
+    @touchend.passive="handleTouchEnd"
   >
     <div class="electric-canvas-wrapper">
       <canvas ref="canvasRef" class="electric-canvas" />
@@ -446,5 +467,37 @@ onUnmounted(() => {
 
 .electric-border-container.is-hovered::before {
   opacity: 0;
+}
+
+/* Mobile optimizations */
+@media (max-width: 768px) {
+  .electric-border-container:hover {
+    transform: translateY(-2px);
+  }
+
+  .electric-border-container.is-hovered .electric-glow-layers {
+    opacity: 0.7;
+  }
+
+  .glow-bg {
+    transform: scale(1.05);
+    opacity: 0.2;
+  }
+}
+
+/* Reduce motion preference */
+@media (prefers-reduced-motion: reduce) {
+  .electric-border-container {
+    transition: none;
+  }
+
+  .electric-canvas-wrapper,
+  .electric-glow-layers {
+    transition: none;
+  }
+
+  .electric-border-container:hover {
+    transform: none;
+  }
 }
 </style>

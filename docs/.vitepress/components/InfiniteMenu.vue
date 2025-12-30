@@ -377,7 +377,10 @@ function makeBuffer(gl: WebGL2RenderingContext, data: ArrayBufferView, usage: nu
 }
 
 function resizeCanvasToDisplaySize(canvas: HTMLCanvasElement): boolean {
-  const dpr = Math.min(2, window.devicePixelRatio || 1)
+  // Lower DPR on mobile for performance (cap at 1.0 on mobile, 2 on desktop)
+  const isMobile = 'ontouchstart' in window || navigator.maxTouchPoints > 0
+  const maxDpr = isMobile ? 1.0 : 2
+  const dpr = Math.min(maxDpr, window.devicePixelRatio || 1)
   const displayWidth = Math.round(canvas.clientWidth * dpr)
   const displayHeight = Math.round(canvas.clientHeight * dpr)
   const needResize = canvas.width !== displayWidth || canvas.height !== displayHeight
@@ -404,21 +407,76 @@ class ArcballControl {
   private _combinedQuat = quat.create()
   private readonly EPSILON = 0.1
   private readonly IDENTITY_QUAT = quat.create()
+  private isMobile = false
+  private lastTouchTime = 0
+  private touchStartPos = vec2.create()
+  private hasMoved = false
 
   constructor(private canvas: HTMLCanvasElement, private updateCallback: (dt: number) => void) {
-    canvas.addEventListener('pointerdown', (e: PointerEvent) => {
-      vec2.set(this.pointerPos, e.clientX, e.clientY)
-      vec2.copy(this.previousPointerPos, this.pointerPos)
-      this.isPointerDown = true
-    })
-    canvas.addEventListener('pointerup', () => { this.isPointerDown = false })
-    canvas.addEventListener('pointerleave', () => { this.isPointerDown = false })
-    canvas.addEventListener('pointermove', (e: PointerEvent) => {
-      if (this.isPointerDown) {
+    // Detect mobile
+    this.isMobile = 'ontouchstart' in window || navigator.maxTouchPoints > 0
+
+    // Use touch events on mobile for better control
+    if (this.isMobile) {
+      canvas.addEventListener('touchstart', this.handleTouchStart.bind(this), { passive: false })
+      canvas.addEventListener('touchmove', this.handleTouchMove.bind(this), { passive: false })
+      canvas.addEventListener('touchend', this.handleTouchEnd.bind(this), { passive: true })
+      canvas.addEventListener('touchcancel', this.handleTouchEnd.bind(this), { passive: true })
+    } else {
+      canvas.addEventListener('pointerdown', (e: PointerEvent) => {
         vec2.set(this.pointerPos, e.clientX, e.clientY)
-      }
-    })
+        vec2.copy(this.previousPointerPos, this.pointerPos)
+        this.isPointerDown = true
+      })
+      canvas.addEventListener('pointerup', () => { this.isPointerDown = false })
+      canvas.addEventListener('pointerleave', () => { this.isPointerDown = false })
+      canvas.addEventListener('pointermove', (e: PointerEvent) => {
+        if (this.isPointerDown) {
+          vec2.set(this.pointerPos, e.clientX, e.clientY)
+        }
+      })
+    }
     canvas.style.touchAction = 'none'
+  }
+
+  private handleTouchStart(e: TouchEvent) {
+    if (e.touches.length !== 1) return
+    e.preventDefault()
+
+    const touch = e.touches[0]
+    const rect = this.canvas.getBoundingClientRect()
+    const x = touch.clientX - rect.left
+    const y = touch.clientY - rect.top
+
+    vec2.set(this.pointerPos, x, y)
+    vec2.copy(this.previousPointerPos, this.pointerPos)
+    vec2.copy(this.touchStartPos, this.pointerPos)
+    this.isPointerDown = true
+    this.hasMoved = false
+    this.lastTouchTime = Date.now()
+  }
+
+  private handleTouchMove(e: TouchEvent) {
+    if (!this.isPointerDown || e.touches.length !== 1) return
+    e.preventDefault()
+
+    const touch = e.touches[0]
+    const rect = this.canvas.getBoundingClientRect()
+    const x = touch.clientX - rect.left
+    const y = touch.clientY - rect.top
+
+    // Check if we've moved enough to count as a drag
+    const dx = x - this.touchStartPos[0]
+    const dy = y - this.touchStartPos[1]
+    if (Math.sqrt(dx * dx + dy * dy) > 10) {
+      this.hasMoved = true
+    }
+
+    vec2.set(this.pointerPos, x, y)
+  }
+
+  private handleTouchEnd() {
+    this.isPointerDown = false
   }
 
   update(deltaTime: number, targetFrameDuration = 16): void {
@@ -427,8 +485,10 @@ class ArcballControl {
     const snapRotation = quat.create()
 
     if (this.isPointerDown) {
-      const INTENSITY = 0.3 * timeScale
-      const ANGLE_AMPLIFICATION = 5 / timeScale
+      // Lower sensitivity on mobile for smoother control
+      const mobileFactor = this.isMobile ? 0.6 : 1.0
+      const INTENSITY = 0.3 * timeScale * mobileFactor
+      const ANGLE_AMPLIFICATION = (this.isMobile ? 3 : 5) / timeScale
       const midPointerPos = vec2.sub(vec2.create(), this.pointerPos, this.previousPointerPos)
       vec2.scale(midPointerPos, midPointerPos, INTENSITY)
 
@@ -550,6 +610,9 @@ let DISC_INSTANCE_COUNT = 0
 let discBuffers: { vertices: Float32Array; indices: Uint16Array; uvs: Float32Array }
 let smoothRotationVelocity = 0
 const TARGET_FRAME_DURATION = 1000 / 60
+const TARGET_FPS = 30 // Limit to 30fps for performance
+const FRAME_TIME = 1000 / TARGET_FPS
+let lastRenderTime = 0
 const SPHERE_RADIUS = 2
 let scaleFactor = 1.0
 let _time = 0
@@ -978,11 +1041,15 @@ function render() {
 }
 
 function run(time = 0) {
+  animationId = requestAnimationFrame(run)
+
   // Skip animation when tab is hidden (performance optimization)
-  if (!isVisible) {
-    animationId = requestAnimationFrame(run)
-    return
-  }
+  if (!isVisible) return
+
+  // Frame rate limiting - skip frame if not enough time has passed
+  const elapsed = time - lastRenderTime
+  if (elapsed < FRAME_TIME) return
+  lastRenderTime = time - (elapsed % FRAME_TIME)
 
   const deltaTime = Math.min(32, time - _time)
   _time = time
@@ -990,8 +1057,6 @@ function run(time = 0) {
 
   animate(deltaTime)
   render()
-
-  animationId = requestAnimationFrame(run)
 }
 
 function handleClick() {
@@ -1353,41 +1418,100 @@ onUnmounted(() => {
 
 @media (max-width: 768px) {
   .infinite-menu-container {
-    height: 400px;
+    height: 350px;
   }
 
   .item-title {
-    font-size: 1.2rem;
+    font-size: 1.1rem;
   }
 
   .menu-info {
-    bottom: 16px;
-    left: 16px;
+    bottom: 12px;
+    left: 12px;
+    gap: 6px;
+  }
+
+  .category-badge {
+    padding: 3px 10px;
+    font-size: 10px;
   }
 
   .disc-label-text {
-    font-size: 9px;
-    padding: 3px 7px;
-    max-width: 90px;
+    font-size: 8px;
+    padding: 2px 6px;
+    max-width: 80px;
   }
 
   .drag-hint {
-    bottom: 16px;
-    right: 16px;
-    font-size: 12px;
-    padding: 8px 14px;
+    bottom: 12px;
+    right: 12px;
+    font-size: 11px;
+    padding: 6px 12px;
   }
 
   .drag-hint::before {
+    content: '☝️';
     font-size: 14px;
   }
 
   .center-icon {
-    font-size: 2rem;
+    font-size: 1.8rem;
   }
 
   .center-text {
+    font-size: 0.9rem;
+  }
+
+  .go-button {
+    padding: 8px 16px;
+    font-size: 12px;
+  }
+}
+
+@media (max-width: 480px) {
+  .infinite-menu-container {
+    height: 300px;
+    border-radius: 12px;
+  }
+
+  .menu-info {
+    bottom: 10px;
+    left: 10px;
+  }
+
+  .item-title {
     font-size: 1rem;
+  }
+
+  .disc-labels-container {
+    display: none; /* Hide labels on very small screens */
+  }
+
+  .center-label {
+    gap: 4px;
+  }
+
+  .center-icon {
+    font-size: 1.5rem;
+  }
+
+  .center-text {
+    font-size: 0.8rem;
+  }
+
+  .drag-hint {
+    font-size: 10px;
+    padding: 5px 10px;
+  }
+}
+
+/* Reduce motion */
+@media (prefers-reduced-motion: reduce) {
+  .category-badge,
+  .shiny-text,
+  .center-text,
+  .drag-hint {
+    animation: none;
   }
 }
 </style>

@@ -51,6 +51,9 @@ let gl: WebGL2RenderingContext | WebGLRenderingContext | null = null
 let isWebGL2 = false
 let animationId: number | null = null
 let lastTime = 0
+let lastRenderTime = 0
+const TARGET_FPS = 30 // Limit to 30fps for performance
+const FRAME_TIME = 1000 / TARGET_FPS
 let colorUpdateTimer = 0
 let isVisible = true
 let needsResize = false
@@ -790,11 +793,15 @@ function render() {
   blit(null)
 }
 
-function updateFrame() {
-  if (!gl || !isVisible) {
-    animationId = requestAnimationFrame(updateFrame)
-    return
-  }
+function updateFrame(timestamp: number = 0) {
+  animationId = requestAnimationFrame(updateFrame)
+
+  if (!gl || !isVisible) return
+
+  // Frame rate limiting - skip frame if not enough time has passed
+  const elapsed = timestamp - lastRenderTime
+  if (elapsed < FRAME_TIME) return
+  lastRenderTime = timestamp - (elapsed % FRAME_TIME)
 
   const now = performance.now()
   let dt = (now - lastTime) / 1000
@@ -826,8 +833,6 @@ function updateFrame() {
 
   step(dt)
   render()
-
-  animationId = requestAnimationFrame(updateFrame)
 }
 
 function scaleByPixelRatio(value: number) {
@@ -1058,6 +1063,13 @@ onUnmounted(() => {
 }
 
 @media (prefers-reduced-motion: reduce) {
+  .splash-cursor-container {
+    display: none;
+  }
+}
+
+/* Hide on mobile for performance - touch doesn't work well with cursor effect */
+@media (max-width: 768px) {
   .splash-cursor-container {
     display: none;
   }
