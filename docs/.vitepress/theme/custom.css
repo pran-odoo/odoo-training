@@ -715,44 +715,40 @@ body {
 }
 
 /* ============================================
-   16. PREMIUM HOME PAGE
+   16. PREMIUM HOME PAGE WITH GALAXY BACKGROUND
    ============================================ */
 
-/* Transparent home page for Galaxy background */
-.VPHome {
-  background: transparent !important;
-}
+/*
+ * Galaxy Background Layering:
+ * - Galaxy container: z-index: 0 (behind everything)
+ * - All page content: z-index: 1+ (above galaxy)
+ * - Home page elements: transparent backgrounds
+ */
 
-.dark .VPHome {
-  background: transparent !important;
-}
-
-/* Make VPContent transparent on home page */
+/* Base page - transparent on home to show galaxy */
 .VPContent.is-home {
   background: transparent !important;
+  position: relative;
+  z-index: 1;
 }
 
-/* Hero section transparent */
+/* Home container - transparent */
+.VPHome {
+  background: transparent !important;
+  position: relative;
+  z-index: 1;
+}
+
+/* Hero section - transparent with readable text */
 .VPHero {
+  background: transparent !important;
   padding-bottom: 64px !important;
-  background: transparent !important;
+  position: relative;
+  z-index: 1;
 }
 
-.dark .VPHero {
-  background: transparent !important;
-}
-
-/* Features section transparent */
-.VPFeatures {
-  background: transparent !important;
-}
-
-/* Home page main content area transparent */
-.VPHome .VPHomeContent {
-  background: transparent !important;
-}
-
-.VPHome .name {
+/* Hero text needs good contrast on dark bg */
+.VPHero .name {
   font-weight: 800 !important;
   letter-spacing: -0.03em;
   background: linear-gradient(135deg, var(--vp-c-brand-1), var(--accent-primary)) !important;
@@ -761,24 +757,50 @@ body {
   -webkit-text-fill-color: transparent !important;
 }
 
-.VPHome .tagline {
-  color: var(--vp-c-text-2) !important;
+.VPHero .tagline {
+  color: rgba(255, 255, 255, 0.9) !important;
   font-weight: 400;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
 }
 
+/* Light mode: darker tagline */
+:root:not(.dark) .VPHero .tagline {
+  color: var(--vp-c-text-2) !important;
+  text-shadow: none;
+}
+
+/* Features section - transparent */
+.VPFeatures {
+  background: transparent !important;
+  position: relative;
+  z-index: 1;
+}
+
+/* Feature cards - glass effect */
 .VPFeature {
-  background: var(--glass-bg) !important;
-  backdrop-filter: var(--glass-blur) !important;
-  -webkit-backdrop-filter: var(--glass-blur) !important;
-  border: 1px solid var(--glass-border) !important;
+  background: rgba(10, 10, 15, 0.7) !important;
+  backdrop-filter: blur(12px) saturate(150%) !important;
+  -webkit-backdrop-filter: blur(12px) saturate(150%) !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
   border-radius: var(--radius-lg) !important;
   transition: all var(--duration-normal) var(--ease-out-expo) !important;
+}
+
+/* Light mode feature cards */
+:root:not(.dark) .VPFeature {
+  background: rgba(255, 255, 255, 0.85) !important;
+  border: 1px solid var(--glass-border) !important;
 }
 
 .VPFeature:hover {
   transform: translateY(-4px) !important;
   box-shadow: var(--shadow-lg) !important;
   border-color: var(--vp-c-brand-1) !important;
+  background: rgba(10, 10, 15, 0.85) !important;
+}
+
+:root:not(.dark) .VPFeature:hover {
+  background: rgba(255, 255, 255, 0.95) !important;
 }
 
 .VPFeature .title {
@@ -788,6 +810,28 @@ body {
 
 .VPFeature .details {
   color: var(--vp-c-text-2) !important;
+}
+
+/* Home page markdown content - glass card */
+.VPHome .vp-doc {
+  background: rgba(10, 10, 15, 0.7) !important;
+  backdrop-filter: blur(12px) !important;
+  -webkit-backdrop-filter: blur(12px) !important;
+  border-radius: var(--radius-lg);
+  padding: 2rem !important;
+  margin: 2rem auto !important;
+  max-width: 900px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+:root:not(.dark) .VPHome .vp-doc {
+  background: rgba(255, 255, 255, 0.85) !important;
+  border: 1px solid var(--glass-border);
+}
+
+/* Ensure nav stays above galaxy */
+.VPNav {
+  z-index: 10 !important;
 }
 
 /* ============================================
