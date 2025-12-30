@@ -49,7 +49,12 @@ watch(settings, () => {
 }, { deep: true })
 
 // Re-apply glossary when route changes
+// Also blur any focused element to fix scroll issues after navigation
 watch(() => route.path, () => {
+  // Blur active element to release focus (fixes scroll block after clicking hero links)
+  if (document.activeElement instanceof HTMLElement) {
+    document.activeElement.blur()
+  }
   // Glossary will re-process on next tick
 })
 
