@@ -26,11 +26,11 @@ const props = withDefaults(defineProps<Props>(), {
   density: 1.0,
   hueShift: 140,
   speed: 1.0,
-  glowIntensity: 0.3,
+  glowIntensity: 0.4,
   saturation: 0.0,
   mouseRepulsion: true,
-  twinkleIntensity: 0.3,
-  rotationSpeed: 0.1,
+  twinkleIntensity: 0.4,
+  rotationSpeed: 0.08,
   repulsionStrength: 2.0
 })
 
@@ -78,7 +78,7 @@ uniform float uMouseActiveFactor;
 
 varying vec2 vUv;
 
-#define NUM_LAYER 4.0
+#define NUM_LAYER 3.0
 #define STAR_COLOR_CUTOFF 0.2
 #define MAT45 mat2(0.7071, -0.7071, 0.7071, 0.7071)
 #define PERIOD 3.0
@@ -297,7 +297,8 @@ function init() {
 function resize() {
   if (!canvasRef.value || !gl) return
 
-  const dpr = Math.min(1.5, window.devicePixelRatio || 1)
+  // Use lower resolution for better performance (0.75 of device pixel ratio)
+  const dpr = Math.min(1.0, (window.devicePixelRatio || 1) * 0.75)
   const width = canvasRef.value.clientWidth
   const height = canvasRef.value.clientHeight
 

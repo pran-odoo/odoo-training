@@ -6,7 +6,6 @@ const isOpen = ref(false)
 const { settings, updateSetting, resetSettings, ACCENT_COLORS } = usePersonalization()
 
 const accentColors = Object.keys(ACCENT_COLORS) as Array<keyof typeof ACCENT_COLORS>
-const backgroundStyles = ['liquid', 'galaxy', 'none']
 const fontSizes = ['small', 'normal', 'large', 'xlarge']
 const fontFamilies = ['system', 'serif', 'mono']
 const lineHeights = ['tight', 'normal', 'relaxed', 'loose']
@@ -113,21 +112,6 @@ const activeTab = ref<'appearance' | 'typography' | 'layout' | 'accessibility'>(
                 </div>
               </div>
 
-              <div class="settings-group">
-                <label class="settings-label">Home Background</label>
-                <div class="settings-options">
-                  <button
-                    v-for="style in backgroundStyles"
-                    :key="style"
-                    class="option-btn"
-                    :class="{ active: settings.backgroundStyle === style }"
-                    @click="updateSetting('backgroundStyle', style)"
-                  >
-                    {{ style === 'liquid' ? 'Liquid' : style === 'galaxy' ? 'Galaxy' : 'None' }}
-                  </button>
-                </div>
-                <p class="settings-hint">Background effect on the home page</p>
-              </div>
             </div>
 
             <!-- TYPOGRAPHY TAB -->
