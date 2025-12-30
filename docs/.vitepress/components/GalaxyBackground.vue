@@ -4,7 +4,7 @@
  * Animated star field with mouse interaction
  * Client-side only to avoid hydration mismatches
  */
-import { ref, onMounted, onUnmounted } from 'vue'
+import { ref, onMounted, onUnmounted, nextTick } from 'vue'
 
 interface Props {
   focal?: [number, number]
@@ -326,11 +326,13 @@ function cleanup() {
   gl = null
 }
 
-onMounted(() => {
+onMounted(async () => {
   // Only render on client side
   if (typeof window !== 'undefined') {
     isClient.value = true
-    // Delay initialization to avoid blocking
+    // Wait for DOM to update after v-if becomes true
+    await nextTick()
+    // Additional frame delay for canvas to be fully ready
     requestAnimationFrame(() => {
       init()
       render()
