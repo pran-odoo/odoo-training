@@ -9,6 +9,7 @@ const DEFAULT_SETTINGS = {
   // Appearance
   accentColor: 'purple',     // purple | blue | green | orange | pink
   codeTheme: 'dark',         // dark | light | high-contrast
+  backgroundStyle: 'liquid', // liquid | galaxy | none
   highContrast: false,
   eyeComfort: false,
   inPageHighlights: true,

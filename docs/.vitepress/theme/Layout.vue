@@ -13,6 +13,7 @@ import KeyboardHelp from '../components/KeyboardHelp.vue'
 import ResumeReading from '../components/ResumeReading.vue'
 import GlossaryProvider from '../components/GlossaryProvider.vue'
 import LiquidBackground from '../components/LiquidBackground.vue'
+import GalaxyBackground from '../components/GalaxyBackground.vue'
 import CustomFooter from '../components/CustomFooter.vue'
 import HiTechCursor from '../components/HiTechCursor.vue'
 
@@ -124,7 +125,8 @@ onUnmounted(() => {
 
 <template>
   <HiTechCursor v-if="isHomePage()" />
-  <LiquidBackground v-if="isHomePage()" />
+  <LiquidBackground v-if="isHomePage() && settings.backgroundStyle === 'liquid'" />
+  <GalaxyBackground v-if="isHomePage() && settings.backgroundStyle === 'galaxy'" />
   <Layout>
     <template #layout-top>
       <ProgressBar />
