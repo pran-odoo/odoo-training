@@ -52,12 +52,10 @@ function loadProgress() {
 }
 
 function resumeReading() {
-  router.go(savedPath.value)
-  // Scroll after navigation
-  setTimeout(() => {
-    window.scrollTo({ top: savedScroll.value, behavior: 'smooth' })
-  }, 100)
+  // Fix: Use direct navigation instead of router.go() which takes a delta number, not a path
   dismiss()
+  // Navigate and scroll after page loads
+  window.location.href = savedPath.value
 }
 
 function dismiss() {

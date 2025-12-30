@@ -13,7 +13,11 @@ import KeyboardHelp from '../components/KeyboardHelp.vue'
 import ResumeReading from '../components/ResumeReading.vue'
 import GlossaryProvider from '../components/GlossaryProvider.vue'
 import GalaxyBackground from '../components/GalaxyBackground.vue'
+import SplashCursor from '../components/SplashCursor.vue'
 import CustomFooter from '../components/CustomFooter.vue'
+import SearchHighlights from '../components/SearchHighlights.vue'
+import BookmarkButton from '../components/BookmarkButton.vue'
+import BookmarksPanel from '../components/BookmarksPanel.vue'
 
 const { Layout } = DefaultTheme
 const route = useRoute()
@@ -25,15 +29,18 @@ const isHomePage = () => frontmatter.value?.layout === 'home'
 
 const keyboardHelpRef = ref<InstanceType<typeof KeyboardHelp> | null>(null)
 
+// Handler for keyboard help event - defined outside so we can remove it
+function handleShowKeyboardHelp() {
+  keyboardHelpRef.value?.open()
+}
+
 // Apply settings on mount
 onMounted(() => {
   applySettings()
   setupKeyboardShortcuts()
 
   // Listen for keyboard help event from command palette
-  document.addEventListener('show-keyboard-help', () => {
-    keyboardHelpRef.value?.open()
-  })
+  document.addEventListener('show-keyboard-help', handleShowKeyboardHelp)
 })
 
 // Re-apply when settings change
@@ -118,18 +125,25 @@ function navigateSection(direction: 'prev' | 'next') {
 
 onUnmounted(() => {
   document.removeEventListener('keydown', handleKeydown)
+  document.removeEventListener('show-keyboard-help', handleShowKeyboardHelp)
 })
 </script>
 
 <template>
   <GalaxyBackground v-if="isHomePage()" />
+  <SplashCursor v-if="isHomePage()" />
   <Layout>
     <template #layout-top>
       <ProgressBar />
     </template>
 
     <template #nav-bar-content-after>
+      <BookmarkButton />
       <SettingsPanel />
+    </template>
+
+    <template #sidebar-nav-before>
+      <BookmarksPanel />
     </template>
 
     <template #layout-bottom>
@@ -139,6 +153,7 @@ onUnmounted(() => {
       <KeyboardHelp ref="keyboardHelpRef" />
       <ResumeReading />
       <GlossaryProvider />
+      <SearchHighlights />
     </template>
   </Layout>
 </template>

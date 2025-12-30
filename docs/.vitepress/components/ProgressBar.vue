@@ -2,6 +2,7 @@
 import { ref, onMounted, onUnmounted } from 'vue'
 
 const progress = ref(0)
+let ticking = false
 
 function updateProgress() {
   const scrollTop = window.scrollY
@@ -9,15 +10,24 @@ function updateProgress() {
   if (docHeight > 0) {
     progress.value = Math.min(100, Math.max(0, (scrollTop / docHeight) * 100))
   }
+  ticking = false
+}
+
+function handleScroll() {
+  // Throttle using requestAnimationFrame (~60fps max)
+  if (!ticking) {
+    requestAnimationFrame(updateProgress)
+    ticking = true
+  }
 }
 
 onMounted(() => {
-  window.addEventListener('scroll', updateProgress, { passive: true })
+  window.addEventListener('scroll', handleScroll, { passive: true })
   updateProgress()
 })
 
 onUnmounted(() => {
-  window.removeEventListener('scroll', updateProgress)
+  window.removeEventListener('scroll', handleScroll)
 })
 </script>
 

@@ -336,28 +336,54 @@ Every Odoo model automatically gets these 5 fields:
 - **"Unknown model" error**: The module defining the model isn't installed
 :::
 
-## Knowledge Check
+## Interactive Quiz
 
-::: details Q1: What's the difference between Model and TransientModel?
-**Answer:** Model stores data permanently in the database; TransientModel auto-deletes old records (used for wizards/popups).
-:::
+Test your understanding of Odoo models with these interactive questions:
 
-::: details Q2: Which columns exist automatically on every model?
-**Answer:** `id`, `create_uid`, `create_date`, `write_uid`, `write_date`
-:::
+<Quiz
+  id="models-q1"
+  question="What's the difference between Model and TransientModel?"
+  :options="[
+    { text: 'Model is for forms, TransientModel is for lists', correct: false },
+    { text: 'Model stores data permanently, TransientModel auto-deletes data (used for wizards)', correct: true },
+    { text: 'TransientModel is faster than Model', correct: false },
+    { text: 'There is no difference, they are aliases', correct: false }
+  ]"
+  explanation="Model stores data permanently in the database, while TransientModel auto-deletes old records after about an hour. TransientModels are used for wizards/popups like 'Register Payment'."
+/>
 
-::: details Q3: What prefix must custom fields have?
-**Answer:** `x_` for manual creation, `x_studio_` for Studio-created fields
-:::
+<Quiz
+  id="models-q2"
+  question="Which columns exist automatically on every Odoo model?"
+  :options="[
+    { text: 'id, name, active, state', correct: false },
+    { text: 'id, create_uid, create_date, write_uid, write_date', correct: true },
+    { text: 'id, user_id, date, company_id', correct: false },
+    { text: 'id, partner_id, sequence, display_name', correct: false }
+  ]"
+  explanation="Every Odoo model automatically gets 5 'magic columns': id (unique identifier), create_uid/create_date (who/when created), and write_uid/write_date (who/when last modified)."
+/>
 
-::: details Q4: Why might a dropdown show an ID number instead of a name?
-**Answer:** The related model has no `name` field and no `_rec_name` is configured to specify an alternative display field.
-:::
+<Quiz
+  id="models-q3"
+  question="What prefix must custom fields have in Odoo?"
+  :options="[
+    { text: 'custom_', correct: false },
+    { text: 'field_', correct: false },
+    { text: 'x_ (or x_studio_ for Studio)', correct: true },
+    { text: 'No prefix is required', correct: false }
+  ]"
+  explanation="Custom fields must start with 'x_' for manual creation, or 'x_studio_' when created via Odoo Studio. This helps distinguish custom fields from standard Odoo fields."
+/>
 
-::: details Q5: Where can you see all models in the system?
-**Answer:** Settings → Technical → Database Structure → Models (requires Developer Mode)
-:::
-
-::: details Q6: What does mail.thread add to a model?
-**Answer:** The chatter feature - messages, followers, and activity log at the bottom of forms.
-:::
+<Quiz
+  id="models-q4"
+  question="What does the mail.thread AbstractModel add to a model?"
+  :options="[
+    { text: 'Email sending capability', correct: false },
+    { text: 'The chatter feature (messages, followers, activity log)', correct: true },
+    { text: 'Multi-threading for performance', correct: false },
+    { text: 'Background job processing', correct: false }
+  ]"
+  explanation="mail.thread is an AbstractModel (mixin) that adds the 'chatter' feature - the message log, followers, and activity tracking you see at the bottom of forms like Sales Orders."
+/>

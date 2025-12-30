@@ -6,7 +6,8 @@ const { bookmarks, removeBookmark, clearBookmarks } = useBookmarks()
 const router = useRouter()
 
 function navigateTo(path: string) {
-  router.go(path)
+  // Fix: Use direct navigation instead of router.go() which takes a delta number
+  window.location.href = path
 }
 
 function getPageTitle(path: string): string {

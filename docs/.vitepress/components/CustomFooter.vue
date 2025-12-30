@@ -95,6 +95,8 @@ onMounted(() => {
   background: var(--vp-c-bg-soft);
   padding: 24px;
   text-align: center;
+  position: relative;
+  z-index: 1;
 }
 
 .footer-content {

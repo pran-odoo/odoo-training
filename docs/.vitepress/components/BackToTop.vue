@@ -2,9 +2,19 @@
 import { ref, onMounted, onUnmounted } from 'vue'
 
 const isVisible = ref(false)
+let ticking = false
+
+function updateVisibility() {
+  isVisible.value = window.scrollY > 500
+  ticking = false
+}
 
 function handleScroll() {
-  isVisible.value = window.scrollY > 500
+  // Throttle using requestAnimationFrame (~60fps max)
+  if (!ticking) {
+    requestAnimationFrame(updateVisibility)
+    ticking = true
+  }
 }
 
 function scrollToTop() {
@@ -13,7 +23,7 @@ function scrollToTop() {
 
 onMounted(() => {
   window.addEventListener('scroll', handleScroll, { passive: true })
-  handleScroll()
+  updateVisibility()
 })
 
 onUnmounted(() => {

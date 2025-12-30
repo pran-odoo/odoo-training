@@ -834,6 +834,23 @@ body {
   z-index: 10 !important;
 }
 
+/* Custom footer on home page - glass effect */
+.VPContent.is-home ~ .custom-footer,
+.is-home .custom-footer {
+  background: rgba(10, 10, 15, 0.8) !important;
+  backdrop-filter: blur(12px) saturate(150%) !important;
+  -webkit-backdrop-filter: blur(12px) saturate(150%) !important;
+  border-top: 1px solid rgba(255, 255, 255, 0.1) !important;
+  position: relative;
+  z-index: 1;
+}
+
+:root:not(.dark) .VPContent.is-home ~ .custom-footer,
+:root:not(.dark) .is-home .custom-footer {
+  background: rgba(255, 255, 255, 0.9) !important;
+  border-top: 1px solid var(--glass-border) !important;
+}
+
 /* ============================================
    17. PREMIUM BLOCKQUOTES
    ============================================ */

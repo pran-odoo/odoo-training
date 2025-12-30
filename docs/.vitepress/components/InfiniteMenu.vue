@@ -328,6 +328,7 @@ function createShader(gl: WebGL2RenderingContext, type: number, source: string):
   gl.shaderSource(shader, source)
   gl.compileShader(shader)
   if (gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
+    allShaders.push(shader) // Track for cleanup
     return shader
   }
   console.error(gl.getShaderInfoLog(shader))
@@ -368,6 +369,7 @@ function createProgram(
 function makeBuffer(gl: WebGL2RenderingContext, data: ArrayBufferView, usage: number): WebGLBuffer {
   const buf = gl.createBuffer()
   if (!buf) throw new Error('Failed to create buffer')
+  allBuffers.push(buf) // Track for cleanup
   gl.bindBuffer(gl.ARRAY_BUFFER, buf)
   gl.bufferData(gl.ARRAY_BUFFER, data, usage)
   gl.bindBuffer(gl.ARRAY_BUFFER, null)
@@ -516,6 +518,11 @@ let discProgram: WebGLProgram | null = null
 let discVAO: WebGLVertexArrayObject | null = null
 let control: ArcballControl | null = null
 let animationId: number | null = null
+let isVisible = true
+
+// Track all WebGL resources for cleanup
+let allBuffers: WebGLBuffer[] = []
+let allShaders: WebGLShader[] = []
 
 const worldMatrix = mat4.create()
 const camera = {
@@ -971,6 +978,12 @@ function render() {
 }
 
 function run(time = 0) {
+  // Skip animation when tab is hidden (performance optimization)
+  if (!isVisible) {
+    animationId = requestAnimationFrame(run)
+    return
+  }
+
   const deltaTime = Math.min(32, time - _time)
   _time = time
   _frames += deltaTime / TARGET_FRAME_DURATION
@@ -983,22 +996,69 @@ function run(time = 0) {
 
 function handleClick() {
   if (!activeItem.value) return
-  window.location.href = `/odoo-training${activeItem.value.link}`
+  // Use dynamic base path - works on both Vercel (/) and GitHub Pages (/odoo-training/)
+  const base = import.meta.env.BASE_URL.replace(/\/$/, '')
+  window.location.href = `${base}${activeItem.value.link}`
+}
+
+function handleVisibilityChange() {
+  isVisible = !document.hidden
+}
+
+function cleanup() {
+  // Cancel animation
+  if (animationId !== null) {
+    cancelAnimationFrame(animationId)
+    animationId = null
+  }
+
+  // Remove event listeners
+  window.removeEventListener('resize', resize)
+  document.removeEventListener('visibilitychange', handleVisibilityChange)
+
+  // Cleanup WebGL resources
+  if (gl) {
+    // Delete buffers
+    allBuffers.forEach(buf => gl!.deleteBuffer(buf))
+    allBuffers = []
+
+    // Delete shaders
+    allShaders.forEach(shader => gl!.deleteShader(shader))
+    allShaders = []
+
+    // Delete instance buffer
+    if (discInstances?.buffer) {
+      gl.deleteBuffer(discInstances.buffer)
+    }
+
+    // Delete VAO
+    if (discVAO) {
+      gl.deleteVertexArray(discVAO)
+      discVAO = null
+    }
+
+    // Delete program
+    if (discProgram) {
+      gl.deleteProgram(discProgram)
+      discProgram = null
+    }
+  }
+
+  gl = null
+  control = null
 }
 
 onMounted(() => {
   if (canvasRef.value) {
     initWebGL(canvasRef.value)
     run()
-    window.addEventListener('resize', resize)
+    window.addEventListener('resize', resize, { passive: true })
+    document.addEventListener('visibilitychange', handleVisibilityChange)
   }
 })
 
 onUnmounted(() => {
-  if (animationId) {
-    cancelAnimationFrame(animationId)
-  }
-  window.removeEventListener('resize', resize)
+  cleanup()
 })
 </script>
 

@@ -89,14 +89,14 @@ function applyHighlights(searchQuery: string): void {
     const text = node.nodeValue
     if (!text) return
 
-    highlightRegex.lastIndex = 0
-    if (!highlightRegex.test(text)) return
-
+    // Skip .test() which advances lastIndex - just go straight to replace
     const fragment = document.createDocumentFragment()
     let lastIndex = 0
+    let hasMatches = false
 
     highlightRegex.lastIndex = 0
     text.replace(highlightRegex, (match, offset) => {
+      hasMatches = true
       if (offset > lastIndex) {
         fragment.appendChild(document.createTextNode(text.slice(lastIndex, offset)))
       }
@@ -108,6 +108,9 @@ function applyHighlights(searchQuery: string): void {
       lastIndex = offset + match.length
       return match
     })
+
+    // Only process if we found matches
+    if (!hasMatches) return
 
     if (lastIndex < text.length) {
       fragment.appendChild(document.createTextNode(text.slice(lastIndex)))
