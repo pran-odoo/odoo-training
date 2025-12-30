@@ -778,24 +778,28 @@ function projectToScreen(worldPos: vec3): { x: number, y: number, depth: number 
   return { x, y, depth: ndcZ }
 }
 
-// Update all disc labels with screen positions
+// Update all disc labels with screen positions - with collision detection
 function updateDiscLabels() {
   if (!control || !canvasRef.value) return
 
-  const labels: DiscLabel[] = []
   const canvas = canvasRef.value
+  const centerX = canvas.clientWidth / 2
+  const centerY = canvas.clientHeight / 2
+
+  // Collect all potential labels with their data
+  const potentialLabels: (DiscLabel & { distToCenter: number })[] = []
 
   for (let i = 0; i < instancePositions.length; i++) {
     const worldPos = vec3.transformQuat(vec3.create(), instancePositions[i], control.orientation)
 
-    // Only show labels for discs facing the camera (positive z means facing us)
-    if (worldPos[2] <= 0.3) continue // Threshold to hide edge discs
+    // Only show labels for discs clearly facing the camera
+    if (worldPos[2] <= 0.5) continue // Higher threshold to reduce clutter
 
     const screenPos = projectToScreen(worldPos)
     if (!screenPos) continue
 
-    // Check if on screen with margin
-    const margin = 30
+    // Check if on screen with larger margin
+    const margin = 60
     if (screenPos.x < margin || screenPos.x > canvas.clientWidth - margin ||
         screenPos.y < margin || screenPos.y > canvas.clientHeight - margin) {
       continue
@@ -804,15 +808,19 @@ function updateDiscLabels() {
     const itemIndex = i % menuItems.length
     const item = menuItems[itemIndex]
 
-    // Calculate opacity based on z position (front discs more visible)
-    // worldPos[2] ranges from -SPHERE_RADIUS to +SPHERE_RADIUS
-    const normalizedZ = Math.max(0, worldPos[2] / SPHERE_RADIUS) // 0 to 1
-    const opacity = 0.4 + normalizedZ * 0.6 // Range from 0.4 to 1.0
+    // Calculate distance to screen center
+    const distToCenter = Math.sqrt(
+      Math.pow(screenPos.x - centerX, 2) + Math.pow(screenPos.y - centerY, 2)
+    )
 
-    // Scale based on proximity to front
-    const scale = 0.7 + normalizedZ * 0.3 // Range from 0.7 to 1.0
+    // Skip labels too close to center (where the main label is)
+    if (distToCenter < 80) continue
 
-    labels.push({
+    const normalizedZ = Math.max(0, worldPos[2] / SPHERE_RADIUS)
+    const opacity = 0.5 + normalizedZ * 0.5
+    const scale = 0.75 + normalizedZ * 0.25
+
+    potentialLabels.push({
       x: screenPos.x,
       y: screenPos.y,
       text: item.text,
@@ -820,14 +828,52 @@ function updateDiscLabels() {
       opacity,
       scale,
       category: item.category,
-      depth: worldPos[2] // Store depth for z-index sorting
+      depth: worldPos[2],
+      distToCenter
     })
   }
 
-  // Sort by depth so front labels render on top (higher z-index)
-  labels.sort((a, b) => (a as any).depth - (b as any).depth)
+  // Sort by depth (front first) so front labels take priority
+  potentialLabels.sort((a, b) => b.depth - a.depth)
 
-  discLabels.value = labels
+  // Filter out overlapping labels - keep only non-overlapping ones
+  const finalLabels: DiscLabel[] = []
+  const MIN_DISTANCE = 70 // Minimum distance between label centers
+
+  for (const label of potentialLabels) {
+    let overlaps = false
+
+    for (const existing of finalLabels) {
+      const dist = Math.sqrt(
+        Math.pow(label.x - existing.x, 2) + Math.pow(label.y - existing.y, 2)
+      )
+      if (dist < MIN_DISTANCE) {
+        overlaps = true
+        break
+      }
+    }
+
+    if (!overlaps) {
+      finalLabels.push({
+        x: label.x,
+        y: label.y,
+        text: label.text,
+        icon: label.icon,
+        opacity: label.opacity,
+        scale: label.scale,
+        category: label.category,
+        depth: label.depth
+      })
+    }
+
+    // Limit total labels to avoid clutter
+    if (finalLabels.length >= 8) break
+  }
+
+  // Sort for z-index (back to front for proper stacking)
+  finalLabels.sort((a, b) => a.depth - b.depth)
+
+  discLabels.value = finalLabels
 }
 
 function animate(deltaTime: number) {
