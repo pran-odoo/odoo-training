@@ -643,7 +643,7 @@ class ArcballControl {
   }
 }
 
-// Main WebGL class
+// Main WebGL state - all mutable state that needs reset between mounts
 let gl: WebGL2RenderingContext | null = null
 let discProgram: WebGLProgram | null = null
 let discVAO: WebGLVertexArrayObject | null = null
@@ -655,8 +655,8 @@ let isVisible = true
 let allBuffers: WebGLBuffer[] = []
 let allShaders: WebGLShader[] = []
 
-const worldMatrix = mat4.create()
-const camera = {
+// Camera state
+let camera = {
   matrix: mat4.create(),
   near: 0.1,
   far: 40,
@@ -674,11 +674,11 @@ let discInstances: {
   matricesArray: Float32Array
   matrices: Float32Array[]
   buffer: WebGLBuffer | null
-}
+} | null = null
 
 let instancePositions: vec3[] = []
 let DISC_INSTANCE_COUNT = 0
-let discBuffers: { vertices: Float32Array; indices: Uint16Array; uvs: Float32Array }
+let discBuffers: { vertices: Float32Array; indices: Uint16Array; uvs: Float32Array } | null = null
 let smoothRotationVelocity = 0
 const TARGET_FRAME_DURATION = 1000 / 60
 const TARGET_FPS = 30 // Limit to 30fps for performance
@@ -689,6 +689,50 @@ let scaleFactor = 1.0
 let _time = 0
 let _frames = 0
 let movementActive = false
+const worldMatrix = mat4.create()
+
+// Reset all module state - call before initializing
+function resetModuleState() {
+  gl = null
+  discProgram = null
+  discVAO = null
+  control = null
+  animationId = null
+  isVisible = true
+  allBuffers = []
+  allShaders = []
+  discInstances = null
+  instancePositions = []
+  DISC_INSTANCE_COUNT = 0
+  discBuffers = null
+  smoothRotationVelocity = 0
+  lastRenderTime = 0
+  scaleFactor = 1.0
+  _time = 0
+  _frames = 0
+  movementActive = false
+  lastInputTime = 0
+  isIdle = false
+  lastLabelUpdateTime = 0
+  _categoryColorArray = null
+  _categoryIndices = null
+  _categoryList = null
+
+  // Reset camera
+  camera = {
+    matrix: mat4.create(),
+    near: 0.1,
+    far: 40,
+    fov: Math.PI / 4,
+    aspect: 1,
+    position: vec3.fromValues(0, 0, 3),
+    up: vec3.fromValues(0, 1, 0),
+    matrices: {
+      view: mat4.create(),
+      projection: mat4.create(),
+    }
+  }
+}
 
 // Pre-allocated reusable objects to avoid per-frame allocations (GC churn)
 const _idleQuat = quat.create()
@@ -794,6 +838,7 @@ function initWebGL(canvas: HTMLCanvasElement) {
   gl.vertexAttribPointer(discLocations.aModelUvs, 2, gl.FLOAT, false, 0, 0)
 
   const indexBuffer = gl.createBuffer()
+  if (indexBuffer) allBuffers.push(indexBuffer) // Track for cleanup
   gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, indexBuffer)
   gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, discBuffers.indices, gl.STATIC_DRAW)
 
@@ -1068,7 +1113,7 @@ function updateDiscLabels() {
 }
 
 function animate(deltaTime: number) {
-  if (!gl || !control) return
+  if (!gl || !control || !discInstances) return
 
   // Add gentle idle rotation when not dragging (using pre-allocated quat)
   if (!control.isPointerDown && Math.abs(smoothRotationVelocity) < 0.01) {
@@ -1152,7 +1197,7 @@ function initUniformArrays() {
 }
 
 function render() {
-  if (!gl || !discProgram) return
+  if (!gl || !discProgram || !discBuffers || !discVAO) return
 
   gl.useProgram(discProgram)
   gl.enable(gl.CULL_FACE)
@@ -1224,8 +1269,16 @@ function run(time = 0) {
 
   _frames += deltaTime / TARGET_FRAME_DURATION
 
-  animate(deltaTime)
-  render()
+  // Wrap in try-catch to prevent crashes from killing the loop
+  try {
+    animate(deltaTime)
+    render()
+  } catch (error) {
+    console.error('InfiniteMenu render error:', error)
+    // Stop animation on error to prevent repeated crashes
+    stopAnimationLoop()
+    webglSupported.value = false
+  }
 }
 
 function handleClick(event: MouseEvent) {
@@ -1321,6 +1374,9 @@ function handleReducedMotionChange(e: MediaQueryListEvent) {
 }
 
 onMounted(() => {
+  // CRITICAL: Reset all module-level state first to prevent crashes from stale state
+  resetModuleState()
+
   if (!canvasRef.value) return
 
   // Check for reduced motion preference FIRST
