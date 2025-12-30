@@ -18,6 +18,7 @@ import CustomFooter from '../components/CustomFooter.vue'
 import SearchHighlights from '../components/SearchHighlights.vue'
 import BookmarkButton from '../components/BookmarkButton.vue'
 import BookmarksPanel from '../components/BookmarksPanel.vue'
+import QuizProgress from '../components/QuizProgress.vue'
 
 const { Layout } = DefaultTheme
 const route = useRoute()
@@ -149,6 +150,7 @@ onUnmounted(() => {
 
     <template #sidebar-nav-before>
       <BookmarksPanel />
+      <QuizProgress />
     </template>
 
     <template #layout-bottom>
