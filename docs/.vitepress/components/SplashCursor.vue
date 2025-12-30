@@ -793,12 +793,29 @@ function render() {
   blit(null)
 }
 
+// Accumulated pointer input for frame-limited rendering
+let pendingSplat = false
+let pendingSplatX = 0
+let pendingSplatY = 0
+let pendingSplatDx = 0
+let pendingSplatDy = 0
+
 function updateFrame(timestamp: number = 0) {
   animationId = requestAnimationFrame(updateFrame)
 
   if (!gl || !isVisible) return
 
-  // Frame rate limiting - skip frame if not enough time has passed
+  // Always capture pointer input at 60fps to avoid losing mouse movements
+  if (pointer.moved) {
+    pointer.moved = false
+    pendingSplat = true
+    pendingSplatX = pointer.texcoordX
+    pendingSplatY = pointer.texcoordY
+    pendingSplatDx = pointer.deltaX * props.splatForce
+    pendingSplatDy = pointer.deltaY * props.splatForce
+  }
+
+  // Frame rate limiting - skip rendering if not enough time has passed
   const elapsed = timestamp - lastRenderTime
   if (elapsed < FRAME_TIME) return
   lastRenderTime = timestamp - (elapsed % FRAME_TIME)
@@ -823,12 +840,10 @@ function updateFrame(timestamp: number = 0) {
     pointer.color = generateColor()
   }
 
-  // Apply pointer input
-  if (pointer.moved) {
-    pointer.moved = false
-    const dx = pointer.deltaX * props.splatForce
-    const dy = pointer.deltaY * props.splatForce
-    splat(pointer.texcoordX, pointer.texcoordY, dx, dy, pointer.color)
+  // Apply accumulated pointer input
+  if (pendingSplat) {
+    pendingSplat = false
+    splat(pendingSplatX, pendingSplatY, pendingSplatDx, pendingSplatDy, pointer.color)
   }
 
   step(dt)
