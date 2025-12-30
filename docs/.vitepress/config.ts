@@ -1,6 +1,10 @@
 import { defineConfig } from 'vitepress'
 import { withPwa } from '@vite-pwa/vitepress'
 
+// Vercel sets VERCEL=1, GitHub Pages doesn't
+const isVercel = process.env.VERCEL === '1'
+const base = isVercel ? '/' : '/odoo-training/'
+
 export default withPwa(defineConfig({
   vite: {
     build: {
@@ -11,9 +15,8 @@ export default withPwa(defineConfig({
   title: 'Odoo Functional Training',
   description: 'Free Odoo 19 training guide for functional consultants',
 
-  // For GitHub Pages: set to '/<REPO_NAME>/' if not using custom domain
-  // For custom domain or root: use '/'
-  base: '/odoo-training/',
+  // Dynamic base: '/' for Vercel, '/odoo-training/' for GitHub Pages
+  base,
 
   head: [
     // Dynamic theme color for light/dark modes (Aurora Premium)
@@ -21,8 +24,8 @@ export default withPwa(defineConfig({
     ['meta', { name: 'theme-color', media: '(prefers-color-scheme: dark)', content: '#0C0A09' }],
     ['meta', { name: 'mobile-web-app-capable', content: 'yes' }],
     ['meta', { name: 'apple-mobile-web-app-status-bar-style', content: 'black-translucent' }],
-    ['link', { rel: 'apple-touch-icon', sizes: '192x192', href: '/odoo-training/icons/icon-192.png' }],
-    ['link', { rel: 'icon', type: 'image/png', sizes: '32x32', href: '/odoo-training/icons/icon-32.png' }],
+    ['link', { rel: 'apple-touch-icon', sizes: '192x192', href: `${base}icons/icon-192.png` }],
+    ['link', { rel: 'icon', type: 'image/png', sizes: '32x32', href: `${base}icons/icon-32.png` }],
   ],
 
   appearance: 'dark',
@@ -135,17 +138,17 @@ export default withPwa(defineConfig({
       categories: ['education', 'productivity'],
       icons: [
         {
-          src: '/odoo-training/icons/icon-192.png',
+          src: `${base}icons/icon-192.png`,
           sizes: '192x192',
           type: 'image/png'
         },
         {
-          src: '/odoo-training/icons/icon-512.png',
+          src: `${base}icons/icon-512.png`,
           sizes: '512x512',
           type: 'image/png'
         },
         {
-          src: '/odoo-training/icons/icon-512.png',
+          src: `${base}icons/icon-512.png`,
           sizes: '512x512',
           type: 'image/png',
           purpose: 'maskable'
