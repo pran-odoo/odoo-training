@@ -718,22 +718,38 @@ body {
    16. PREMIUM HOME PAGE
    ============================================ */
 
-/* Darker home page background */
+/* Transparent home page for Galaxy background */
 .VPHome {
-  background: linear-gradient(180deg, var(--vp-c-bg) 0%, var(--vp-c-bg-mute) 100%);
+  background: transparent !important;
 }
 
 .dark .VPHome {
-  background: linear-gradient(180deg, #050505 0%, #0A0A0A 50%, #0F0F0F 100%);
+  background: transparent !important;
 }
 
-/* Hero section darker background */
+/* Make VPContent transparent on home page */
+.VPContent.is-home {
+  background: transparent !important;
+}
+
+/* Hero section transparent */
 .VPHero {
   padding-bottom: 64px !important;
+  background: transparent !important;
 }
 
 .dark .VPHero {
-  background: radial-gradient(ellipse at 50% 0%, rgba(99, 102, 241, 0.15) 0%, transparent 60%);
+  background: transparent !important;
+}
+
+/* Features section transparent */
+.VPFeatures {
+  background: transparent !important;
+}
+
+/* Home page main content area transparent */
+.VPHome .VPHomeContent {
+  background: transparent !important;
 }
 
 .VPHome .name {
@@ -751,8 +767,10 @@ body {
 }
 
 .VPFeature {
-  background: var(--surface-elevated) !important;
-  border: 1px solid var(--vp-c-border) !important;
+  background: var(--glass-bg) !important;
+  backdrop-filter: var(--glass-blur) !important;
+  -webkit-backdrop-filter: var(--glass-blur) !important;
+  border: 1px solid var(--glass-border) !important;
   border-radius: var(--radius-lg) !important;
   transition: all var(--duration-normal) var(--ease-out-expo) !important;
 }
