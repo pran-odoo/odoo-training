@@ -4,20 +4,8 @@ import { defineAsyncComponent } from 'vue'
 import Layout from './Layout.vue'
 import './custom.css'
 
-// Components
-import CommandPalette from '../components/CommandPalette.vue'
-import SettingsPanel from '../components/SettingsPanel.vue'
-import ProgressBar from '../components/ProgressBar.vue'
-import BookmarksPanel from '../components/BookmarksPanel.vue'
-import BookmarkButton from '../components/BookmarkButton.vue'
-import SearchHighlights from '../components/SearchHighlights.vue'
+// Components used in markdown files (need global registration)
 import Quiz from '../components/Quiz.vue'
-import QuizProgress from '../components/QuizProgress.vue'
-import BackToTop from '../components/BackToTop.vue'
-import KeyboardHelp from '../components/KeyboardHelp.vue'
-import ResumeReading from '../components/ResumeReading.vue'
-import GlossaryProvider from '../components/GlossaryProvider.vue'
-import ElectricBorder from '../components/ElectricBorder.vue'
 import FeatureCards from '../components/FeatureCards.vue'
 
 // Lazy load heavy WebGL component
@@ -27,21 +15,10 @@ export default {
   extends: DefaultTheme,
   Layout,
   enhanceApp({ app }) {
-    // Register global components
-    app.component('CommandPalette', CommandPalette)
-    app.component('SettingsPanel', SettingsPanel)
-    app.component('ProgressBar', ProgressBar)
-    app.component('BookmarksPanel', BookmarksPanel)
-    app.component('BookmarkButton', BookmarkButton)
-    app.component('SearchHighlights', SearchHighlights)
+    // Only register components used in markdown files
+    // Layout.vue components are imported directly there
     app.component('Quiz', Quiz)
-    app.component('QuizProgress', QuizProgress)
-    app.component('BackToTop', BackToTop)
-    app.component('KeyboardHelp', KeyboardHelp)
-    app.component('ResumeReading', ResumeReading)
-    app.component('GlossaryProvider', GlossaryProvider)
-    app.component('InfiniteMenu', InfiniteMenu)
-    app.component('ElectricBorder', ElectricBorder)
     app.component('FeatureCards', FeatureCards)
+    app.component('InfiniteMenu', InfiniteMenu)
   }
 } satisfies Theme
