@@ -14,7 +14,6 @@ import ResumeReading from '../components/ResumeReading.vue'
 import GlossaryProvider from '../components/GlossaryProvider.vue'
 import GalaxyBackground from '../components/GalaxyBackground.vue'
 import CustomFooter from '../components/CustomFooter.vue'
-import HiTechCursor from '../components/HiTechCursor.vue'
 
 const { Layout } = DefaultTheme
 const route = useRoute()
@@ -123,7 +122,6 @@ onUnmounted(() => {
 </script>
 
 <template>
-  <HiTechCursor v-if="isHomePage()" />
   <GalaxyBackground v-if="isHomePage()" />
   <Layout>
     <template #layout-top>
