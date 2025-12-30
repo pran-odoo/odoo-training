@@ -1,8 +1,7 @@
 <script setup lang="ts">
 /**
- * Galaxy Background Effect - WebGL Shader Implementation
- * Animated star field with mouse interaction
- * Based on the original React/OGL implementation
+ * Galaxy Background Effect - Optimized WebGL Shader
+ * Performance optimized star field with reduced GPU load
  */
 import { ref, onMounted, onUnmounted, nextTick } from 'vue'
 
@@ -14,37 +13,29 @@ interface Props {
   speed?: number
   glowIntensity?: number
   saturation?: number
-  mouseRepulsion?: boolean
   twinkleIntensity?: number
   rotationSpeed?: number
-  repulsionStrength?: number
 }
 
 const props = withDefaults(defineProps<Props>(), {
   focal: () => [0.5, 0.5],
   starSpeed: 0.5,
-  density: 1.0,
+  density: 0.8,
   hueShift: 140,
-  speed: 1.0,
-  glowIntensity: 0.4,
+  speed: 0.8,
+  glowIntensity: 0.5,
   saturation: 0.0,
-  mouseRepulsion: true,
-  twinkleIntensity: 0.4,
-  rotationSpeed: 0.08,
-  repulsionStrength: 2.0
+  twinkleIntensity: 0.3,
+  rotationSpeed: 0.05
 })
 
-// Client-side only rendering to prevent hydration mismatch
 const isClient = ref(false)
 const canvasRef = ref<HTMLCanvasElement | null>(null)
 let gl: WebGLRenderingContext | null = null
 let program: WebGLProgram | null = null
 let animationId: number | null = null
-
-const mousePos = { x: 0.5, y: 0.5 }
-const smoothMousePos = { x: 0.5, y: 0.5 }
-let mouseActive = 0.0
-let smoothMouseActive = 0.0
+let lastFrameTime = 0
+const TARGET_FPS = 30 // Throttle to 30fps for performance
 
 const vertexShader = `
 attribute vec2 position;
@@ -56,9 +47,9 @@ void main() {
 }
 `
 
-// Original shader from the React implementation
+// Optimized fragment shader - reduced layers and simplified math
 const fragmentShader = `
-precision highp float;
+precision mediump float;
 
 uniform float uTime;
 uniform vec2 uResolution;
@@ -67,96 +58,73 @@ uniform float uStarSpeed;
 uniform float uDensity;
 uniform float uHueShift;
 uniform float uSpeed;
-uniform vec2 uMouse;
 uniform float uGlowIntensity;
-uniform float uSaturation;
-uniform bool uMouseRepulsion;
 uniform float uTwinkleIntensity;
 uniform float uRotationSpeed;
-uniform float uRepulsionStrength;
-uniform float uMouseActiveFactor;
 
 varying vec2 vUv;
 
-#define NUM_LAYER 4.0
-#define STAR_COLOR_CUTOFF 0.2
-#define MAT45 mat2(0.7071, -0.7071, 0.7071, 0.7071)
-#define PERIOD 3.0
+#define NUM_LAYER 3.0
+#define PI 3.14159265
 
-float Hash21(vec2 p) {
-  p = fract(p * vec2(123.34, 456.21));
-  p += dot(p, p + 45.32);
-  return fract(p.x * p.y);
+// Simplified hash function
+float hash(vec2 p) {
+  return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453);
 }
 
+// Simple triangle wave
 float tri(float x) {
   return abs(fract(x) * 2.0 - 1.0);
 }
 
-float tris(float x) {
-  float t = fract(x);
-  return 1.0 - smoothstep(0.0, 1.0, abs(2.0 * t - 1.0));
+// Simplified HSV to RGB
+vec3 hsv2rgb(float h, float s, float v) {
+  vec3 c = vec3(h, s, v);
+  vec3 rgb = clamp(abs(mod(c.x * 6.0 + vec3(0.0, 4.0, 2.0), 6.0) - 3.0) - 1.0, 0.0, 1.0);
+  return c.z * mix(vec3(1.0), rgb, c.y);
 }
 
-float trisn(float x) {
-  float t = fract(x);
-  return 2.0 * (1.0 - smoothstep(0.0, 1.0, abs(2.0 * t - 1.0))) - 1.0;
-}
-
-vec3 hsv2rgb(vec3 c) {
-  vec4 K = vec4(1.0, 2.0 / 3.0, 1.0 / 3.0, 3.0);
-  vec3 p = abs(fract(c.xxx + K.xyz) * 6.0 - K.www);
-  return c.z * mix(K.xxx, clamp(p - K.xxx, 0.0, 1.0), c.y);
-}
-
-float Star(vec2 uv, float flare) {
+// Optimized star - simpler glow calculation
+float Star(vec2 uv, float brightness) {
   float d = length(uv);
-  float m = (0.05 * uGlowIntensity) / d;
-  float rays = smoothstep(0.0, 1.0, 1.0 - abs(uv.x * uv.y * 1000.0));
-  m += rays * flare * uGlowIntensity;
-  uv *= MAT45;
-  rays = smoothstep(0.0, 1.0, 1.0 - abs(uv.x * uv.y * 1000.0));
-  m += rays * 0.3 * flare * uGlowIntensity;
-  m *= smoothstep(1.0, 0.2, d);
+  float m = (0.04 * uGlowIntensity * brightness) / (d + 0.01);
+  m *= smoothstep(0.6, 0.0, d);
   return m;
 }
 
-vec3 StarLayer(vec2 uv) {
+// Simplified star layer - reduced neighbor check to 2x2
+vec3 StarLayer(vec2 uv, float layerIndex) {
   vec3 col = vec3(0.0);
 
   vec2 gv = fract(uv) - 0.5;
   vec2 id = floor(uv);
 
-  for (int y = -1; y <= 1; y++) {
-    for (int x = -1; x <= 1; x++) {
-      vec2 offset = vec2(float(x), float(y));
+  // Only check immediate neighbors (2x2 instead of 3x3)
+  for (int y = 0; y <= 1; y++) {
+    for (int x = 0; x <= 1; x++) {
+      vec2 offset = vec2(float(x), float(y)) - 0.5;
       vec2 si = id + offset;
-      float seed = Hash21(si);
+
+      float seed = hash(si + layerIndex * 100.0);
+
+      // Skip some stars based on seed for variety
+      if (seed < 0.3) continue;
+
       float size = fract(seed * 345.32);
-      float glossLocal = tri(uStarSpeed / (PERIOD * seed + 1.0));
-      float flareSize = smoothstep(0.9, 1.0, size) * glossLocal;
 
-      float red = smoothstep(STAR_COLOR_CUTOFF, 1.0, Hash21(si + 1.0)) + STAR_COLOR_CUTOFF;
-      float blu = smoothstep(STAR_COLOR_CUTOFF, 1.0, Hash21(si + 3.0)) + STAR_COLOR_CUTOFF;
-      float grn = min(red, blu) * seed;
-      vec3 base = vec3(red, grn, blu);
+      // Simplified position jitter
+      vec2 starPos = offset + vec2(hash(si * 1.1), hash(si * 1.3)) * 0.8 - 0.4;
 
-      float hue = atan(base.g - base.r, base.b - base.r) / (2.0 * 3.14159) + 0.5;
-      hue = fract(hue + uHueShift / 360.0);
-      float sat = length(base - vec3(dot(base, vec3(0.299, 0.587, 0.114)))) * uSaturation;
-      float val = max(max(base.r, base.g), base.b);
-      base = hsv2rgb(vec3(hue, sat, val));
+      // Simplified twinkle
+      float twinkle = tri(uTime * uSpeed * 0.5 + seed * 6.28) * uTwinkleIntensity + (1.0 - uTwinkleIntensity);
 
-      vec2 pad = vec2(tris(seed * 34.0 + uTime * uSpeed / 10.0), tris(seed * 38.0 + uTime * uSpeed / 30.0)) - 0.5;
+      float star = Star(gv - starPos, size * twinkle);
 
-      float star = Star(gv - offset - pad, flareSize);
-      vec3 color = base;
+      // Simple color based on seed
+      float hue = fract(seed + uHueShift / 360.0);
+      vec3 starColor = hsv2rgb(hue, 0.3, 1.0);
 
-      float twinkle = trisn(uTime * uSpeed + seed * 6.2831) * 0.5 + 1.0;
-      twinkle = mix(1.0, twinkle, uTwinkleIntensity);
-      star *= twinkle;
-
-      col += star * size * color;
+      col += star * size * starColor;
     }
   }
 
@@ -167,35 +135,27 @@ void main() {
   vec2 focalPx = uFocal * uResolution;
   vec2 uv = (vUv * uResolution - focalPx) / uResolution.y;
 
-  vec2 mouseNorm = uMouse - vec2(0.5);
-
-  if (uMouseRepulsion) {
-    vec2 mousePosUV = (uMouse * uResolution - focalPx) / uResolution.y;
-    float mouseDist = length(uv - mousePosUV);
-    vec2 repulsion = normalize(uv - mousePosUV) * (uRepulsionStrength / (mouseDist + 0.1));
-    uv += repulsion * 0.05 * uMouseActiveFactor;
-  } else {
-    vec2 mouseOffset = mouseNorm * 0.1 * uMouseActiveFactor;
-    uv += mouseOffset;
-  }
-
-  float autoRotAngle = uTime * uRotationSpeed;
-  mat2 autoRot = mat2(cos(autoRotAngle), -sin(autoRotAngle), sin(autoRotAngle), cos(autoRotAngle));
-  uv = autoRot * uv;
+  // Simplified rotation
+  float angle = uTime * uRotationSpeed;
+  float c = cos(angle);
+  float s = sin(angle);
+  uv = mat2(c, -s, s, c) * uv;
 
   vec3 col = vec3(0.0);
 
+  // 3 layers instead of 4
   for (float i = 0.0; i < 1.0; i += 1.0 / NUM_LAYER) {
-    float depth = fract(i + uStarSpeed * uSpeed);
-    float scale = mix(20.0 * uDensity, 0.5 * uDensity, depth);
-    float fade = depth * smoothstep(1.0, 0.9, depth);
-    col += StarLayer(uv * scale + i * 453.32) * fade;
+    float depth = fract(i + uStarSpeed * uSpeed * 0.1);
+    float scale = mix(15.0 * uDensity, 3.0 * uDensity, depth);
+    float fade = depth * smoothstep(1.0, 0.8, depth);
+    col += StarLayer(uv * scale + i * 453.32, i) * fade;
   }
 
   float alpha = length(col);
-  alpha = smoothstep(0.0, 0.3, alpha);
-  alpha = min(alpha, 1.0);
-  gl_FragColor = vec4(col, alpha * 0.8);
+  alpha = smoothstep(0.0, 0.2, alpha);
+  alpha = min(alpha, 0.9);
+
+  gl_FragColor = vec4(col, alpha * 0.7);
 }
 `
 
@@ -237,28 +197,19 @@ let uniforms: Record<string, WebGLUniformLocation | null> = {}
 let startTime = 0
 
 function init() {
-  if (!canvasRef.value) {
-    console.error('Canvas ref not available')
-    return
-  }
+  if (!canvasRef.value) return
 
   gl = canvasRef.value.getContext('webgl', {
     alpha: true,
     premultipliedAlpha: false,
-    antialias: false
+    antialias: false,
+    powerPreference: 'low-power' // Request low-power GPU
   })
-  if (!gl) {
-    console.error('WebGL not supported')
-    return
-  }
+  if (!gl) return
 
   program = createProgram(gl, vertexShader, fragmentShader)
-  if (!program) {
-    console.error('Failed to create shader program')
-    return
-  }
+  if (!program) return
 
-  // Create fullscreen quad
   const positions = new Float32Array([-1, -1, 1, -1, -1, 1, 1, 1])
   const buffer = gl.createBuffer()
   gl.bindBuffer(gl.ARRAY_BUFFER, buffer)
@@ -268,7 +219,6 @@ function init() {
   gl.enableVertexAttribArray(posLoc)
   gl.vertexAttribPointer(posLoc, 2, gl.FLOAT, false, 0, 0)
 
-  // Get uniform locations
   uniforms = {
     uTime: gl.getUniformLocation(program, 'uTime'),
     uResolution: gl.getUniformLocation(program, 'uResolution'),
@@ -277,14 +227,9 @@ function init() {
     uDensity: gl.getUniformLocation(program, 'uDensity'),
     uHueShift: gl.getUniformLocation(program, 'uHueShift'),
     uSpeed: gl.getUniformLocation(program, 'uSpeed'),
-    uMouse: gl.getUniformLocation(program, 'uMouse'),
     uGlowIntensity: gl.getUniformLocation(program, 'uGlowIntensity'),
-    uSaturation: gl.getUniformLocation(program, 'uSaturation'),
-    uMouseRepulsion: gl.getUniformLocation(program, 'uMouseRepulsion'),
     uTwinkleIntensity: gl.getUniformLocation(program, 'uTwinkleIntensity'),
-    uRotationSpeed: gl.getUniformLocation(program, 'uRotationSpeed'),
-    uRepulsionStrength: gl.getUniformLocation(program, 'uRepulsionStrength'),
-    uMouseActiveFactor: gl.getUniformLocation(program, 'uMouseActiveFactor')
+    uRotationSpeed: gl.getUniformLocation(program, 'uRotationSpeed')
   }
 
   gl.enable(gl.BLEND)
@@ -297,8 +242,8 @@ function init() {
 function resize() {
   if (!canvasRef.value || !gl) return
 
-  // Use proper resolution for crisp stars
-  const dpr = Math.min(2, window.devicePixelRatio || 1)
+  // Balance quality and performance - use 1.5x max for visible stars
+  const dpr = Math.min(1.5, window.devicePixelRatio || 1)
   const width = canvasRef.value.clientWidth
   const height = canvasRef.value.clientHeight
 
@@ -308,19 +253,24 @@ function resize() {
   gl.viewport(0, 0, canvasRef.value.width, canvasRef.value.height)
 }
 
-function render() {
+function render(currentTime: number) {
+  // Throttle to target FPS
+  const elapsed = currentTime - lastFrameTime
+  const frameInterval = 1000 / TARGET_FPS
+
+  if (elapsed < frameInterval) {
+    animationId = requestAnimationFrame(render)
+    return
+  }
+
+  lastFrameTime = currentTime - (elapsed % frameInterval)
+
   if (!gl || !program || !canvasRef.value) {
     animationId = requestAnimationFrame(render)
     return
   }
 
   const time = (performance.now() - startTime) * 0.001
-
-  // Smooth mouse interpolation
-  const lerpFactor = 0.05
-  smoothMousePos.x += (mousePos.x - smoothMousePos.x) * lerpFactor
-  smoothMousePos.y += (mousePos.y - smoothMousePos.y) * lerpFactor
-  smoothMouseActive += (mouseActive - smoothMouseActive) * lerpFactor
 
   gl.clearColor(0, 0, 0, 0)
   gl.clear(gl.COLOR_BUFFER_BIT)
@@ -334,30 +284,20 @@ function render() {
   gl.uniform1f(uniforms.uDensity, props.density)
   gl.uniform1f(uniforms.uHueShift, props.hueShift)
   gl.uniform1f(uniforms.uSpeed, props.speed)
-  gl.uniform2f(uniforms.uMouse, smoothMousePos.x, smoothMousePos.y)
   gl.uniform1f(uniforms.uGlowIntensity, props.glowIntensity)
-  gl.uniform1f(uniforms.uSaturation, props.saturation)
-  gl.uniform1i(uniforms.uMouseRepulsion, props.mouseRepulsion ? 1 : 0)
   gl.uniform1f(uniforms.uTwinkleIntensity, props.twinkleIntensity)
   gl.uniform1f(uniforms.uRotationSpeed, props.rotationSpeed)
-  gl.uniform1f(uniforms.uRepulsionStrength, props.repulsionStrength)
-  gl.uniform1f(uniforms.uMouseActiveFactor, smoothMouseActive)
 
   gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4)
 
   animationId = requestAnimationFrame(render)
 }
 
-function handleMouseMove(e: MouseEvent) {
-  if (!canvasRef.value) return
-  const rect = canvasRef.value.getBoundingClientRect()
-  mousePos.x = (e.clientX - rect.left) / rect.width
-  mousePos.y = 1.0 - (e.clientY - rect.top) / rect.height
-  mouseActive = 1.0
-}
-
-function handleMouseLeave() {
-  mouseActive = 0.0
+// Debounced resize handler
+let resizeTimeout: number | null = null
+function handleResize() {
+  if (resizeTimeout) clearTimeout(resizeTimeout)
+  resizeTimeout = window.setTimeout(resize, 150)
 }
 
 function cleanup() {
@@ -365,9 +305,11 @@ function cleanup() {
     cancelAnimationFrame(animationId)
     animationId = null
   }
-  window.removeEventListener('resize', resize)
-  document.removeEventListener('mousemove', handleMouseMove)
-  document.removeEventListener('mouseleave', handleMouseLeave)
+  if (resizeTimeout) {
+    clearTimeout(resizeTimeout)
+    resizeTimeout = null
+  }
+  window.removeEventListener('resize', handleResize)
 
   if (gl && program) {
     gl.deleteProgram(program)
@@ -379,20 +321,17 @@ function cleanup() {
 onMounted(async () => {
   if (typeof window !== 'undefined') {
     isClient.value = true
-    // Wait for DOM to update after v-if becomes true
     await nextTick()
-    // Double nextTick to ensure canvas is in DOM
     await nextTick()
 
     setTimeout(() => {
       init()
       if (gl && program) {
-        render()
-        window.addEventListener('resize', resize)
-        document.addEventListener('mousemove', handleMouseMove)
-        document.addEventListener('mouseleave', handleMouseLeave)
+        lastFrameTime = performance.now()
+        render(lastFrameTime)
+        window.addEventListener('resize', handleResize, { passive: true })
       }
-    }, 50)
+    }, 100)
   }
 })
 
