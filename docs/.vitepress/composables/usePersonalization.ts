@@ -26,7 +26,10 @@ const DEFAULT_SETTINGS = {
   animations: 'normal',      // normal | reduced | none
 
   // Features
-  focusMode: false
+  focusMode: false,
+
+  // Performance - Premium effects OFF by default for compatibility
+  premiumEffects: false      // WebGL galaxy background, etc.
 }
 
 // Color definitions

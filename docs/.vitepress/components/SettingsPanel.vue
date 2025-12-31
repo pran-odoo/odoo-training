@@ -112,6 +112,18 @@ const activeTab = ref<'appearance' | 'typography' | 'layout' | 'accessibility'>(
                 </div>
               </div>
 
+              <div class="settings-group">
+                <label class="settings-toggle-row">
+                  <span>Premium Visual Effects</span>
+                  <input
+                    type="checkbox"
+                    :checked="settings.premiumEffects"
+                    @change="updateSetting('premiumEffects', !settings.premiumEffects)"
+                  />
+                </label>
+                <p class="settings-hint">Enable animated galaxy background on home page. May impact performance on older devices.</p>
+              </div>
+
             </div>
 
             <!-- TYPOGRAPHY TAB -->

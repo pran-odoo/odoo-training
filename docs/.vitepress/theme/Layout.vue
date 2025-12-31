@@ -146,8 +146,8 @@ onUnmounted(() => {
 </script>
 
 <template>
-  <!-- Decorative WebGL effect - lazy loaded after 500ms for better initial performance -->
-  <GalaxyBackground v-if="isHomePage() && showEffects" />
+  <!-- Decorative WebGL effect - only shown when Premium Effects is enabled in settings -->
+  <GalaxyBackground v-if="isHomePage() && showEffects && settings.premiumEffects" />
   <Layout>
     <template #layout-top>
       <ProgressBar />
