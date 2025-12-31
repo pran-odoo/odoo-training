@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import DefaultTheme from 'vitepress/theme'
 import { useRoute, useData } from 'vitepress'
-import { onMounted, watch, ref, onUnmounted } from 'vue'
+import { onMounted, watch, ref, onUnmounted, defineAsyncComponent } from 'vue'
 import { usePersonalization } from '../composables/usePersonalization'
 
 // Components
@@ -12,13 +12,15 @@ import BackToTop from '../components/BackToTop.vue'
 import KeyboardHelp from '../components/KeyboardHelp.vue'
 import ResumeReading from '../components/ResumeReading.vue'
 import GlossaryProvider from '../components/GlossaryProvider.vue'
-import GalaxyBackground from '../components/GalaxyBackground.vue'
-import SplashCursor from '../components/SplashCursor.vue'
 import CustomFooter from '../components/CustomFooter.vue'
 import SearchHighlights from '../components/SearchHighlights.vue'
 import BookmarkButton from '../components/BookmarkButton.vue'
 import BookmarksPanel from '../components/BookmarksPanel.vue'
 import QuizProgress from '../components/QuizProgress.vue'
+
+// Lazy load heavy WebGL effects - they're decorative and can load after main content
+const GalaxyBackground = defineAsyncComponent(() => import('../components/GalaxyBackground.vue'))
+const SplashCursor = defineAsyncComponent(() => import('../components/SplashCursor.vue'))
 
 const { Layout } = DefaultTheme
 const route = useRoute()
@@ -27,6 +29,9 @@ const { settings, applySettings, toggleSetting } = usePersonalization()
 
 // Check if we're on the home page
 const isHomePage = () => frontmatter.value?.layout === 'home'
+
+// Delay loading decorative effects until after main content is interactive
+const showEffects = ref(false)
 
 const keyboardHelpRef = ref<InstanceType<typeof KeyboardHelp> | null>(null)
 
@@ -42,6 +47,12 @@ onMounted(() => {
 
   // Listen for keyboard help event from command palette
   document.addEventListener('show-keyboard-help', handleShowKeyboardHelp)
+
+  // Delay loading decorative WebGL effects until after main content is interactive
+  // This improves initial load performance especially on slower connections (GitHub Pages)
+  setTimeout(() => {
+    showEffects.value = true
+  }, 500)
 })
 
 // Re-apply when settings change
@@ -136,8 +147,9 @@ onUnmounted(() => {
 </script>
 
 <template>
-  <GalaxyBackground v-if="isHomePage()" />
-  <SplashCursor v-if="isHomePage()" />
+  <!-- Decorative WebGL effects - lazy loaded after 500ms for better initial performance -->
+  <GalaxyBackground v-if="isHomePage() && showEffects" />
+  <SplashCursor v-if="isHomePage() && showEffects" />
   <Layout>
     <template #layout-top>
       <ProgressBar />
