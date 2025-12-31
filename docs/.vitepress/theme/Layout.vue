@@ -20,7 +20,6 @@ import QuizProgress from '../components/QuizProgress.vue'
 
 // Lazy load heavy WebGL effects - they're decorative and can load after main content
 const GalaxyBackground = defineAsyncComponent(() => import('../components/GalaxyBackground.vue'))
-const SplashCursor = defineAsyncComponent(() => import('../components/SplashCursor.vue'))
 
 const { Layout } = DefaultTheme
 const route = useRoute()
@@ -147,9 +146,8 @@ onUnmounted(() => {
 </script>
 
 <template>
-  <!-- Decorative WebGL effects - lazy loaded after 500ms for better initial performance -->
+  <!-- Decorative WebGL effect - lazy loaded after 500ms for better initial performance -->
   <GalaxyBackground v-if="isHomePage() && showEffects" />
-  <SplashCursor v-if="isHomePage() && showEffects" />
   <Layout>
     <template #layout-top>
       <ProgressBar />

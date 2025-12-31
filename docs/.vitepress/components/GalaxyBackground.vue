@@ -38,6 +38,7 @@ const isReady = ref(false)
 let gl: WebGLRenderingContext | null = null
 let isMobile = false
 let isLowEndDevice = false
+let isVeryLowEndDevice = false // For truly slow devices - disable entirely
 let program: WebGLProgram | null = null
 let buffer: WebGLBuffer | null = null
 let animationId: number | null = null
@@ -47,7 +48,9 @@ let prefersReducedMotion = false
 let shouldAnimate = true
 let uniforms: Record<string, WebGLUniformLocation | null> = {}
 let lastRenderTime = 0
-const TARGET_FPS = 20 // Limit to 20fps for ambient background effect (was 30)
+let effectiveDensity = 1.5 // Will be reduced for low-end devices
+let effectiveNumLayers = 4 // Will be reduced for low-end devices
+const TARGET_FPS = 20 // Limit to 20fps for ambient background effect
 const FRAME_TIME = 1000 / TARGET_FPS
 
 // Idle detection
@@ -72,7 +75,7 @@ void main() {
 `
 
 const FRAGMENT_SHADER = `
-precision highp float;
+precision mediump float;
 
 uniform float uTime;
 uniform vec2 uResolution;
@@ -89,10 +92,10 @@ uniform float uTwinkleIntensity;
 uniform float uRotationSpeed;
 uniform float uRepulsionStrength;
 uniform float uMouseActiveFactor;
+uniform float uNumLayers;
 
 varying vec2 vUv;
 
-#define NUM_LAYER 4.0
 #define STAR_COLOR_CUTOFF 0.2
 #define MAT45 mat2(0.7071, -0.7071, 0.7071, 0.7071)
 #define PERIOD 3.0
@@ -199,7 +202,10 @@ void main() {
 
   vec3 col = vec3(0.0);
 
-  for (float i = 0.0; i < 1.0; i += 1.0 / NUM_LAYER) {
+  float layerStep = 1.0 / uNumLayers;
+  for (float i = 0.0; i < 1.0; i += 0.25) {
+    if (i >= 1.0 - 0.01) break; // Safety break
+    if (i * uNumLayers >= uNumLayers - 0.01) break; // Respect layer count
     float depth = fract(i + uStarSpeed * uSpeed);
     float scale = mix(20.0 * uDensity, 0.5 * uDensity, depth);
     float fade = depth * smoothstep(1.0, 0.9, depth);
@@ -284,7 +290,8 @@ function initWebGL(): boolean {
     uTwinkleIntensity: gl.getUniformLocation(program, 'uTwinkleIntensity'),
     uRotationSpeed: gl.getUniformLocation(program, 'uRotationSpeed'),
     uRepulsionStrength: gl.getUniformLocation(program, 'uRepulsionStrength'),
-    uMouseActiveFactor: gl.getUniformLocation(program, 'uMouseActiveFactor')
+    uMouseActiveFactor: gl.getUniformLocation(program, 'uMouseActiveFactor'),
+    uNumLayers: gl.getUniformLocation(program, 'uNumLayers')
   }
 
   gl.enable(gl.BLEND)
@@ -301,11 +308,17 @@ function resize() {
   const height = window.innerHeight
 
   // Dynamic DPR based on device capability
-  // - Mobile: cap at 1.0
-  // - Low-end (< 4GB RAM or slow device): cap at 1.0
-  // - Desktop: cap at 1.5 (was 2, reduced for performance)
-  let maxDpr = 1.5
-  if (isMobile || isLowEndDevice) {
+  // - Low-end devices: render at 0.5x for massive performance boost
+  // - Mobile: cap at 0.75x
+  // - Medium devices: cap at 1.0
+  // - High-end desktop: cap at 1.25
+  let maxDpr = 1.25
+  if (isLowEndDevice) {
+    maxDpr = 0.5 // Half resolution for low-end
+  } else if (isMobile) {
+    maxDpr = 0.75
+  } else if (effectiveNumLayers <= 3) {
+    // Medium devices (reduced layers)
     maxDpr = 1.0
   }
   const dpr = Math.min(window.devicePixelRatio || 1, maxDpr)
@@ -366,7 +379,7 @@ function render(timestamp: number = 0) {
   gl.uniform2f(uniforms.uResolution, canvasRef.value!.width, canvasRef.value!.height)
   gl.uniform2f(uniforms.uFocal, 0.5, 0.5)
   gl.uniform1f(uniforms.uStarSpeed, time * 0.5 / 10.0)
-  gl.uniform1f(uniforms.uDensity, props.density)
+  gl.uniform1f(uniforms.uDensity, effectiveDensity)
   gl.uniform1f(uniforms.uHueShift, props.hueShift)
   gl.uniform1f(uniforms.uSpeed, props.speed)
   gl.uniform2f(uniforms.uMouse, smoothMouse.x, smoothMouse.y)
@@ -377,6 +390,7 @@ function render(timestamp: number = 0) {
   gl.uniform1f(uniforms.uRotationSpeed, props.rotationSpeed)
   gl.uniform1f(uniforms.uRepulsionStrength, props.repulsionStrength)
   gl.uniform1f(uniforms.uMouseActiveFactor, mouseActive)
+  gl.uniform1f(uniforms.uNumLayers, effectiveNumLayers)
 
   // Draw the stars
   gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4)
@@ -474,15 +488,98 @@ function cleanup() {
   buffer = null
 }
 
-onMounted(() => {
+// Detect device capability level
+function detectDeviceCapability(): 'high' | 'medium' | 'low' | 'veryLow' {
+  const nav = navigator as Navigator & {
+    deviceMemory?: number
+    hardwareConcurrency?: number
+    connection?: { effectiveType?: string; saveData?: boolean }
+  }
+
+  // Check for data saver mode
+  if (nav.connection?.saveData) return 'veryLow'
+
+  // Check connection type (slow connections = likely low-end device)
+  const connType = nav.connection?.effectiveType
+  if (connType === '2g' || connType === 'slow-2g') return 'veryLow'
+
+  // Check device memory (Chrome/Edge only)
+  const memory = nav.deviceMemory
+  if (memory !== undefined) {
+    if (memory <= 2) return 'veryLow'
+    if (memory <= 4) return 'low'
+    if (memory <= 8) return 'medium'
+    return 'high'
+  }
+
+  // Check CPU cores as fallback
+  const cores = nav.hardwareConcurrency
+  if (cores !== undefined) {
+    if (cores <= 2) return 'low'
+    if (cores <= 4) return 'medium'
+    return 'high'
+  }
+
+  // Check for mobile - be conservative
+  if ('ontouchstart' in window || navigator.maxTouchPoints > 0) {
+    return 'low'
+  }
+
+  // Default to medium for unknown devices
+  return 'medium'
+}
+
+// Quick GPU benchmark - render a few frames and measure time
+function benchmarkGPU(): Promise<'fast' | 'slow' | 'verySlow'> {
+  return new Promise((resolve) => {
+    if (!gl || !program) {
+      resolve('verySlow')
+      return
+    }
+
+    const startBench = performance.now()
+    const testFrames = 3
+
+    // Render a few test frames
+    for (let i = 0; i < testFrames; i++) {
+      gl.clearColor(0, 0, 0, 0)
+      gl.clear(gl.COLOR_BUFFER_BIT)
+      gl.useProgram(program)
+      gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4)
+      gl.finish() // Force GPU to complete
+    }
+
+    const elapsed = performance.now() - startBench
+    const avgFrameTime = elapsed / testFrames
+
+    // If average frame takes > 50ms, GPU is very slow
+    // If > 20ms, GPU is slow
+    if (avgFrameTime > 50) {
+      resolve('verySlow')
+    } else if (avgFrameTime > 20) {
+      resolve('slow')
+    } else {
+      resolve('fast')
+    }
+  })
+}
+
+onMounted(async () => {
   if (typeof window === 'undefined') return
 
   // Detect mobile
   isMobile = 'ontouchstart' in window || navigator.maxTouchPoints > 0
 
-  // Detect low-end device (< 4GB RAM)
-  const nav = navigator as Navigator & { deviceMemory?: number }
-  isLowEndDevice = (nav.deviceMemory !== undefined && nav.deviceMemory < 4)
+  // Detect device capability
+  const capability = detectDeviceCapability()
+  isLowEndDevice = capability === 'low' || capability === 'veryLow'
+  isVeryLowEndDevice = capability === 'veryLow'
+
+  // For very low-end devices, show static background only
+  if (isVeryLowEndDevice) {
+    shouldAnimate = false
+    return
+  }
 
   // Check for reduced motion preference FIRST
   reducedMotionQuery = window.matchMedia('(prefers-reduced-motion: reduce)')
@@ -496,6 +593,28 @@ onMounted(() => {
   }
 
   if (initWebGL()) {
+    // Run GPU benchmark and adjust settings
+    const gpuSpeed = await benchmarkGPU()
+
+    if (gpuSpeed === 'verySlow') {
+      // GPU is too slow - disable animation entirely
+      shouldAnimate = false
+      cleanup()
+      return
+    } else if (gpuSpeed === 'slow' || isLowEndDevice) {
+      // Reduce quality for slow GPUs
+      effectiveDensity = 0.8  // Fewer stars
+      effectiveNumLayers = 2   // Only 2 layers instead of 4
+    } else if (capability === 'medium') {
+      // Medium devices get slight reduction
+      effectiveDensity = 1.2
+      effectiveNumLayers = 3
+    } else {
+      // High-end devices get full quality
+      effectiveDensity = props.density
+      effectiveNumLayers = 4
+    }
+
     startTime = performance.now()
     lastInputTime = performance.now() // Initialize idle timer
     resize()
