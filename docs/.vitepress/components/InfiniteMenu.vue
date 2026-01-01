@@ -720,7 +720,6 @@ function resetModuleState() {
   _categoryColorArray = null
   _categoryIndices = null
   _categoryList = null
-  previousLabels = new Map()
 
   // Reset camera
   camera = {
@@ -772,13 +771,9 @@ const IDLE_TIMEOUT = 3000 // 3 seconds of no input
 let lastInputTime = 0
 let isIdle = false
 
-// Label update cadence (10fps instead of render fps)
-const LABEL_UPDATE_INTERVAL = 100 // ms (10fps)
+// Label update cadence (15fps for smoother visuals, still cheaper than render fps)
+const LABEL_UPDATE_INTERVAL = 66 // ms (~15fps)
 let lastLabelUpdateTime = 0
-
-// Label interpolation for smooth movement
-const LABEL_LERP_FACTOR = 0.15 // Smoothing factor (0-1, lower = smoother)
-let previousLabels: Map<string, { x: number; y: number }> = new Map()
 
 let discLocations: {
   aModelPosition: number
@@ -1114,29 +1109,9 @@ function updateDiscLabels() {
   // Sort for z-index (back to front for proper stacking)
   finalLabels.sort((a, b) => a.depth - b.depth)
 
-  // Apply position interpolation for smooth movement
-  const interpolatedLabels = finalLabels.map(label => {
-    const key = label.text // Use text as unique identifier
-    const prev = previousLabels.get(key)
-
-    if (prev) {
-      // Lerp from previous position to new position
-      return {
-        ...label,
-        x: prev.x + (label.x - prev.x) * LABEL_LERP_FACTOR,
-        y: prev.y + (label.y - prev.y) * LABEL_LERP_FACTOR,
-      }
-    }
-    return label
-  })
-
-  // Update previous positions for next frame
-  previousLabels.clear()
-  interpolatedLabels.forEach(label => {
-    previousLabels.set(label.text, { x: label.x, y: label.y })
-  })
-
-  discLabels.value = interpolatedLabels
+  // No interpolation - direct update for responsive feel
+  // The 10fps update rate already provides some smoothing
+  discLabels.value = finalLabels
 }
 
 function animate(deltaTime: number) {
