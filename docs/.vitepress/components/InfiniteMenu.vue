@@ -75,15 +75,15 @@ const menuItems: MenuItem[] = [
   { text: 'Removal', link: '/28-removal-strategies', category: 'Inventory', icon: '📤' },
 ]
 
-// Category colors
+// Category colors - optimized for visual distinction and accessibility
 const categoryColors: Record<string, string> = {
-  'Getting Started': '#10b981',
-  'Core Concepts': '#6366f1',
-  'Views & UI': '#f59e0b',
-  'Security': '#ef4444',
-  'Advanced': '#8b5cf6',
-  'Platform': '#06b6d4',
-  'Inventory': '#f97316',
+  'Getting Started': '#22c55e',  // Vibrant green
+  'Core Concepts': '#6366f1',    // Indigo
+  'Views & UI': '#eab308',       // Distinct yellow (was amber, too close to orange)
+  'Security': '#f43f5e',         // Rose (softer than pure red)
+  'Advanced': '#a855f7',         // Brighter purple
+  'Platform': '#0ea5e9',         // Sky blue
+  'Inventory': '#f97316',        // Orange
 }
 
 const activeCategory = computed(() => activeItem.value?.category || '')
@@ -415,9 +415,7 @@ class ArcballControl {
   private readonly EPSILON = 0.1
   private readonly IDENTITY_QUAT = quat.create()
   private isMobile = false
-  private lastTouchTime = 0
   private touchStartPos = vec2.create()
-  private hasMoved = false
 
   // Store bound handlers for cleanup
   private boundHandlers: {
@@ -521,8 +519,6 @@ class ArcballControl {
     vec2.copy(this.previousPointerPos, this.pointerPos)
     vec2.copy(this.touchStartPos, this.pointerPos)
     this.isPointerDown = true
-    this.hasMoved = false
-    this.lastTouchTime = Date.now()
     this.onInput() // Track input for idle detection
   }
 
@@ -534,13 +530,6 @@ class ArcballControl {
     const rect = this.canvas.getBoundingClientRect()
     const x = touch.clientX - rect.left
     const y = touch.clientY - rect.top
-
-    // Check if we've moved enough to count as a drag
-    const dx = x - this.touchStartPos[0]
-    const dy = y - this.touchStartPos[1]
-    if (Math.sqrt(dx * dx + dy * dy) > 10) {
-      this.hasMoved = true
-    }
 
     vec2.set(this.pointerPos, x, y)
     this.onInput() // Track input for idle detection
@@ -680,11 +669,25 @@ let instancePositions: vec3[] = []
 let DISC_INSTANCE_COUNT = 0
 let discBuffers: { vertices: Float32Array; indices: Uint16Array; uvs: Float32Array } | null = null
 let smoothRotationVelocity = 0
+
+// Performance constants
 const TARGET_FRAME_DURATION = 1000 / 60
 const TARGET_FPS = 30 // Limit to 30fps for performance
 const FRAME_TIME = 1000 / TARGET_FPS
 let lastRenderTime = 0
+
+// Geometry constants
 const SPHERE_RADIUS = 2
+const DISC_GEOMETRY_SEGMENTS = 24 // Reduced from 56 for performance
+const DISC_SCALE = 0.25
+const DISC_SCALE_INTENSITY = 0.6
+
+// Label display constants
+const MAX_VISIBLE_LABELS = 8
+const LABEL_MIN_DISTANCE = 70 // Minimum distance between label centers
+const LABEL_SCREEN_MARGIN = 60
+const LABEL_CENTER_EXCLUSION_RADIUS = 80
+const LABEL_DEPTH_THRESHOLD = 0.5
 let scaleFactor = 1.0
 let _time = 0
 let _frames = 0
@@ -717,6 +720,7 @@ function resetModuleState() {
   _categoryColorArray = null
   _categoryIndices = null
   _categoryList = null
+  previousLabels = new Map()
 
   // Reset camera
   camera = {
@@ -755,7 +759,8 @@ const _ntVec = vec3.create()
 
 // Pre-allocated for updateDiscLabels() hot path
 const _labelWorldPos = vec3.create()
-const _viewProjection = mat4.create()
+const _projectViewProjection = mat4.create()
+const _clipSpace = [0, 0, 0, 0] // Pre-allocated for projectToScreen
 
 // Pre-allocated arrays for render uniforms (avoid creating every frame)
 let _categoryColorArray: Float32Array | null = null
@@ -770,6 +775,10 @@ let isIdle = false
 // Label update cadence (10fps instead of render fps)
 const LABEL_UPDATE_INTERVAL = 100 // ms (10fps)
 let lastLabelUpdateTime = 0
+
+// Label interpolation for smooth movement
+const LABEL_LERP_FACTOR = 0.15 // Smoothing factor (0-1, lower = smoother)
+let previousLabels: Map<string, { x: number; y: number }> = new Map()
 
 let discLocations: {
   aModelPosition: number
@@ -817,7 +826,7 @@ function initWebGL(canvas: HTMLCanvasElement) {
     uTime: gl.getUniformLocation(discProgram, 'uTime'),
   }
 
-  const discGeo = new DiscGeometry(56, 1)
+  const discGeo = new DiscGeometry(DISC_GEOMETRY_SEGMENTS, 1)
   discBuffers = {
     vertices: discGeo.vertexData,
     indices: discGeo.indexData,
@@ -986,24 +995,22 @@ function projectToScreen(worldPos: vec3): { x: number, y: number, depth: number 
 
   const canvas = canvasRef.value
 
-  // Create view-projection matrix
-  const viewProjection = mat4.multiply(mat4.create(), camera.matrices.projection, camera.matrices.view)
+  // Use pre-allocated view-projection matrix
+  mat4.multiply(_projectViewProjection, camera.matrices.projection, camera.matrices.view)
 
-  // Transform to clip space (homogeneous coordinates)
-  const clipSpace = [
-    worldPos[0] * viewProjection[0] + worldPos[1] * viewProjection[4] + worldPos[2] * viewProjection[8] + viewProjection[12],
-    worldPos[0] * viewProjection[1] + worldPos[1] * viewProjection[5] + worldPos[2] * viewProjection[9] + viewProjection[13],
-    worldPos[0] * viewProjection[2] + worldPos[1] * viewProjection[6] + worldPos[2] * viewProjection[10] + viewProjection[14],
-    worldPos[0] * viewProjection[3] + worldPos[1] * viewProjection[7] + worldPos[2] * viewProjection[11] + viewProjection[15]
-  ]
+  // Transform to clip space using pre-allocated array (avoids GC churn)
+  _clipSpace[0] = worldPos[0] * _projectViewProjection[0] + worldPos[1] * _projectViewProjection[4] + worldPos[2] * _projectViewProjection[8] + _projectViewProjection[12]
+  _clipSpace[1] = worldPos[0] * _projectViewProjection[1] + worldPos[1] * _projectViewProjection[5] + worldPos[2] * _projectViewProjection[9] + _projectViewProjection[13]
+  _clipSpace[2] = worldPos[0] * _projectViewProjection[2] + worldPos[1] * _projectViewProjection[6] + worldPos[2] * _projectViewProjection[10] + _projectViewProjection[14]
+  _clipSpace[3] = worldPos[0] * _projectViewProjection[3] + worldPos[1] * _projectViewProjection[7] + worldPos[2] * _projectViewProjection[11] + _projectViewProjection[15]
 
   // Behind camera check
-  if (clipSpace[3] <= 0) return null
+  if (_clipSpace[3] <= 0) return null
 
   // Perspective divide to get NDC
-  const ndcX = clipSpace[0] / clipSpace[3]
-  const ndcY = clipSpace[1] / clipSpace[3]
-  const ndcZ = clipSpace[2] / clipSpace[3]
+  const ndcX = _clipSpace[0] / _clipSpace[3]
+  const ndcY = _clipSpace[1] / _clipSpace[3]
+  const ndcZ = _clipSpace[2] / _clipSpace[3]
 
   // Convert NDC (-1 to 1) to screen coordinates
   const x = (ndcX * 0.5 + 0.5) * canvas.clientWidth
@@ -1029,15 +1036,14 @@ function updateDiscLabels() {
     const worldPos = _labelWorldPos
 
     // Only show labels for discs clearly facing the camera
-    if (worldPos[2] <= 0.5) continue // Higher threshold to reduce clutter
+    if (worldPos[2] <= LABEL_DEPTH_THRESHOLD) continue // Higher threshold to reduce clutter
 
     const screenPos = projectToScreen(worldPos)
     if (!screenPos) continue
 
     // Check if on screen with larger margin
-    const margin = 60
-    if (screenPos.x < margin || screenPos.x > canvas.clientWidth - margin ||
-        screenPos.y < margin || screenPos.y > canvas.clientHeight - margin) {
+    if (screenPos.x < LABEL_SCREEN_MARGIN || screenPos.x > canvas.clientWidth - LABEL_SCREEN_MARGIN ||
+        screenPos.y < LABEL_SCREEN_MARGIN || screenPos.y > canvas.clientHeight - LABEL_SCREEN_MARGIN) {
       continue
     }
 
@@ -1050,7 +1056,7 @@ function updateDiscLabels() {
     )
 
     // Skip labels too close to center (where the main label is)
-    if (distToCenter < 80) continue
+    if (distToCenter < LABEL_CENTER_EXCLUSION_RADIUS) continue
 
     const normalizedZ = Math.max(0, worldPos[2] / SPHERE_RADIUS)
     const opacity = 0.5 + normalizedZ * 0.5
@@ -1074,7 +1080,6 @@ function updateDiscLabels() {
 
   // Filter out overlapping labels - keep only non-overlapping ones
   const finalLabels: DiscLabel[] = []
-  const MIN_DISTANCE = 70 // Minimum distance between label centers
 
   for (const label of potentialLabels) {
     let overlaps = false
@@ -1083,7 +1088,7 @@ function updateDiscLabels() {
       const dist = Math.sqrt(
         Math.pow(label.x - existing.x, 2) + Math.pow(label.y - existing.y, 2)
       )
-      if (dist < MIN_DISTANCE) {
+      if (dist < LABEL_MIN_DISTANCE) {
         overlaps = true
         break
       }
@@ -1103,13 +1108,35 @@ function updateDiscLabels() {
     }
 
     // Limit total labels to avoid clutter
-    if (finalLabels.length >= 8) break
+    if (finalLabels.length >= MAX_VISIBLE_LABELS) break
   }
 
   // Sort for z-index (back to front for proper stacking)
   finalLabels.sort((a, b) => a.depth - b.depth)
 
-  discLabels.value = finalLabels
+  // Apply position interpolation for smooth movement
+  const interpolatedLabels = finalLabels.map(label => {
+    const key = label.text // Use text as unique identifier
+    const prev = previousLabels.get(key)
+
+    if (prev) {
+      // Lerp from previous position to new position
+      return {
+        ...label,
+        x: prev.x + (label.x - prev.x) * LABEL_LERP_FACTOR,
+        y: prev.y + (label.y - prev.y) * LABEL_LERP_FACTOR,
+      }
+    }
+    return label
+  })
+
+  // Update previous positions for next frame
+  previousLabels.clear()
+  interpolatedLabels.forEach(label => {
+    previousLabels.set(label.text, { x: label.x, y: label.y })
+  })
+
+  discLabels.value = interpolatedLabels
 }
 
 function animate(deltaTime: number) {
@@ -1125,8 +1152,8 @@ function animate(deltaTime: number) {
 
   // Note: control.update() is called in run() at 60fps for responsive input
 
-  const scale = 0.25
-  const SCALE_INTENSITY = 0.6
+  const scale = DISC_SCALE
+  const scaleIntensity = DISC_SCALE_INTENSITY
 
   // Transform positions in-place using pre-allocated objects
   for (let ndx = 0; ndx < instancePositions.length; ndx++) {
@@ -1135,7 +1162,7 @@ function animate(deltaTime: number) {
     // Transform position by orientation (reuse _tempVec3)
     vec3.transformQuat(_tempVec3, p, control.orientation)
 
-    const s = (Math.abs(_tempVec3[2]) / SPHERE_RADIUS) * SCALE_INTENSITY + (1 - SCALE_INTENSITY)
+    const s = (Math.abs(_tempVec3[2]) / SPHERE_RADIUS) * scaleIntensity + (1 - scaleIntensity)
     const finalScale = s * scale
 
     // Build matrix using pre-allocated matrices
