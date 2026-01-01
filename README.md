@@ -23,7 +23,7 @@ Odoo Framework Training for Functional Consultants
 
   ## Features
 
-  - 📖 27 comprehensive sections
+  - 📖 28 comprehensive sections
   - 🏗️ Real-world analogies (no jargon)
   - 📊 Decision matrices for quick reference
   - ⚠️ Common mistakes & troubleshooting
