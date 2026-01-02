@@ -11,9 +11,12 @@ Relationships connect data across different models. Understanding them is **impo
 
 ```mermaid
 graph TD
-    M2O[Many2one<br>N : 1] -->|Many orders belong to One customer| C[Customer]
-    O2M[One2many<br>1 : N] -->|One customer has Many orders| O[Orders]
-    M2M[Many2many<br>N : N] ---|Many products in Many categories| CAT[Categories]
+    M2O["Many2one
+    N : 1"] -->|Many orders belong to One customer| C[Customer]
+    O2M["One2many
+    1 : N"] -->|One customer has Many orders| O[Orders]
+    M2M["Many2many
+    N : N"] ---|Many products in Many categories| CAT[Categories]
 ```
 
 | Type | Cardinality | UI Display | Database Storage |

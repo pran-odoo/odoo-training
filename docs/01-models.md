@@ -93,7 +93,8 @@ An **AbstractModel** is a reusable set of features that can be added to any mode
 
 ```mermaid
 graph TD
-    Mixin[mail.thread<br>Feature Pack: Chatter] --> SO[sale.order]
+    Mixin["mail.thread
+    Feature Pack: Chatter"] --> SO[sale.order]
     Mixin --> INV[account.move]
     Mixin --> CRM[crm.lead]
     Mixin --> TASK[project.task]
@@ -204,10 +205,15 @@ When you click **"Confirm"** on a quotation, Odoo creates even more records:
 
 ```mermaid
 graph LR
-    SO[sale.order<br>S00108] --> PICK[stock.picking<br>Delivery Order]
-    SO --> INV[account.move<br>Invoice]
-    PICK --> MOVE[stock.move<br>Stock Movements]
-    INV --> AML[account.move.line<br>Journal Items]
+    SO["sale.order
+    S00108"] --> PICK["stock.picking
+    Delivery Order"]
+    SO --> INV["account.move
+    Invoice"]
+    PICK --> MOVE["stock.move
+    Stock Movements"]
+    INV --> AML["account.move.line
+    Journal Items"]
 
     style SO fill:#8b5cf6,color:white
     style PICK fill:#3b82f6,color:white

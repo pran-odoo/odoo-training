@@ -23,8 +23,10 @@ Constraints catch these issues **at save time** and display a clear error messag
 
 ```mermaid
 graph TD
-    U[User Clicks Save] --> P[Python Constraints<br>@api.constrains]
-    P --> S[SQL Constraints<br>Database Level]
+    U[User Clicks Save] --> P["Python Constraints
+    @api.constrains"]
+    P --> S["SQL Constraints
+    Database Level"]
     S --> D{Valid?}
     D -->|Yes| Save[Record Saved]
     D -->|No| E[Error Message]

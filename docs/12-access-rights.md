@@ -20,8 +20,10 @@ graph TD
     U[User] --> G[User Groups]
     G --> AR[Access Rights]
     G --> RR[Record Rules]
-    AR --> M[Model Access<br>Can access sale.order?]
-    RR --> R[Record Filtering<br>Which orders can see?]
+    AR --> M["Model Access
+    Can access sale.order?"]
+    RR --> R["Record Filtering
+    Which orders can see?"]
 ```
 
 ## Access Rights - Model Level

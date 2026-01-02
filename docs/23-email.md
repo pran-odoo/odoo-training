@@ -79,7 +79,8 @@ Aliases automatically create records when emails arrive at specific addresses.
 
 ```mermaid
 graph LR
-    E[Email arrives at<br>sales@company.com] --> A[Alias matched]
+    E["Email arrives at
+    sales@company.com"] --> A[Alias matched]
     A --> M[Model: crm.lead]
     M --> R[New Lead created]
     R --> C[Email attached to Chatter]

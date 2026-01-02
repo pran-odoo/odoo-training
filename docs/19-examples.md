@@ -14,11 +14,16 @@ A hospital needs to track patients, their doctors, appointments, and medical rec
 
 ```mermaid
 graph LR
-    P[Patient<br><small>hospital.patient</small>] -->|Many2one| D[Doctor<br><small>hospital.doctor</small>]
-    P -->|One2many| A[Appointments<br><small>hospital.appointment</small>]
-    P -->|One2many| MR[Medical Records<br><small>hospital.record</small>]
+    P["Patient
+    hospital.patient"] -->|Many2one| D["Doctor
+    hospital.doctor"]
+    P -->|One2many| A["Appointments
+    hospital.appointment"]
+    P -->|One2many| MR["Medical Records
+    hospital.record"]
     A -->|Many2one| D
-    D -->|Many2many| S[Specializations<br><small>hospital.specialization</small>]
+    D -->|Many2many| S["Specializations
+    hospital.specialization"]
 ```
 
 ### Model Definitions
@@ -75,13 +80,21 @@ Track the complete order lifecycle from quotation through delivery and payment, 
 
 ```mermaid
 graph LR
-    C[Customer<br><small>res.partner</small>] --> SO[Sale Order<br><small>sale.order</small>]
-    SO --> L[Order Lines<br><small>sale.order.line</small>]
-    L --> P[Product<br><small>product.product</small>]
-    SO -->|Confirm| D[Delivery<br><small>stock.picking</small>]
-    SO -->|Invoice| I[Invoice<br><small>account.move</small>]
-    D --> SM[Stock Move<br><small>stock.move</small>]
-    I --> IL[Invoice Lines<br><small>account.move.line</small>]
+    C["Customer
+    res.partner"] --> SO["Sale Order
+    sale.order"]
+    SO --> L["Order Lines
+    sale.order.line"]
+    L --> P["Product
+    product.product"]
+    SO -->|Confirm| D["Delivery
+    stock.picking"]
+    SO -->|Invoice| I["Invoice
+    account.move"]
+    D --> SM["Stock Move
+    stock.move"]
+    I --> IL["Invoice Lines
+    account.move.line"]
 ```
 
 ### Key Relationships
@@ -125,13 +138,21 @@ Understanding the manufacturing data model helps when clients need production tr
 
 ```mermaid
 graph TD
-    PT[Product Template<br><small>product.template</small>] --> PP[Product Variant<br><small>product.product</small>]
-    PP --> BOM[Bill of Materials<br><small>mrp.bom</small>]
-    BOM --> BOML[BOM Lines<br><small>mrp.bom.line</small>]
-    BOML --> COMP[Component Products<br><small>product.product</small>]
-    BOM --> MO[Manufacturing Order<br><small>mrp.production</small>]
-    MO --> WO[Work Orders<br><small>mrp.workorder</small>]
-    WO --> WC[Work Center<br><small>mrp.workcenter</small>]
+    PT["Product Template
+    product.template"] --> PP["Product Variant
+    product.product"]
+    PP --> BOM["Bill of Materials
+    mrp.bom"]
+    BOM --> BOML["BOM Lines
+    mrp.bom.line"]
+    BOML --> COMP["Component Products
+    product.product"]
+    BOM --> MO["Manufacturing Order
+    mrp.production"]
+    MO --> WO["Work Orders
+    mrp.workorder"]
+    WO --> WC["Work Center
+    mrp.workcenter"]
 ```
 
 ### Model Relationships
@@ -175,10 +196,15 @@ graph LR
 
 ```mermaid
 graph LR
-    BSO[Buyer's Sale Order<br><small>sale.order</small>] -->|Export| XML[XML File<br><small>Peppol BIS 3</small>]
-    XML -->|Import| SPO[Supplier's Purchase Order<br><small>purchase.order</small>]
-    SPO -->|Confirm| SPK[Supplier's Delivery<br><small>stock.picking</small>]
-    SPK -->|Ship| BPK[Buyer's Receipt<br><small>stock.picking</small>]
+    BSO["Buyer's Sale Order
+    sale.order"] -->|Export| XML["XML File
+    Peppol BIS 3"]
+    XML -->|Import| SPO["Supplier's Purchase Order
+    purchase.order"]
+    SPO -->|Confirm| SPK["Supplier's Delivery
+    stock.picking"]
+    SPK -->|Ship| BPK["Buyer's Receipt
+    stock.picking"]
 ```
 
 ### Document Mapping
@@ -204,11 +230,17 @@ graph LR
 
 ```mermaid
 graph LR
-    E[Employee<br><small>hr.employee</small>] --> LR[Leave Request<br><small>hr.leave</small>]
-    LR --> LT[Leave Type<br><small>hr.leave.type</small>]
-    LR --> A[Approver<br><small>res.users</small>]
-    E --> D[Department<br><small>hr.department</small>]
-    D --> M[Manager<br><small>hr.employee</small>]
+    E["Employee
+    hr.employee"] --> LR["Leave Request
+    hr.leave"]
+    LR --> LT["Leave Type
+    hr.leave.type"]
+    LR --> A["Approver
+    res.users"]
+    E --> D["Department
+    hr.department"]
+    D --> M["Manager
+    hr.employee"]
 ```
 
 ### Model Structure
@@ -245,11 +277,17 @@ graph LR
 
 ```mermaid
 graph TD
-    P[Project<br><small>project.project</small>] --> T[Tasks<br><small>project.task</small>]
-    T --> ST[Subtasks<br><small>project.task</small>]
-    T --> S[Stage<br><small>project.task.type</small>]
-    T --> U[Assignees<br><small>res.users</small>]
-    T --> TS[Timesheets<br><small>account.analytic.line</small>]
+    P["Project
+    project.project"] --> T["Tasks
+    project.task"]
+    T --> ST["Subtasks
+    project.task"]
+    T --> S["Stage
+    project.task.type"]
+    T --> U["Assignees
+    res.users"]
+    T --> TS["Timesheets
+    account.analytic.line"]
 ```
 
 ### Key Features
@@ -279,9 +317,13 @@ Projects use **Stages** (Many2one) instead of **States** (Selection):
 
 ```mermaid
 graph LR
-    L[Lead<br><small>crm.lead</small>] -->|Convert| O[Opportunity<br><small>crm.lead</small>]
-    O -->|Won| SO[Sale Order<br><small>sale.order</small>]
-    O -->|Won| P[Partner<br><small>res.partner</small>]
+    L["Lead
+    crm.lead"] -->|Convert| O["Opportunity
+    crm.lead"]
+    O -->|Won| SO["Sale Order
+    sale.order"]
+    O -->|Won| P["Partner
+    res.partner"]
 ```
 
 ### CRM Stages

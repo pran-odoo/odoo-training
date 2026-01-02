@@ -21,8 +21,11 @@ Odoo.sh organizes your project into three distinct environments, like three sepa
 
 ```mermaid
 graph LR
-    D[Development<br>🟢 Sandbox] --> S[Staging<br>🟡 Testing]
-    S --> P[Production<br>🔴 Live]
+    D["Development
+    🟢 Sandbox"] --> S["Staging
+    🟡 Testing"]
+    S --> P["Production
+    🔴 Live"]
 ```
 
 ### 🔴 Production
@@ -68,8 +71,11 @@ graph LR
 
 ```mermaid
 graph LR
-    D[Development<br>Build & Test] --> S[Staging<br>Test with Real Data]
-    S --> P[Production<br>Go Live]
+    D["Development
+    Build & Test"] --> S["Staging
+    Test with Real Data"]
+    S --> P["Production
+    Go Live"]
 ```
 
 ::: info How Changes Move to Production
