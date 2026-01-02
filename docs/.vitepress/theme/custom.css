@@ -417,6 +417,8 @@ body {
   border: 1px solid var(--vp-c-border);
   box-shadow: var(--shadow-sm);
   margin: 1.5rem 0;
+  width: 100%;
+  table-layout: auto;
 }
 
 .vp-doc th {
@@ -450,6 +452,35 @@ body {
 
 .vp-doc tbody tr:nth-child(even):hover {
   background: var(--vp-c-brand-softer);
+}
+
+/* Better column distribution - prevent narrow first columns */
+.vp-doc table th,
+.vp-doc table td {
+  min-width: 150px;
+}
+
+/* 2-column tables: 30/70 split */
+.vp-doc table:has(thead tr th:nth-child(2):last-child) th:first-child,
+.vp-doc table:has(thead tr th:nth-child(2):last-child) td:first-child {
+  width: 30%;
+}
+
+.vp-doc table:has(thead tr th:nth-child(2):last-child) th:last-child,
+.vp-doc table:has(thead tr th:nth-child(2):last-child) td:last-child {
+  width: 70%;
+}
+
+/* 3-column tables: equal distribution */
+.vp-doc table:has(thead tr th:nth-child(3):last-child) th,
+.vp-doc table:has(thead tr th:nth-child(3):last-child) td {
+  width: 33.33%;
+}
+
+/* 4-column tables: equal distribution */
+.vp-doc table:has(thead tr th:nth-child(4):last-child) th,
+.vp-doc table:has(thead tr th:nth-child(4):last-child) td {
+  width: 25%;
 }
 
 /* ============================================
