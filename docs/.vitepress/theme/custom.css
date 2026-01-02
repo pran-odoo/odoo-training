@@ -457,14 +457,15 @@ body {
 /* Better column distribution - prevent narrow first columns */
 .vp-doc table th:first-child,
 .vp-doc table td:first-child {
-  width: 30%;
-  min-width: 150px;
+  width: 35%;
+  min-width: 180px;
+  max-width: 300px;
 }
 
-/* Second column gets more space for 2-column tables */
+/* Second column gets remaining space for 2-column tables */
 .vp-doc table th:nth-child(2):last-child,
 .vp-doc table td:nth-child(2):last-child {
-  width: 70%;
+  width: 65%;
 }
 
 /* For 3+ column tables, distribute remaining columns evenly */
