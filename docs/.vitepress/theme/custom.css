@@ -455,32 +455,32 @@ body {
 }
 
 /* Better column distribution - prevent narrow first columns */
-.vp-doc table th,
-.vp-doc table td {
+.vp-doc table th:first-child,
+.vp-doc table td:first-child {
+  width: 30%;
   min-width: 150px;
 }
 
-/* 2-column tables: 30/70 split */
-.vp-doc table:has(thead tr th:nth-child(2):last-child) th:first-child,
-.vp-doc table:has(thead tr th:nth-child(2):last-child) td:first-child {
-  width: 30%;
-}
-
-.vp-doc table:has(thead tr th:nth-child(2):last-child) th:last-child,
-.vp-doc table:has(thead tr th:nth-child(2):last-child) td:last-child {
+/* Second column gets more space for 2-column tables */
+.vp-doc table th:nth-child(2):last-child,
+.vp-doc table td:nth-child(2):last-child {
   width: 70%;
 }
 
-/* 3-column tables: equal distribution */
-.vp-doc table:has(thead tr th:nth-child(3):last-child) th,
-.vp-doc table:has(thead tr th:nth-child(3):last-child) td {
-  width: 33.33%;
+/* For 3+ column tables, distribute remaining columns evenly */
+.vp-doc table th:nth-child(2),
+.vp-doc table td:nth-child(2) {
+  width: 35%;
 }
 
-/* 4-column tables: equal distribution */
-.vp-doc table:has(thead tr th:nth-child(4):last-child) th,
-.vp-doc table:has(thead tr th:nth-child(4):last-child) td {
+.vp-doc table th:nth-child(3),
+.vp-doc table td:nth-child(3) {
   width: 25%;
+}
+
+.vp-doc table th:nth-child(4),
+.vp-doc table td:nth-child(4) {
+  width: 20%;
 }
 
 /* ============================================
