@@ -103,6 +103,12 @@ export default withPwa(defineConfig({
         items: [
           { text: '28. Removal Strategies', link: '/28-removal-strategies' }
         ]
+      },
+      {
+        text: 'Enterprise Modules',
+        items: [
+          { text: '29. Databases App', link: '/29-databases' }
+        ]
       }
     ],
 

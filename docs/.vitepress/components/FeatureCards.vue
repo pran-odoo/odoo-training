@@ -11,8 +11,8 @@ interface Feature {
 const features: Feature[] = [
   {
     icon: '📚',
-    title: '28 In-Depth Sections',
-    details: 'From models and fields to AI features and EDI integration',
+    title: '29 In-Depth Sections',
+    details: 'From models and fields to AI features and Enterprise modules',
     color: '#7df9ff' // cyan
   },
   {

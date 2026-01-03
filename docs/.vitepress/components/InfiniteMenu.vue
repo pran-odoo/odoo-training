@@ -73,6 +73,8 @@ const menuItems: MenuItem[] = [
   { text: 'EDI', link: '/27-edi', category: 'Platform', icon: '📦' },
   // Inventory & Stock
   { text: 'Removal', link: '/28-removal-strategies', category: 'Inventory', icon: '📤' },
+  // Enterprise Modules
+  { text: 'Databases', link: '/29-databases', category: 'Enterprise', icon: '🗄️' },
 ]
 
 // Category colors - optimized for visual distinction and accessibility
@@ -84,6 +86,7 @@ const categoryColors: Record<string, string> = {
   'Advanced': '#a855f7',         // Brighter purple
   'Platform': '#0ea5e9',         // Sky blue
   'Inventory': '#f97316',        // Orange
+  'Enterprise': '#ec4899',       // Pink (distinct from others)
 }
 
 const activeCategory = computed(() => activeItem.value?.category || '')

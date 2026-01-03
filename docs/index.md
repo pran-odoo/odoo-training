@@ -31,6 +31,7 @@ This guide covers everything a functional consultant needs to know about configu
 - **Automation**: Workflows, actions, and scheduled tasks
 - **Integration**: APIs, EDI, and connecting external systems
 - **AI Features**: New in Odoo 19 - AI agents, document digitization, and more
+- **Enterprise Modules**: Databases app for managing client fleets
 
 ### Getting Started
 
