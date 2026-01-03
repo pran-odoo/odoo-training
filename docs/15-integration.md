@@ -63,40 +63,420 @@ Outgoing webhooks allow **Odoo to send data to external systems** via HTTP POST 
 
 JSON/2 is Odoo's **modern, RESTful-style API** for external applications.
 
-### Example: Mobile App Reading Products
+### Endpoint Format
+
+```
+POST https://your-odoo.com/json/2/{model}/{method}
+```
+
+### Authentication: Bearer Token
+
+All JSON/2 requests require an API key passed as a Bearer token:
 
 ```http
-POST /json/2/product.product/search_read
-Authorization: Bearer your-api-key-here
+POST /json/2/res.partner/search_read
+Authorization: Bearer odoo_api_xxxxxxxxxxxxxxxxxxxxxxxx
 Content-Type: application/json
-
-{
-  "domain": [["sale_ok", "=", true]],
-  "fields": ["name", "list_price", "image_128"]
-}
 ```
 
 ### JSON/2 API Characteristics
 
-- **Endpoint Format:** /json/2/{model}/{method}
-- **Authentication:** Bearer token (API key)
-- **Methods Available:** All public Odoo model methods
-- **Response Format:** Clean JSON (not wrapped in RPC protocol)
+| Feature | Details |
+|---------|---------|
+| **Endpoint** | `/json/2/{model}/{method}` |
+| **HTTP Method** | POST only |
+| **Auth** | Bearer token (API key) |
+| **Request Body** | JSON with method parameters |
+| **Response** | Clean JSON (no RPC wrapper) |
+| **Models Returned** | Converted to `list[int]` (record IDs) |
 
-::: tip When to Use JSON/2 API
-- Building mobile applications
-- Creating custom dashboards
-- Modern web application integrations
-- Any new integration project in Odoo 19+
+### Common Operations
+
+#### Search and Read Records
+
+```http
+POST /json/2/res.partner/search_read
+Authorization: Bearer your-api-key
+Content-Type: application/json
+
+{
+  "domain": [["is_company", "=", true]],
+  "fields": ["name", "email", "phone"],
+  "limit": 10,
+  "offset": 0
+}
+```
+
+#### Read Specific Records
+
+```http
+POST /json/2/res.partner/read
+Authorization: Bearer your-api-key
+Content-Type: application/json
+
+{
+  "ids": [1, 2, 3],
+  "fields": ["name", "email"]
+}
+```
+
+#### Create Records
+
+```http
+POST /json/2/res.partner/create
+Authorization: Bearer your-api-key
+Content-Type: application/json
+
+{
+  "values": {
+    "name": "New Customer",
+    "email": "customer@example.com",
+    "is_company": true
+  }
+}
+```
+
+#### Update Records
+
+```http
+POST /json/2/res.partner/write
+Authorization: Bearer your-api-key
+Content-Type: application/json
+
+{
+  "ids": [42],
+  "values": {
+    "phone": "+1 555-1234"
+  }
+}
+```
+
+#### Delete Records
+
+```http
+POST /json/2/res.partner/unlink
+Authorization: Bearer your-api-key
+Content-Type: application/json
+
+{
+  "ids": [42]
+}
+```
+
+#### Call Any Public Method
+
+```http
+POST /json/2/sale.order/action_confirm
+Authorization: Bearer your-api-key
+Content-Type: application/json
+
+{
+  "ids": [15]
+}
+```
+
+### Using Context
+
+Pass context to modify behavior (language, company, etc.):
+
+```http
+POST /json/2/product.product/search_read
+Authorization: Bearer your-api-key
+Content-Type: application/json
+
+{
+  "domain": [["sale_ok", "=", true]],
+  "fields": ["name", "list_price"],
+  "context": {
+    "lang": "fr_FR",
+    "allowed_company_ids": [1, 2]
+  }
+}
+```
+
+## API Key Management
+
+### Generating API Keys
+
+API keys are generated per-user from their profile:
+
+1. Go to **Settings > Users & Companies > Users**
+2. Open your user profile
+3. Click **Account Security** tab (or "API Keys" section)
+4. Click **New API Key**
+5. Enter a description (e.g., "Mobile App", "BI Dashboard")
+6. Select duration (1 Day to 1 Year, or Persistent for admins)
+7. Click **Generate Key**
+8. **Copy the key immediately** - it's only shown once!
+
+::: warning Security Note
+API keys are hashed in the database. If you lose your key, you must generate a new one.
 :::
+
+### API Key Duration Limits
+
+The maximum key duration depends on user group settings:
+
+| User Type | Max Duration | Persistent Keys |
+|-----------|--------------|-----------------|
+| Regular User | Defined by group's `api_key_duration` | No |
+| System Admin | Unlimited | Yes |
+
+Groups can set `api_key_duration` (in days) to limit how long users can create API keys for.
+
+### API Key Scopes
+
+API keys can optionally have a **scope** that limits what they can access:
+
+| Scope | Access |
+|-------|--------|
+| `None` (default) | Full access to all RPC methods |
+| Specific scope | Limited to methods matching that scope |
+
+### Automatic Key Cleanup
+
+Expired API keys are automatically deleted by a scheduled action (`_gc_user_apikeys`).
+
+## Error Handling
+
+### HTTP Status Codes
+
+| Status | Meaning |
+|--------|---------|
+| `200` | Success |
+| `400` | Bad Request - invalid parameters |
+| `401` | Unauthorized - invalid or missing API key |
+| `403` | Forbidden - insufficient permissions |
+| `404` | Not Found - model or method doesn't exist |
+| `422` | Unprocessable Entity - invalid method call |
+| `500` | Internal Server Error |
+
+### Error Response Format
+
+Errors are returned as JSON with a `message` field:
+
+```json
+{
+  "message": "the model 'fake.model' does not exist"
+}
+```
+
+### Common Errors
+
+| Error | Cause | Solution |
+|-------|-------|----------|
+| `the model 'X' does not exist` | Invalid model name | Check spelling, use technical name |
+| `cannot call X.Y with ids` | Called @api.model method with ids | Remove `ids` from request |
+| `AccessError` | User lacks permission | Check access rights for API user |
+| `ValidationError` | Constraint violated | Check required fields, constraints |
+
+## Code Examples
+
+### Python Client
+
+```python
+import requests
+
+ODOO_URL = "https://your-odoo.com"
+API_KEY = "odoo_api_xxxxxxxxxxxxxxxxxxxxxxxx"
+
+def odoo_api(model, method, **kwargs):
+    """Call Odoo JSON/2 API"""
+    response = requests.post(
+        f"{ODOO_URL}/json/2/{model}/{method}",
+        headers={
+            "Authorization": f"Bearer {API_KEY}",
+            "Content-Type": "application/json",
+        },
+        json=kwargs,
+    )
+    response.raise_for_status()
+    return response.json()
+
+# Search partners
+partners = odoo_api(
+    "res.partner", "search_read",
+    domain=[["is_company", "=", True]],
+    fields=["name", "email"],
+    limit=10,
+)
+print(partners)
+
+# Create a partner
+new_id = odoo_api(
+    "res.partner", "create",
+    values={"name": "New Customer", "email": "new@example.com"},
+)
+print(f"Created partner ID: {new_id}")
+
+# Update a partner
+odoo_api(
+    "res.partner", "write",
+    ids=[new_id],
+    values={"phone": "+1 555-0000"},
+)
+
+# Delete a partner
+odoo_api("res.partner", "unlink", ids=[new_id])
+```
+
+### JavaScript/Node.js Client
+
+```javascript
+const ODOO_URL = "https://your-odoo.com";
+const API_KEY = "odoo_api_xxxxxxxxxxxxxxxxxxxxxxxx";
+
+async function odooApi(model, method, params = {}) {
+  const response = await fetch(
+    `${ODOO_URL}/json/2/${model}/${method}`,
+    {
+      method: "POST",
+      headers: {
+        "Authorization": `Bearer ${API_KEY}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(params),
+    }
+  );
+
+  if (!response.ok) {
+    const error = await response.json();
+    throw new Error(error.message || response.statusText);
+  }
+
+  return response.json();
+}
+
+// Search partners
+const partners = await odooApi("res.partner", "search_read", {
+  domain: [["is_company", "=", true]],
+  fields: ["name", "email"],
+  limit: 10,
+});
+console.log(partners);
+
+// Create a partner
+const newId = await odooApi("res.partner", "create", {
+  values: { name: "New Customer", email: "new@example.com" },
+});
+console.log(`Created partner ID: ${newId}`);
+```
+
+### cURL Examples
+
+```bash
+# Search partners
+curl -X POST "https://your-odoo.com/json/2/res.partner/search_read" \
+  -H "Authorization: Bearer odoo_api_xxx" \
+  -H "Content-Type: application/json" \
+  -d '{"domain": [["is_company", "=", true]], "fields": ["name"], "limit": 5}'
+
+# Create a partner
+curl -X POST "https://your-odoo.com/json/2/res.partner/create" \
+  -H "Authorization: Bearer odoo_api_xxx" \
+  -H "Content-Type: application/json" \
+  -d '{"values": {"name": "Test Customer"}}'
+```
+
+## API Documentation Browser
+
+Odoo 19 includes a built-in API documentation browser at `/doc`:
+
+1. Install the `api_doc` module
+2. Navigate to `https://your-odoo.com/doc`
+3. Browse models, fields, and methods
+4. View method signatures and documentation
+
+::: tip Bearer Access
+The API doc is also available via Bearer auth at `/doc-bearer/index.json` for programmatic access.
+:::
+
+## Batch Operations
+
+### Bulk Create
+
+Pass a list of values to create multiple records:
+
+```http
+POST /json/2/res.partner/create
+Authorization: Bearer your-api-key
+Content-Type: application/json
+
+{
+  "values": [
+    {"name": "Customer 1", "email": "c1@example.com"},
+    {"name": "Customer 2", "email": "c2@example.com"},
+    {"name": "Customer 3", "email": "c3@example.com"}
+  ]
+}
+```
+
+Returns: `[id1, id2, id3]`
+
+### Bulk Update
+
+Update multiple records at once:
+
+```http
+POST /json/2/res.partner/write
+Authorization: Bearer your-api-key
+Content-Type: application/json
+
+{
+  "ids": [1, 2, 3, 4, 5],
+  "values": {
+    "active": false
+  }
+}
+```
+
+### Bulk Delete
+
+```http
+POST /json/2/res.partner/unlink
+Authorization: Bearer your-api-key
+Content-Type: application/json
+
+{
+  "ids": [10, 11, 12, 13]
+}
+```
 
 ## XML-RPC & JSON-RPC: Legacy APIs
 
 ::: danger Deprecation Notice
-XML-RPC (/xmlrpc, /xmlrpc/2) and JSON-RPC (/jsonrpc) are **deprecated in Odoo 19** and will be removed in Odoo 20.
+XML-RPC (`/xmlrpc`, `/xmlrpc/2`) and JSON-RPC (`/jsonrpc`) are **deprecated in Odoo 19** and will be removed in Odoo 20.
 
 Migrate existing integrations to JSON/2 API.
 :::
+
+### Migration Guide: XML-RPC to JSON/2
+
+| XML-RPC | JSON/2 Equivalent |
+|---------|-------------------|
+| `execute_kw(db, uid, pwd, model, method, args)` | `POST /json/2/{model}/{method}` |
+| Session-based auth | Bearer token auth |
+| `xmlrpc/2/common` authenticate | Generate API key in UI |
+| RPC envelope response | Direct JSON response |
+
+**Before (XML-RPC):**
+```python
+import xmlrpc.client
+common = xmlrpc.client.ServerProxy(f'{url}/xmlrpc/2/common')
+uid = common.authenticate(db, username, password, {})
+models = xmlrpc.client.ServerProxy(f'{url}/xmlrpc/2/object')
+partners = models.execute_kw(db, uid, password, 'res.partner', 'search_read',
+    [[['is_company', '=', True]]], {'fields': ['name']})
+```
+
+**After (JSON/2):**
+```python
+import requests
+response = requests.post(f'{url}/json/2/res.partner/search_read',
+    headers={'Authorization': f'Bearer {api_key}'},
+    json={'domain': [['is_company', '=', True]], 'fields': ['name']})
+partners = response.json()
+```
 
 ## Comparison: Which Method to Use?
 
@@ -136,3 +516,27 @@ Migrate existing integrations to JSON/2 API.
 | Mobile app accessing Odoo data | JSON/2 API | App needs full CRUD |
 | Custom BI dashboard | JSON/2 API | Dashboard pulls data on demand |
 | Middleware syncing two systems | JSON/2 API | Full control over sync logic |
+
+## Performance Considerations
+
+### No Built-in Rate Limiting
+
+Odoo does **not** have built-in API rate limiting. Consider:
+- Implementing rate limiting at the reverse proxy level (nginx, Cloudflare)
+- Using connection pooling in your clients
+- Batching operations where possible
+
+### Connection Timeouts
+
+Default HTTP timeout is typically 60 seconds. For long operations:
+- Use background jobs (Automated Actions)
+- Process in smaller batches
+- Consider async patterns with webhooks
+
+### Best Practices
+
+1. **Batch operations** - Create/update multiple records in one call
+2. **Select only needed fields** - Don't fetch entire records
+3. **Use domains efficiently** - Filter server-side, not client-side
+4. **Cache static data** - Products, categories don't change often
+5. **Handle errors gracefully** - Implement retry logic for transient failures
