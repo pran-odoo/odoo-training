@@ -100,8 +100,6 @@ The JSON/2 API uses two categories of parameters:
 
 #### Search and Read Records
 
-`search_read` is an `@api.model` method - no `ids` parameter needed.
-
 ```http
 POST /json/2/res.partner/search_read
 Authorization: Bearer your-api-key
@@ -117,8 +115,6 @@ Content-Type: application/json
 
 #### Read Specific Records
 
-`read` operates on a recordset - pass `ids` at the top level, `fields` as the method parameter.
-
 ```http
 POST /json/2/res.partner/read
 Authorization: Bearer your-api-key
@@ -131,8 +127,6 @@ Content-Type: application/json
 ```
 
 #### Create Records
-
-`create` takes `vals_list` - a list of dictionaries (or single dict for backward compatibility).
 
 ```http
 POST /json/2/res.partner/create
@@ -148,24 +142,7 @@ Content-Type: application/json
 }
 ```
 
-Or for multiple records:
-
-```http
-POST /json/2/res.partner/create
-Authorization: Bearer your-api-key
-Content-Type: application/json
-
-{
-  "vals_list": [
-    {"name": "Customer 1", "email": "c1@example.com"},
-    {"name": "Customer 2", "email": "c2@example.com"}
-  ]
-}
-```
-
 #### Update Records
-
-`write` takes `vals` (dict) and operates on records specified by `ids`.
 
 ```http
 POST /json/2/res.partner/write
@@ -182,8 +159,6 @@ Content-Type: application/json
 
 #### Delete Records
 
-`unlink` operates on records specified by `ids` - no additional parameters.
-
 ```http
 POST /json/2/res.partner/unlink
 Authorization: Bearer your-api-key
@@ -195,8 +170,6 @@ Content-Type: application/json
 ```
 
 #### Call Any Public Method
-
-Any public method can be called. Pass `ids` for methods that operate on recordsets.
 
 ```http
 POST /json/2/sale.order/action_confirm
@@ -326,7 +299,7 @@ def odoo_api(model, method, **kwargs):
     response.raise_for_status()
     return response.json()
 
-# Search partners (@api.model - no ids needed)
+# Search partners
 partners = odoo_api(
     "res.partner", "search_read",
     domain=[["is_company", "=", True]],
@@ -335,21 +308,21 @@ partners = odoo_api(
 )
 print(partners)
 
-# Create a partner (vals_list parameter)
+# Create a partner
 new_id = odoo_api(
     "res.partner", "create",
     vals_list={"name": "New Customer", "email": "new@example.com"},
 )
 print(f"Created partner ID: {new_id}")
 
-# Update a partner (ids + vals parameters)
+# Update a partner
 odoo_api(
     "res.partner", "write",
     ids=[new_id],
     vals={"phone": "+1 555-0000"},
 )
 
-# Delete a partner (ids parameter only)
+# Delete a partner
 odoo_api("res.partner", "unlink", ids=[new_id])
 ```
 
@@ -380,7 +353,7 @@ async function odooApi(model, method, params = {}) {
   return response.json();
 }
 
-// Search partners (@api.model - no ids needed)
+// Search partners
 const partners = await odooApi("res.partner", "search_read", {
   domain: [["is_company", "=", true]],
   fields: ["name", "email"],
@@ -388,13 +361,13 @@ const partners = await odooApi("res.partner", "search_read", {
 });
 console.log(partners);
 
-// Create a partner (vals_list parameter)
+// Create a partner
 const newId = await odooApi("res.partner", "create", {
   vals_list: { name: "New Customer", email: "new@example.com" },
 });
 console.log(`Created partner ID: ${newId}`);
 
-// Update a partner (ids + vals parameters)
+// Update a partner
 await odooApi("res.partner", "write", {
   ids: [newId],
   vals: { phone: "+1 555-0000" },
@@ -413,13 +386,13 @@ curl -X POST "https://your-odoo.com/json/2/res.partner/search_read" \
   -H "Content-Type: application/json" \
   -d '{"domain": [["is_company", "=", true]], "fields": ["name"], "limit": 5}'
 
-# Create a partner (vals_list parameter)
+# Create a partner
 curl -X POST "https://your-odoo.com/json/2/res.partner/create" \
   -H "Authorization: Bearer odoo_api_xxx" \
   -H "Content-Type: application/json" \
   -d '{"vals_list": {"name": "Test Customer"}}'
 
-# Update a partner (ids + vals parameters)
+# Update a partner
 curl -X POST "https://your-odoo.com/json/2/res.partner/write" \
   -H "Authorization: Bearer odoo_api_xxx" \
   -H "Content-Type: application/json" \
@@ -449,8 +422,6 @@ The API doc is also available via Bearer auth at `/doc-bearer/index.json` for pr
 
 ### Bulk Create
 
-Pass a list of dictionaries to `vals_list` to create multiple records:
-
 ```http
 POST /json/2/res.partner/create
 Authorization: Bearer your-api-key
@@ -468,8 +439,6 @@ Content-Type: application/json
 Returns: `[id1, id2, id3]`
 
 ### Bulk Update
-
-Update multiple records at once by passing multiple `ids`:
 
 ```http
 POST /json/2/res.partner/write
