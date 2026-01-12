@@ -472,10 +472,9 @@ class ArcballControl {
   // Called on any user input to reset idle timer
   private onInput() {
     lastInputTime = performance.now()
-    // If we were idle, wake up the animation
-    if (isIdle && animationId === null) {
+    // Wake up from idle state (animation will continue at full fps)
+    if (isIdle) {
       isIdle = false
-      run()
     }
   }
 
@@ -511,7 +510,6 @@ class ArcballControl {
 
   private handleTouchStart(e: TouchEvent) {
     if (e.touches.length !== 1) return
-    e.preventDefault()
 
     const touch = e.touches[0]
     const rect = this.canvas.getBoundingClientRect()
@@ -523,19 +521,28 @@ class ArcballControl {
     vec2.copy(this.touchStartPos, this.pointerPos)
     this.isPointerDown = true
     this.onInput() // Track input for idle detection
+
+    // Only prevent default if we're sure it's an interaction (not a scroll)
+    e.preventDefault()
   }
 
   private handleTouchMove(e: TouchEvent) {
     if (!this.isPointerDown || e.touches.length !== 1) return
-    e.preventDefault()
 
     const touch = e.touches[0]
     const rect = this.canvas.getBoundingClientRect()
     const x = touch.clientX - rect.left
     const y = touch.clientY - rect.top
 
-    vec2.set(this.pointerPos, x, y)
-    this.onInput() // Track input for idle detection
+    // Calculate distance from start to determine if this is a deliberate drag
+    const distSq = Math.pow(x - this.touchStartPos[0], 2) + Math.pow(y - this.touchStartPos[1], 2)
+
+    // Only prevent default and update position if moved more than 5px (intentional drag)
+    if (distSq > 25) {
+      e.preventDefault()
+      vec2.set(this.pointerPos, x, y)
+      this.onInput() // Track input for idle detection
+    }
   }
 
   private handleTouchEnd() {
@@ -584,7 +591,15 @@ class ArcballControl {
 
     const combinedQuat = quat.multiply(quat.create(), snapRotation, this.pointerRotation)
     this.orientation = quat.multiply(quat.create(), combinedQuat, this.orientation)
-    quat.normalize(this.orientation, this.orientation)
+
+    // Renormalize more frequently to prevent accumulation errors
+    const lenSq = this.orientation[0] * this.orientation[0] +
+                  this.orientation[1] * this.orientation[1] +
+                  this.orientation[2] * this.orientation[2] +
+                  this.orientation[3] * this.orientation[3]
+    if (Math.abs(lenSq - 1.0) > 0.0001) {
+      quat.normalize(this.orientation, this.orientation)
+    }
 
     const RA_INTENSITY = 0.8 * timeScale
     quat.slerp(this._combinedQuat, this._combinedQuat, combinedQuat, RA_INTENSITY)
@@ -675,7 +690,7 @@ let smoothRotationVelocity = 0
 
 // Performance constants
 const TARGET_FRAME_DURATION = 1000 / 60
-const TARGET_FPS = 30 // Limit to 30fps for performance
+const TARGET_FPS = 60 // Smooth 60fps
 const FRAME_TIME = 1000 / TARGET_FPS
 let lastRenderTime = 0
 
@@ -774,8 +789,8 @@ const IDLE_TIMEOUT = 3000 // 3 seconds of no input
 let lastInputTime = 0
 let isIdle = false
 
-// Label update cadence (15fps for smoother visuals, still cheaper than render fps)
-const LABEL_UPDATE_INTERVAL = 66 // ms (~15fps)
+// Label update cadence (matches render fps for consistency)
+const LABEL_UPDATE_INTERVAL = 16.67 // ms (~60fps)
 let lastLabelUpdateTime = 0
 
 let discLocations: {
@@ -901,11 +916,24 @@ function initDiscInstances(count: number) {
   gl.bindVertexArray(null)
 }
 
+// Debounced resize handler
+let resizeTimeout: number | null = null
 function resize() {
   if (!canvasRef.value || !gl) return
-  resizeCanvasToDisplaySize(canvasRef.value)
-  gl.viewport(0, 0, gl.drawingBufferWidth, gl.drawingBufferHeight)
-  updateProjectionMatrix()
+
+  // Clear existing timeout
+  if (resizeTimeout !== null) {
+    clearTimeout(resizeTimeout)
+  }
+
+  // Debounce resize operations
+  resizeTimeout = window.setTimeout(() => {
+    if (!canvasRef.value || !gl) return
+    resizeCanvasToDisplaySize(canvasRef.value)
+    gl.viewport(0, 0, gl.drawingBufferWidth, gl.drawingBufferHeight)
+    updateProjectionMatrix()
+    resizeTimeout = null
+  }, 100)
 }
 
 function updateCameraMatrix() {
@@ -1248,18 +1276,24 @@ function run(time = 0) {
     return
   }
 
-  // Check for idle state - stop loop after IDLE_TIMEOUT of no input
+  // Check for idle state - reduce animation frequency instead of stopping completely
   const timeSinceInput = time - lastInputTime
   if (timeSinceInput > IDLE_TIMEOUT && !control?.isPointerDown) {
-    // Go idle - stop the animation loop entirely
-    isIdle = true
-    animationId = null
-    return
+    if (!isIdle) {
+      isIdle = true
+    }
+    // Continue animating but at reduced rate (every 3rd frame for idle rotation)
+    if (_frames % 3 !== 0) {
+      animationId = requestAnimationFrame(run)
+      return
+    }
+  } else if (isIdle) {
+    isIdle = false
   }
 
   animationId = requestAnimationFrame(run)
 
-  const deltaTime = Math.min(32, time - _time)
+  const deltaTime = Math.min(100, time - _time) // Cap at 100ms to handle tab switches
   _time = time
 
   // Always update control for responsive input handling
@@ -1299,11 +1333,13 @@ function handleClick(event: MouseEvent) {
 
 function handleVisibilityChange() {
   isVisible = !document.hidden
-  // Wake up when becoming visible again - restart the stopped loop
-  if (isVisible && shouldAnimate.value && !prefersReducedMotion.value && animationId === null) {
+  // Wake up when becoming visible again
+  if (isVisible && shouldAnimate.value && !prefersReducedMotion.value) {
     lastInputTime = performance.now() // Reset idle timer
     isIdle = false
-    run()
+    if (animationId === null) {
+      run()
+    }
   }
 }
 
@@ -1435,7 +1471,7 @@ onUnmounted(() => {
         <a
           v-for="(item, index) in menuItems.slice(0, 12)"
           :key="index"
-          :href="`${$router?.options?.history?.base || ''}${item.link}`"
+          :href="item.link"
           class="static-item"
           :style="{ '--category-color': categoryColors[item.category] }"
         >
