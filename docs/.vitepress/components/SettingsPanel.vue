@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, onMounted, onUnmounted } from 'vue'
 import { usePersonalization } from '../composables/usePersonalization'
 
 const isOpen = ref(false)
@@ -15,6 +15,19 @@ const animationLevels = ['normal', 'reduced', 'none']
 
 // Active tab
 const activeTab = ref<'appearance' | 'typography' | 'layout' | 'accessibility'>('appearance')
+
+// Listen for toggle event from NavDock
+function handleToggle() {
+  isOpen.value = !isOpen.value
+}
+
+onMounted(() => {
+  document.addEventListener('toggle-settings', handleToggle)
+})
+
+onUnmounted(() => {
+  document.removeEventListener('toggle-settings', handleToggle)
+})
 </script>
 
 <template>
