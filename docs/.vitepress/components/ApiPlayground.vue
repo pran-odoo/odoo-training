@@ -446,6 +446,9 @@ function disconnect() {
       </div>
 
       <form class="connection-form" v-if="!isConnected" @submit.prevent="testConnection" autocomplete="on">
+        <!-- Hidden username field for accessibility (browser password managers) -->
+        <input type="text" name="username" autocomplete="username" class="sr-only" tabindex="-1" aria-hidden="true" />
+
         <div class="form-row">
           <label class="form-label" for="odoo-url">Odoo URL</label>
           <input
@@ -778,6 +781,19 @@ function disconnect() {
   font-size: 0.75rem;
   color: var(--vp-c-text-3);
   margin-top: 0.25rem;
+}
+
+/* Screen reader only - visually hidden for accessibility */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
 }
 
 .form-input {
