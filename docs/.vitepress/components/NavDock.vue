@@ -86,7 +86,11 @@ const items = computed<DockItem[]>(() => [
   {
     id: 'bookmark',
     label: isCurrentPageBookmarked.value ? 'Remove Bookmark (B)' : 'Bookmark Page (B)',
-    action: () => toggleBookmark(currentPath.value),
+    action: () => {
+      // Click the existing bookmark button for reliability
+      const btn = document.querySelector('.bookmark-btn') as HTMLButtonElement
+      btn?.click()
+    },
     iconPath: () => bookmarkIconPath.value,
     isFilled: isCurrentPageBookmarked.value
   },
@@ -99,7 +103,11 @@ const items = computed<DockItem[]>(() => [
   {
     id: 'settings',
     label: 'Settings',
-    action: () => document.dispatchEvent(new CustomEvent('toggle-settings')),
+    action: () => {
+      // Click the existing settings button for reliability
+      const btn = document.querySelector('.settings-toggle') as HTMLButtonElement
+      btn?.click()
+    },
     iconPath: ICONS.settings
   },
   {
