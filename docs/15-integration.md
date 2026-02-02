@@ -1010,6 +1010,23 @@ Download a ready-to-use API collection for testing:
 
 The collection includes requests for Partners, Products, Sale Orders, Invoices, Purchase Orders, Inventory, and Bulk Operations.
 
+## Interactive API Playground
+
+Want to test API calls directly in your browser? Try our interactive playground:
+
+<a href="/api-playground" class="download-btn">🚀 Launch API Playground</a>
+
+The playground lets you:
+- Connect to your Odoo instance with your API key
+- Use pre-built templates for common operations
+- Edit and execute custom JSON requests
+- View responses with syntax highlighting
+- Track your request history and stats
+
+::: tip Security
+Your API key is stored only in your browser's session storage and is sent directly to your Odoo instance. We never see or store your credentials.
+:::
+
 ## Performance Considerations
 
 ### Rate Limiting Strategies
