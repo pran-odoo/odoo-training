@@ -1436,3 +1436,34 @@ kbd {
   background: var(--vp-c-bg-soft);
   border-color: var(--vp-c-border);
 }
+
+/* ============================================
+   36. NAV DOCK INTEGRATION
+   ============================================ */
+
+/* Hide default VitePress nav items when dock is present */
+.VPNavBar .VPNavBarMenu {
+  display: none !important;
+}
+
+/* Give dock proper spacing in navbar */
+.VPNavBarExtra {
+  margin-left: 8px;
+}
+
+/* Adjust navbar content alignment for dock */
+.VPNavBar .content-body {
+  gap: 8px;
+}
+
+/* Hide nav dock on mobile - show hamburger menu instead */
+@media (max-width: 768px) {
+  .nav-dock {
+    display: none !important;
+  }
+
+  /* Restore default menu on mobile */
+  .VPNavBar .VPNavBarMenu {
+    display: flex !important;
+  }
+}
