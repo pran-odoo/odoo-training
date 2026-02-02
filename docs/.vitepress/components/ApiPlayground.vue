@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed, onMounted, onUnmounted, watch, nextTick } from 'vue'
+import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
 
 // Connection state
 const baseUrl = ref('')
@@ -36,8 +36,9 @@ const customModel = ref('res.partner')
 const customMethod = ref('search_read')
 const customFields = ref(['name', 'email'])
 const customLimit = ref(10)
-const customDomain = ref<Array<[string, string, string]>>([])
+const customDomain = ref<Array<{ id: number; field: string; operator: string; value: string }>>([])
 const customRecordIds = ref('')
+let domainFilterId = 0 // Unique ID generator for domain filters
 
 // History
 const history = ref<Array<{
@@ -243,21 +244,52 @@ const categories = [
 
 const currentTemplates = computed(() => templates[selectedCategory.value as keyof typeof templates] || [])
 
+// Convert domain filter value to appropriate type
+function coerceDomainValue(value: string, operator: string): any {
+  const trimmed = value.trim()
+
+  // Handle 'in' and 'not in' operators - expect comma-separated list
+  if (operator === 'in' || operator === 'not in') {
+    return trimmed.split(',').map(v => coerceDomainValue(v.trim(), '='))
+  }
+
+  // Boolean values
+  if (trimmed.toLowerCase() === 'true') return true
+  if (trimmed.toLowerCase() === 'false') return false
+
+  // Numeric values (integer or float)
+  if (/^-?\d+$/.test(trimmed)) return parseInt(trimmed, 10)
+  if (/^-?\d+\.\d+$/.test(trimmed)) return parseFloat(trimmed)
+
+  // Default to string
+  return trimmed
+}
+
+// Build domain array from filter objects
+function buildDomainArray(): any[] {
+  return customDomain.value.map(f => [
+    f.field,
+    f.operator,
+    coerceDomainValue(f.value, f.operator)
+  ])
+}
+
 // Build custom request body based on selected method
 const customRequestBody = computed(() => {
   const m = customMethod.value
+  const limit = Number.isFinite(customLimit.value) && customLimit.value > 0 ? customLimit.value : 10
 
   if (m === 'search_read') {
     return {
-      domain: customDomain.value.length > 0 ? customDomain.value : [],
+      domain: customDomain.value.length > 0 ? buildDomainArray() : [],
       fields: customFields.value,
-      limit: customLimit.value
+      limit
     }
   }
 
   if (m === 'search_count') {
     return {
-      domain: customDomain.value.length > 0 ? customDomain.value : []
+      domain: customDomain.value.length > 0 ? buildDomainArray() : []
     }
   }
 
@@ -293,10 +325,11 @@ const customRequestBody = computed(() => {
   }
 
   if (m === 'name_search') {
+    const limit = Number.isFinite(customLimit.value) && customLimit.value > 0 ? customLimit.value : 10
     return {
       name: '',
-      domain: customDomain.value.length > 0 ? customDomain.value : [],
-      limit: customLimit.value
+      domain: customDomain.value.length > 0 ? buildDomainArray() : [],
+      limit
     }
   }
 
@@ -380,16 +413,25 @@ function applyCustomBuilder() {
 }
 
 function addDomainFilter() {
-  customDomain.value.push(['name', 'ilike', ''])
+  customDomain.value.push({
+    id: ++domainFilterId,
+    field: 'name',
+    operator: 'ilike',
+    value: ''
+  })
 }
 
-function removeDomainFilter(index: number) {
-  customDomain.value.splice(index, 1)
+function removeDomainFilter(id: number) {
+  const index = customDomain.value.findIndex(f => f.id === id)
+  if (index !== -1) {
+    customDomain.value.splice(index, 1)
+  }
 }
 
 function addField(field: string) {
-  if (!customFields.value.includes(field)) {
-    customFields.value.push(field)
+  const trimmed = field.trim()
+  if (trimmed && !customFields.value.includes(trimmed)) {
+    customFields.value.push(trimmed)
   }
 }
 
@@ -516,6 +558,9 @@ function getRandomLoadingMessage(): string {
 }
 
 async function executeRequest() {
+  // Prevent double-execution (race condition fix)
+  if (isLoading.value) return
+
   if (!baseUrl.value || !apiKey.value) {
     error.value = 'Please configure connection first'
     return
@@ -531,9 +576,10 @@ async function executeRequest() {
     return
   }
 
+  // Set loading state FIRST to prevent race condition
+  isLoading.value = true
   error.value = ''
   response.value = null
-  isLoading.value = true
   loadingMessage.value = getRandomLoadingMessage()
 
   const start = performance.now()
@@ -635,12 +681,22 @@ function disconnect() {
   if (typeof window !== 'undefined') {
     sessionStorage.removeItem('odoo_playground_key')
     sessionStorage.removeItem('odoo_playground_url')
-    // Keep proxy preference - user might want to reconnect with same mode
+    // Keep proxy preference and best streak - user might want to reconnect
   }
+  // Clear connection state
   apiKey.value = ''
   baseUrl.value = ''
   isConnected.value = false
   connectionStatus.value = 'idle'
+
+  // Clear session data (history, stats, response)
+  history.value = []
+  stats.value = { calls: 0, successful: 0, fastest: 0 }
+  streak.value = 0
+  response.value = null
+  responseStatus.value = 0
+  responseTime.value = 0
+  error.value = ''
 }
 </script>
 
@@ -750,6 +806,12 @@ function disconnect() {
           <span v-else>🚀 Launch Connection</span>
         </button>
 
+        <!-- Connection Error Display -->
+        <div v-if="connectionStatus === 'error' && error" class="connection-error">
+          <span class="error-icon">⚠️</span>
+          <span class="error-text">{{ error }}</span>
+        </div>
+
         <div class="connection-info">
           <div v-if="useProxy" class="info-box proxy-info">
             <span class="info-icon">🔄</span>
@@ -829,6 +891,7 @@ function disconnect() {
                 <button
                   v-for="m in commonMethods"
                   :key="m.id"
+                  type="button"
                   class="method-chip"
                   :class="{ active: customMethod === m.id }"
                   @click="customMethod = m.id"
@@ -863,6 +926,7 @@ function disconnect() {
                   <button
                     v-for="f in ['id', 'name', 'create_date', 'write_date', 'active']"
                     :key="f"
+                    type="button"
                     class="quick-field-btn"
                     :class="{ selected: customFields.includes(f) }"
                     @click="addField(f)"
@@ -886,33 +950,33 @@ function disconnect() {
             <div class="builder-row" v-if="['search_read', 'search_count', 'name_search'].includes(customMethod)">
               <label class="builder-label">
                 Filters
-                <button class="add-filter-btn" @click="addDomainFilter">+ Add</button>
+                <button type="button" class="add-filter-btn" @click="addDomainFilter">+ Add</button>
               </label>
               <div class="domain-filters">
                 <div v-if="customDomain.length === 0" class="no-filters">
                   No filters - will return all records (up to limit)
                 </div>
                 <div
-                  v-for="(filter, idx) in customDomain"
-                  :key="idx"
+                  v-for="filter in customDomain"
+                  :key="filter.id"
                   class="domain-filter"
                 >
                   <input
-                    v-model="filter[0]"
+                    v-model="filter.field"
                     class="filter-field"
                     placeholder="field"
                   />
-                  <select v-model="filter[1]" class="filter-operator">
+                  <select v-model="filter.operator" class="filter-operator">
                     <option v-for="op in domainOperators" :key="op.value" :value="op.value">
                       {{ op.label }}
                     </option>
                   </select>
                   <input
-                    v-model="filter[2]"
+                    v-model="filter.value"
                     class="filter-value"
                     placeholder="value"
                   />
-                  <button class="remove-filter-btn" @click="removeDomainFilter(idx)">🗑️</button>
+                  <button type="button" class="remove-filter-btn" @click="removeDomainFilter(filter.id)">🗑️</button>
                 </div>
               </div>
             </div>
@@ -1505,6 +1569,29 @@ function disconnect() {
 
 .test-connection-btn.error {
   background: #ef4444;
+}
+
+/* Connection Error Display */
+.connection-error {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+  padding: 0.75rem;
+  background: rgba(239, 68, 68, 0.1);
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  border-radius: 8px;
+  color: #ef4444;
+  font-size: 0.85rem;
+  line-height: 1.4;
+}
+
+.connection-error .error-icon {
+  font-size: 1rem;
+  flex-shrink: 0;
+}
+
+.connection-error .error-text {
+  word-break: break-word;
 }
 
 .connection-info .security-note {
