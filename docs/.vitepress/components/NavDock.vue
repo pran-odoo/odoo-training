@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useRouter, useData } from 'vitepress'
 
 const router = useRouter()
@@ -15,26 +15,21 @@ const CONFIG = {
   maxSize: 58,
   magnetDistance: 140,
   itemGap: 8,
-  containerPadding: 16
+  containerPadding: 16,
+  rectCacheTTL: 100, // ms
+  throttleMs: 16 // ~60fps
 } as const
 
-// Cached dock rect to avoid layout thrashing
-let cachedDockRect: DOMRect | null = null
-let rectCacheTime = 0
-const RECT_CACHE_TTL = 100 // ms
+// Reactive state for caching (not module-level)
+const cachedDockRect = ref<DOMRect | null>(null)
+const rectCacheTime = ref(0)
+const lastMouseMove = ref(0)
 
-function getDockRect(): DOMRect | null {
-  if (!dockRef.value) return null
-
-  const now = Date.now()
-  if (cachedDockRect && now - rectCacheTime < RECT_CACHE_TTL) {
-    return cachedDockRect
-  }
-
-  cachedDockRect = dockRef.value.getBoundingClientRect()
-  rectCacheTime = now
-  return cachedDockRect
-}
+// Platform detection for keyboard shortcut display
+const isMac = ref(false)
+onMounted(() => {
+  isMac.value = typeof navigator !== 'undefined' && /Mac|iPod|iPhone|iPad/.test(navigator.platform)
+})
 
 // SVG paths as constants
 const ICONS = {
@@ -43,7 +38,7 @@ const ICONS = {
   sun: 'M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z',
   moon: 'M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z',
   github: 'M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z',
-  keyboard: 'M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4',
+  keyboard: 'M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z', // help/question icon
   search: 'M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z'
 } as const
 
@@ -58,7 +53,8 @@ interface DockItem {
 // Reactive theme icon path
 const themeIconPath = computed(() => isDark.value ? ICONS.sun : ICONS.moon)
 
-const items: DockItem[] = [
+// Items as computed for reactive labels
+const items = computed<DockItem[]>(() => [
   {
     id: 'home',
     label: 'Home',
@@ -86,17 +82,17 @@ const items: DockItem[] = [
   },
   {
     id: 'keyboard',
-    label: 'Keyboard Shortcuts',
+    label: 'Keyboard Help (?)',
     action: () => document.dispatchEvent(new CustomEvent('show-keyboard-help')),
     iconPath: ICONS.keyboard
   },
   {
     id: 'search',
-    label: 'Search (Ctrl+K)',
+    label: `Search (${isMac.value ? '⌘' : 'Ctrl'}+K)`,
     action: openSearch,
     iconPath: ICONS.search
   }
-]
+])
 
 function toggleTheme() {
   const html = document.documentElement
@@ -114,22 +110,24 @@ function openSearch() {
   searchBtn?.click()
 }
 
-// Computed item sizes - calculated once per mouse position change
+// Calculate item size based on mouse position
+function calculateItemSize(index: number, dockRect: DOMRect | null): number {
+  if (mouseX.value === null || !dockRect) return CONFIG.baseSize
+
+  const itemWidth = CONFIG.baseSize + CONFIG.itemGap
+  const itemCenter = dockRect.left + CONFIG.containerPadding + (index + 0.5) * itemWidth
+  const dist = Math.abs(mouseX.value - itemCenter)
+
+  if (dist > CONFIG.magnetDistance) return CONFIG.baseSize
+
+  const scale = 1 - (dist / CONFIG.magnetDistance)
+  return CONFIG.baseSize + (CONFIG.maxSize - CONFIG.baseSize) * scale * scale
+}
+
+// Computed item sizes - reads cached rect without side effects
 const itemSizes = computed(() => {
-  const dockRect = getDockRect()
-
-  return items.map((_, index) => {
-    if (mouseX.value === null || !dockRect) return CONFIG.baseSize
-
-    const itemWidth = CONFIG.baseSize + CONFIG.itemGap
-    const itemCenter = dockRect.left + CONFIG.containerPadding + (index + 0.5) * itemWidth
-    const dist = Math.abs(mouseX.value - itemCenter)
-
-    if (dist > CONFIG.magnetDistance) return CONFIG.baseSize
-
-    const scale = 1 - (dist / CONFIG.magnetDistance)
-    return CONFIG.baseSize + (CONFIG.maxSize - CONFIG.baseSize) * scale * scale
-  })
+  const dockRect = cachedDockRect.value
+  return items.value.map((_, index) => calculateItemSize(index, dockRect))
 })
 
 // Get icon path - handles both static strings and reactive getters
@@ -137,20 +135,31 @@ function getIconPath(item: DockItem): string {
   return typeof item.iconPath === 'function' ? item.iconPath() : item.iconPath
 }
 
-// Throttled mouse move handler
-let lastMouseMove = 0
-const THROTTLE_MS = 16 // ~60fps
+// Update dock rect cache
+function updateDockRect() {
+  if (!dockRef.value) return
 
+  const now = Date.now()
+  if (now - rectCacheTime.value < CONFIG.rectCacheTTL) return
+
+  cachedDockRect.value = dockRef.value.getBoundingClientRect()
+  rectCacheTime.value = now
+}
+
+// Throttled mouse move handler
 function handleMouseMove(e: MouseEvent) {
   const now = Date.now()
-  if (now - lastMouseMove < THROTTLE_MS) return
-  lastMouseMove = now
+  if (now - lastMouseMove.value < CONFIG.throttleMs) return
+  lastMouseMove.value = now
+
+  // Update cache before updating mouse position
+  updateDockRect()
   mouseX.value = e.clientX
 }
 
 function handleMouseLeave() {
   mouseX.value = null
-  cachedDockRect = null // Clear cache on leave
+  cachedDockRect.value = null // Clear cache on leave
 }
 
 // Handle keyboard navigation
@@ -160,6 +169,12 @@ function handleKeydown(e: KeyboardEvent, item: DockItem) {
     item.action()
   }
 }
+
+// Cleanup on unmount
+onUnmounted(() => {
+  cachedDockRect.value = null
+  mouseX.value = null
+})
 </script>
 
 <template>

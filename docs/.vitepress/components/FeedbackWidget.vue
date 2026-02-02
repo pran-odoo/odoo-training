@@ -10,8 +10,12 @@ const isSubmitting = ref(false)
 const isSuccess = ref(false)
 const hasError = ref(false)
 
+// Timeout refs for cleanup
+let closeTimeoutId: ReturnType<typeof setTimeout> | null = null
+
 // Form data
-const feedbackType = ref<'question' | 'suggestion' | 'issue' | 'praise'>('question')
+type FeedbackType = 'question' | 'suggestion' | 'issue' | 'praise'
+const feedbackType = ref<FeedbackType>('question')
 const message = ref('')
 const discordUsername = ref('')
 const email = ref('')
@@ -38,6 +42,11 @@ const canSubmit = computed(() => {
 })
 
 function open() {
+  // Clear any pending close timeout
+  if (closeTimeoutId) {
+    clearTimeout(closeTimeoutId)
+    closeTimeoutId = null
+  }
   isOpen.value = true
   isSuccess.value = false
   hasError.value = false
@@ -46,6 +55,10 @@ function open() {
 
 function close() {
   if (isSubmitting.value) return
+  if (closeTimeoutId) {
+    clearTimeout(closeTimeoutId)
+    closeTimeoutId = null
+  }
   isOpen.value = false
   document.body.style.overflow = ''
 }
@@ -65,15 +78,24 @@ async function submit() {
   isSubmitting.value = true
   hasError.value = false
 
+  // Build description - use message if provided, otherwise note Discord contact
+  const description = message.value.trim()
+    ? message.value
+    : `User provided Discord contact: ${discordUsername.value}`
+
+  // Get current site URL dynamically
+  const siteUrl = typeof window !== 'undefined' ? window.location.origin : ''
+  const pageUrl = `${siteUrl}${route.path}`
+
   const payload = {
     embeds: [{
       title: `${currentType.value?.icon} New ${currentType.value?.label}`,
-      description: message.value,
+      description,
       color: parseInt(currentType.value?.color?.replace('#', '') || '6366F1', 16),
       fields: [
         {
           name: '📄 Page',
-          value: `[${route.path}](https://pran-odoo.github.io/odoo-training${route.path})`,
+          value: `[${route.path}](${pageUrl})`,
           inline: true
         },
         ...(discordUsername.value ? [{
@@ -111,11 +133,12 @@ async function submit() {
 
     isSuccess.value = true
 
-    // Auto close after success
-    setTimeout(() => {
+    // Auto close after success (single timeout, no nesting)
+    closeTimeoutId = setTimeout(() => {
       close()
-      setTimeout(reset, 300)
-    }, 2000)
+      reset()
+      closeTimeoutId = null
+    }, 2500)
 
   } catch (err) {
     console.error('Feedback error:', err)
@@ -139,6 +162,10 @@ onMounted(() => {
 onUnmounted(() => {
   document.removeEventListener('keydown', handleKeydown)
   document.body.style.overflow = ''
+  if (closeTimeoutId) {
+    clearTimeout(closeTimeoutId)
+    closeTimeoutId = null
+  }
 })
 </script>
 
@@ -164,11 +191,17 @@ onUnmounted(() => {
     <Transition name="feedback-overlay">
       <div v-if="isOpen" class="feedback-overlay" @click.self="close">
         <Transition name="feedback-modal">
-          <div v-if="isOpen" class="feedback-modal">
+          <div
+            v-if="isOpen"
+            class="feedback-modal"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="feedback-title"
+          >
             <!-- Header -->
             <div class="feedback-header">
               <div class="feedback-header-content">
-                <h3 class="feedback-title">
+                <h3 id="feedback-title" class="feedback-title">
                   <span class="feedback-title-icon">💬</span>
                   Have a question or feedback?
                 </h3>
@@ -206,7 +239,7 @@ onUnmounted(() => {
                   class="feedback-type-btn"
                   :class="{ active: feedbackType === type.value }"
                   :style="feedbackType === type.value ? `--type-color: ${type.color}` : ''"
-                  @click="feedbackType = type.value as any"
+                  @click="feedbackType = type.value as FeedbackType"
                 >
                   <span class="feedback-type-icon">{{ type.icon }}</span>
                   <span class="feedback-type-label">{{ type.label }}</span>

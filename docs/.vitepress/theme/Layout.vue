@@ -83,7 +83,7 @@ function handleKeydown(e: KeyboardEvent) {
   if (target.matches('input, textarea, [contenteditable]')) return
 
   // Skip if any modal is open
-  if (document.querySelector('.command-palette-overlay, .keyboard-help-overlay, .VPLocalSearchBox')) return
+  if (document.querySelector('.command-palette-overlay, .keyboard-help-overlay, .feedback-overlay, .VPLocalSearchBox')) return
 
   const key = e.key.toLowerCase()
 

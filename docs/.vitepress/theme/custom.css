@@ -1432,11 +1432,6 @@ kbd {
   opacity: 0.7;
 }
 
-.dark .reading-time {
-  background: var(--vp-c-bg-soft);
-  border-color: var(--vp-c-border);
-}
-
 /* ============================================
    36. NAV DOCK INTEGRATION
    ============================================ */

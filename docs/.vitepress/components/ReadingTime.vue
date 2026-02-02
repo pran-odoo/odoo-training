@@ -25,9 +25,11 @@ function calculateReadingTime() {
       const content = document.querySelector('.vp-doc')
       if (!content) return
 
-      // Clone content and remove code blocks for accurate reading time
+      // Clone content and remove non-readable elements for accurate reading time
       const clone = content.cloneNode(true) as HTMLElement
-      clone.querySelectorAll('pre, code, .line-numbers').forEach(el => el.remove())
+      clone.querySelectorAll(
+        'pre, code, .line-numbers, .header-anchor, .custom-block-title, .copy, .lang, nav, .table-of-contents'
+      ).forEach(el => el.remove())
 
       const text = clone.textContent || ''
       const words = text.trim().split(/\s+/).filter(word => word.length > 0).length
