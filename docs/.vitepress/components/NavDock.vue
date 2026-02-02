@@ -353,7 +353,11 @@ onUnmounted(() => {
 
 :root:not(.dark) .dock-item:hover,
 :root:not(.dark) .dock-item:focus-visible {
+  background: linear-gradient(135deg, #4f46e5, #6366f1);
   color: white;
+  box-shadow:
+    0 4px 16px rgba(79, 70, 229, 0.35),
+    0 0 0 1px rgba(79, 70, 229, 0.15);
 }
 
 :root:not(.dark) .dock-tooltip {
