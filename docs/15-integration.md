@@ -55,9 +55,19 @@ Outgoing webhooks allow **Odoo to send data to external systems** via HTTP POST 
 ### How Outgoing Webhooks Work
 
 - **Method:** HTTP POST with JSON payload
-- **Payload:** Always includes _id, _model, _name + selected fields
-- **Synchronous:** Blocks the Odoo transaction until complete
-- **No Retry:** If external system is down, data is lost
+- **Payload structure:**
+  ```json
+  {
+    "_id": 42,
+    "_model": "sale.order",
+    "_name": "S00042",
+    "field1": "value1",
+    "field2": "value2"
+  }
+  ```
+- **Synchronous:** Blocks the Odoo transaction until complete (timeout ~10s)
+- **No Retry:** If external system is down, webhook fails silently
+- **No Queueing:** Consider using a message queue for reliability
 
 ## JSON/2 API: Modern RESTful Integration (Odoo 19+)
 
@@ -84,11 +94,12 @@ Content-Type: application/json
 | Feature | Details |
 |---------|---------|
 | **Endpoint** | `/json/2/{model}/{method}` |
-| **HTTP Method** | POST only |
-| **Auth** | Bearer token (API key) |
-| **Request Body** | JSON with method parameters |
-| **Response** | Clean JSON (no RPC wrapper) |
-| **Models Returned** | Converted to `list[int]` (record IDs) |
+| **HTTP Method** | POST only (GET returns 405) |
+| **Auth** | `Authorization: Bearer {api_key}` header |
+| **Content-Type** | `application/json` (required) |
+| **Request Body** | JSON object with method parameters |
+| **Response** | Clean JSON (no RPC envelope) |
+| **Recordsets** | Returned as `list[int]` (IDs only, not full records) |
 
 ### Common Operations
 
@@ -251,7 +262,10 @@ API keys are generated per-user from their profile:
 8. **Copy the key immediately** - it's only shown once!
 
 ::: warning Security Note
-API keys are hashed in the database. If you lose your key, you must generate a new one.
+- API keys are hashed (bcrypt) in the database - cannot be recovered
+- Keys use the format: `odoo_api_` + 40 random characters
+- The API user's permissions apply to all API calls
+- Revoke compromised keys immediately from the user profile
 :::
 
 ### API Key Duration Limits
@@ -294,11 +308,19 @@ Expired API keys are automatically deleted by a scheduled action (`_gc_user_apik
 
 ### Error Response Format
 
-Errors are returned as JSON with a `message` field:
+Errors return JSON with details about the failure:
 
 ```json
 {
   "message": "the model 'fake.model' does not exist"
+}
+```
+
+For validation errors, additional context may be included:
+```json
+{
+  "message": "Missing required field: 'partner_id'",
+  "code": 400
 }
 ```
 
@@ -504,9 +526,12 @@ Content-Type: application/json
 ## XML-RPC & JSON-RPC: Legacy APIs
 
 ::: danger Deprecation Notice
-XML-RPC (`/xmlrpc`, `/xmlrpc/2`) and JSON-RPC (`/jsonrpc`) are **deprecated in Odoo 19** and will be removed in Odoo 20.
+XML-RPC (`/xmlrpc/2/object`, `/xmlrpc/2/common`) and JSON-RPC (`/jsonrpc`) are **deprecated starting Odoo 17** in favor of JSON/2.
 
-Migrate existing integrations to JSON/2 API.
+- **Odoo 17-19:** Both APIs work but JSON/2 is recommended
+- **Future versions:** Legacy APIs may be removed
+
+Migrate existing integrations to JSON/2 API for long-term compatibility.
 :::
 
 ### Migration Guide: XML-RPC to JSON/2
@@ -622,14 +647,20 @@ Content-Type: application/json
 
 **Response:** `42` (the new sale order ID)
 
-::: info Relationship Commands
-The `[0, 0, {...}]` syntax creates new related records. This is the ORM command format:
-- `[0, 0, {values}]` - Create a new record
-- `[1, id, {values}]` - Update existing record with ID
-- `[2, id]` - Delete the record
-- `[3, id]` - Unlink (remove from relation, don't delete)
-- `[4, id]` - Link existing record
-- `[6, 0, [ids]]` - Replace all with these IDs
+::: info Relationship Commands (One2many/Many2many)
+The `[command, id, values]` syntax manipulates related records:
+
+| Command | Format | Action |
+|---------|--------|--------|
+| `0` | `[0, 0, {values}]` | Create new linked record |
+| `1` | `[1, id, {values}]` | Update existing record |
+| `2` | `[2, id, 0]` | Delete record from database |
+| `3` | `[3, id, 0]` | Unlink (remove relation, keep record) |
+| `4` | `[4, id, 0]` | Link existing record |
+| `5` | `[5, 0, 0]` | Unlink all (clear relation) |
+| `6` | `[6, 0, [ids]]` | Replace all links with these IDs |
+
+The third element is required but ignored for commands 2-5 (use `0`).
 :::
 
 ### Use Case 2: Complete Sales Workflow
@@ -654,10 +685,14 @@ Authorization: Bearer your-api-key
 Content-Type: application/json
 
 {
-  "domain": [["sale_id", "=", 42]],
-  "fields": ["name", "state", "scheduled_date", "move_ids_without_package"]
+  "domain": [["origin", "ilike", "SO042"]],
+  "fields": ["name", "state", "scheduled_date", "origin"]
 }
 ```
+
+::: tip Finding Deliveries
+Use the `origin` field (contains SO number) to find deliveries linked to a sale order. The field `sale_id` exists but requires the `sale_stock` module.
+:::
 
 **Step 3: Create Invoice from Sales Order**
 
@@ -680,6 +715,12 @@ Content-Type: application/json
 ```
 
 **Response:** `7` (the wizard ID)
+
+::: details advance_payment_method options
+- `delivered` - Invoice for delivered quantities (regular invoice)
+- `percentage` - Down payment (percentage)
+- `fixed` - Down payment (fixed amount)
+:::
 
 Then call the wizard's action using the returned wizard ID:
 ```http
@@ -900,12 +941,19 @@ Content-Type: application/json
 ```
 
 ::: tip Domain Operators
-Available operators: `=`, `!=`, `>`, `>=`, `<`, `<=`, `in`, `not in`, `like`, `ilike`, `=like`, `=ilike`, `any`, `not any`
+**Comparison:** `=`, `!=`, `>`, `>=`, `<`, `<=`
 
-Combine with `&` (AND), `|` (OR), `!` (NOT) in Polish notation:
+**List:** `in`, `not in`
+
+**Pattern:** `like` (case-sensitive), `ilike` (case-insensitive), `=like`, `=ilike`
+
+**Relational (Odoo 17+):** `any`, `not any` (for x2many fields)
+
+**Logical:** `&` (AND, default), `|` (OR), `!` (NOT) - prefix notation:
 ```json
 ["|", ["state", "=", "draft"], ["state", "=", "sent"]]
 ```
+**Note:** `&` is implicit between conditions. Use `|` or `!` explicitly.
 :::
 
 ### Use Case 8: Sync Customer Data
@@ -997,7 +1045,6 @@ location /json/2/ {
 
 ```python
 import time
-from functools import wraps
 
 class RateLimiter:
     def __init__(self, calls_per_second=5):
@@ -1027,7 +1074,6 @@ def odoo_api(model, method, **kwargs):
 
 ```python
 import time
-from collections import deque
 
 class TokenBucket:
     def __init__(self, tokens_per_second=10, max_tokens=50):
@@ -1057,6 +1103,9 @@ class TokenBucket:
 bucket = TokenBucket(tokens_per_second=10, max_tokens=50)
 
 def odoo_api_with_retry(model, method, max_retries=3, **kwargs):
+    """Call Odoo API with automatic retry and rate limiting."""
+    import requests  # Ensure requests is imported
+
     for attempt in range(max_retries):
         bucket.wait_for_token()
         try:
@@ -1067,14 +1116,16 @@ def odoo_api_with_retry(model, method, max_retries=3, **kwargs):
                 timeout=30
             )
             if response.status_code == 429:
-                time.sleep(2 ** attempt)  # Exponential backoff
+                wait = 2 ** attempt  # Exponential backoff: 1s, 2s, 4s
+                time.sleep(wait)
                 continue
             response.raise_for_status()
             return response.json()
-        except requests.exceptions.RequestException as e:
+        except requests.exceptions.RequestException:
             if attempt == max_retries - 1:
                 raise
             time.sleep(2 ** attempt)
+    return None  # All retries exhausted
 ```
 
 ### Rate Limiting Recommendations
