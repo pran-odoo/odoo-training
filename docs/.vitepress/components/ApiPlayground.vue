@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
+import { ref, computed, onMounted, onUnmounted, watch, nextTick } from 'vue'
 
 // Connection state
 const baseUrl = ref('')
@@ -24,6 +24,21 @@ const responseTime = ref(0)
 const responseStatus = ref(0)
 const error = ref('')
 
+// Fun stuff!
+const showConfetti = ref(false)
+const streak = ref(0)
+const bestStreak = ref(0)
+const loadingMessage = ref('')
+const showSuccessAnimation = ref(false)
+
+// Custom query builder
+const customModel = ref('res.partner')
+const customMethod = ref('search_read')
+const customFields = ref(['name', 'email'])
+const customLimit = ref(10)
+const customDomain = ref<Array<[string, string, string]>>([])
+const customRecordIds = ref('')
+
 // History
 const history = ref<Array<{
   id: number
@@ -36,6 +51,58 @@ const history = ref<Array<{
 
 // Stats
 const stats = ref({ calls: 0, successful: 0, fastest: 0 })
+
+// Fun loading messages
+const loadingMessages = [
+  '🚀 Launching request into the cloud...',
+  '🔮 Consulting the Odoo Oracle...',
+  '⚡ Zapping through the API...',
+  '🎯 Targeting the database...',
+  '🌊 Surfing the data waves...',
+  '🎪 Performing API acrobatics...',
+  '🔬 Analyzing your query...',
+  '🎨 Painting the response...',
+  '🏎️ Racing to fetch data...',
+  '🎸 Rocking the API...',
+  '🍕 Cooking up some data...',
+  '🎮 Level loading...',
+  '🦄 Summoning unicorn powers...',
+  '🌈 Following the rainbow to data...',
+  '🎪 The API circus is in town...'
+]
+
+// Common Odoo methods for custom builder
+const commonMethods = [
+  { id: 'search_read', name: 'Search & Read', icon: '🔍', description: 'Find and retrieve records' },
+  { id: 'search_count', name: 'Count Records', icon: '🔢', description: 'Count matching records' },
+  { id: 'read', name: 'Read by ID', icon: '📖', description: 'Get records by their IDs' },
+  { id: 'create', name: 'Create Record', icon: '➕', description: 'Create a new record' },
+  { id: 'write', name: 'Update Record', icon: '✏️', description: 'Modify existing records' },
+  { id: 'unlink', name: 'Delete Record', icon: '🗑️', description: 'Remove records' },
+  { id: 'name_search', name: 'Name Search', icon: '🏷️', description: 'Search by display name' },
+  { id: 'fields_get', name: 'Get Fields', icon: '📋', description: 'Discover model fields' }
+]
+
+// Common domain operators
+const domainOperators = [
+  { value: '=', label: 'equals' },
+  { value: '!=', label: 'not equals' },
+  { value: '>', label: 'greater than' },
+  { value: '>=', label: 'greater or equal' },
+  { value: '<', label: 'less than' },
+  { value: '<=', label: 'less or equal' },
+  { value: 'like', label: 'contains (case sensitive)' },
+  { value: 'ilike', label: 'contains' },
+  { value: 'in', label: 'in list' },
+  { value: 'not in', label: 'not in list' }
+]
+
+// Popular Odoo models
+const popularModels = [
+  'res.partner', 'res.users', 'product.product', 'product.template',
+  'sale.order', 'sale.order.line', 'purchase.order', 'account.move',
+  'stock.picking', 'stock.quant', 'crm.lead', 'project.project', 'project.task'
+]
 
 // Templates organized by category
 const templates = {
@@ -163,20 +230,7 @@ const templates = {
       body: { ids: [1] }
     }
   ],
-  custom: [
-    {
-      id: 'custom-empty',
-      name: 'Empty Request',
-      icon: '📝',
-      model: 'res.partner',
-      method: 'search_read',
-      body: {
-        domain: [],
-        fields: ["name"],
-        limit: 5
-      }
-    }
-  ]
+  custom: [] // Will be populated by the custom builder
 }
 
 const categories = [
@@ -184,10 +238,76 @@ const categories = [
   { id: 'products', name: 'Products', icon: '📦' },
   { id: 'sales', name: 'Sales', icon: '🛒' },
   { id: 'invoices', name: 'Invoices', icon: '🧾' },
-  { id: 'custom', name: 'Custom', icon: '⚙️' }
+  { id: 'custom', name: 'Custom Builder', icon: '🛠️' }
 ]
 
 const currentTemplates = computed(() => templates[selectedCategory.value as keyof typeof templates] || [])
+
+// Build custom request body based on selected method
+const customRequestBody = computed(() => {
+  const m = customMethod.value
+
+  if (m === 'search_read') {
+    return {
+      domain: customDomain.value.length > 0 ? customDomain.value : [],
+      fields: customFields.value,
+      limit: customLimit.value
+    }
+  }
+
+  if (m === 'search_count') {
+    return {
+      domain: customDomain.value.length > 0 ? customDomain.value : []
+    }
+  }
+
+  if (m === 'read') {
+    const ids = customRecordIds.value.split(',').map(id => parseInt(id.trim())).filter(id => !isNaN(id))
+    return {
+      ids: ids.length > 0 ? ids : [1],
+      fields: customFields.value
+    }
+  }
+
+  if (m === 'create') {
+    return {
+      vals_list: {
+        name: 'New Record'
+      }
+    }
+  }
+
+  if (m === 'write') {
+    const ids = customRecordIds.value.split(',').map(id => parseInt(id.trim())).filter(id => !isNaN(id))
+    return {
+      ids: ids.length > 0 ? ids : [1],
+      vals: {}
+    }
+  }
+
+  if (m === 'unlink') {
+    const ids = customRecordIds.value.split(',').map(id => parseInt(id.trim())).filter(id => !isNaN(id))
+    return {
+      ids: ids.length > 0 ? ids : [1]
+    }
+  }
+
+  if (m === 'name_search') {
+    return {
+      name: '',
+      domain: customDomain.value.length > 0 ? customDomain.value : [],
+      limit: customLimit.value
+    }
+  }
+
+  if (m === 'fields_get') {
+    return {
+      attributes: ['string', 'type', 'required', 'readonly']
+    }
+  }
+
+  return {}
+})
 
 // Load saved connection from sessionStorage (client-side only)
 onMounted(() => {
@@ -196,9 +316,11 @@ onMounted(() => {
   const savedUrl = sessionStorage.getItem('odoo_playground_url')
   const savedKey = sessionStorage.getItem('odoo_playground_key')
   const savedProxy = sessionStorage.getItem('odoo_playground_proxy')
+  const savedStreak = sessionStorage.getItem('odoo_playground_best_streak')
   if (savedUrl) baseUrl.value = savedUrl
   if (savedKey) apiKey.value = savedKey
   if (savedProxy !== null) useProxy.value = savedProxy === 'true'
+  if (savedStreak) bestStreak.value = parseInt(savedStreak) || 0
   // Don't auto-set isConnected - user must test connection to verify
 
   // Add keyboard shortcut listener
@@ -237,11 +359,42 @@ watch([baseUrl, apiKey, useProxy], () => {
   sessionStorage.setItem('odoo_playground_proxy', String(useProxy.value))
 })
 
+// Save best streak
+watch(bestStreak, () => {
+  if (typeof window === 'undefined') return
+  sessionStorage.setItem('odoo_playground_best_streak', String(bestStreak.value))
+})
+
 function selectTemplate(template: typeof templates.partners[0]) {
   selectedTemplate.value = template.id
   model.value = template.model
   method.value = template.method
   requestBody.value = JSON.stringify(template.body, null, 2)
+}
+
+function applyCustomBuilder() {
+  model.value = customModel.value
+  method.value = customMethod.value
+  requestBody.value = JSON.stringify(customRequestBody.value, null, 2)
+  selectedTemplate.value = 'custom-builder'
+}
+
+function addDomainFilter() {
+  customDomain.value.push(['name', 'ilike', ''])
+}
+
+function removeDomainFilter(index: number) {
+  customDomain.value.splice(index, 1)
+}
+
+function addField(field: string) {
+  if (!customFields.value.includes(field)) {
+    customFields.value.push(field)
+  }
+}
+
+function removeField(index: number) {
+  customFields.value.splice(index, 1)
 }
 
 // Normalize Odoo URL: strip trailing paths like /web, /odoo, /web/login, etc.
@@ -337,6 +490,7 @@ async function testConnection() {
       connectionStatus.value = 'success'
       isConnected.value = true
       responseTime.value = elapsed
+      triggerConfetti()
     } else {
       connectionStatus.value = 'error'
       error.value = result.data?.message || result.data?.error || `HTTP ${result.status}`
@@ -355,6 +509,10 @@ async function testConnection() {
       error.value = e.message || 'Connection failed'
     }
   }
+}
+
+function getRandomLoadingMessage(): string {
+  return loadingMessages[Math.floor(Math.random() * loadingMessages.length)]
 }
 
 async function executeRequest() {
@@ -376,6 +534,7 @@ async function executeRequest() {
   error.value = ''
   response.value = null
   isLoading.value = true
+  loadingMessage.value = getRandomLoadingMessage()
 
   const start = performance.now()
 
@@ -399,9 +558,19 @@ async function executeRequest() {
     stats.value.calls++
     if (result.ok) {
       stats.value.successful++
+      streak.value++
+      if (streak.value > bestStreak.value) {
+        bestStreak.value = streak.value
+      }
       if (stats.value.fastest === 0 || elapsed < stats.value.fastest) {
         stats.value.fastest = elapsed
       }
+      triggerSuccessAnimation()
+      if (streak.value >= 3 || elapsed < 200) {
+        triggerConfetti()
+      }
+    } else {
+      streak.value = 0
     }
 
     // Add to history
@@ -424,9 +593,21 @@ async function executeRequest() {
       error.value = e.message || 'Request failed'
     }
     responseStatus.value = 0
+    streak.value = 0
   } finally {
     isLoading.value = false
+    loadingMessage.value = ''
   }
+}
+
+function triggerConfetti() {
+  showConfetti.value = true
+  setTimeout(() => { showConfetti.value = false }, 2000)
+}
+
+function triggerSuccessAnimation() {
+  showSuccessAnimation.value = true
+  setTimeout(() => { showSuccessAnimation.value = false }, 600)
 }
 
 async function copyToClipboard(text: string) {
@@ -447,6 +628,7 @@ function formatJson(obj: any): string {
 function clearHistory() {
   history.value = []
   stats.value = { calls: 0, successful: 0, fastest: 0 }
+  streak.value = 0
 }
 
 function disconnect() {
@@ -463,13 +645,19 @@ function disconnect() {
 </script>
 
 <template>
-  <div class="api-playground">
+  <div class="api-playground" :class="{ 'success-pulse': showSuccessAnimation }">
+    <!-- Confetti -->
+    <div class="confetti-container" v-if="showConfetti">
+      <div class="confetti" v-for="i in 50" :key="i" :style="{ '--i': i }"></div>
+    </div>
+
     <!-- Header -->
     <div class="playground-header">
       <div class="header-content">
         <h2 class="playground-title">
-          <span class="title-icon">🚀</span>
+          <span class="title-icon animated-rocket">🚀</span>
           API Playground
+          <span class="beta-badge">BETA</span>
         </h2>
         <p class="playground-subtitle">Test Odoo JSON/2 API calls in real-time</p>
       </div>
@@ -485,6 +673,14 @@ function disconnect() {
         <div class="stat" v-if="stats.fastest">
           <span class="stat-value">{{ stats.fastest }}ms</span>
           <span class="stat-label">Fastest</span>
+        </div>
+        <div class="stat streak" v-if="streak > 0">
+          <span class="stat-value">🔥 {{ streak }}</span>
+          <span class="stat-label">Streak</span>
+        </div>
+        <div class="stat best-streak" v-if="bestStreak > 2">
+          <span class="stat-value">🏆 {{ bestStreak }}</span>
+          <span class="stat-label">Best</span>
         </div>
       </div>
     </div>
@@ -551,7 +747,7 @@ function disconnect() {
           <span v-if="connectionStatus === 'testing'" class="spinner"></span>
           <span v-else-if="connectionStatus === 'success'">✓ Connected</span>
           <span v-else-if="connectionStatus === 'error'">✗ Failed - Retry</span>
-          <span v-else>Test Connection</span>
+          <span v-else>🚀 Launch Connection</span>
         </button>
 
         <div class="connection-info">
@@ -591,7 +787,8 @@ function disconnect() {
           </button>
         </div>
 
-        <div class="template-grid">
+        <!-- Regular Templates Grid -->
+        <div class="template-grid" v-if="selectedCategory !== 'custom'">
           <button
             v-for="template in currentTemplates"
             :key="template.id"
@@ -602,6 +799,141 @@ function disconnect() {
             <span class="template-icon">{{ template.icon }}</span>
             <span class="template-name">{{ template.name }}</span>
           </button>
+        </div>
+
+        <!-- Custom Query Builder -->
+        <div class="custom-builder" v-else>
+          <div class="builder-section">
+            <h4 class="builder-title">🛠️ Build Your Query</h4>
+
+            <!-- Model Selection -->
+            <div class="builder-row">
+              <label class="builder-label">Model</label>
+              <div class="model-input-wrapper">
+                <input
+                  v-model="customModel"
+                  class="builder-input"
+                  placeholder="e.g., res.partner"
+                  list="popular-models"
+                />
+                <datalist id="popular-models">
+                  <option v-for="m in popularModels" :key="m" :value="m" />
+                </datalist>
+              </div>
+            </div>
+
+            <!-- Method Selection -->
+            <div class="builder-row">
+              <label class="builder-label">Method</label>
+              <div class="method-grid">
+                <button
+                  v-for="m in commonMethods"
+                  :key="m.id"
+                  class="method-chip"
+                  :class="{ active: customMethod === m.id }"
+                  @click="customMethod = m.id"
+                  :title="m.description"
+                >
+                  <span class="method-icon">{{ m.icon }}</span>
+                  <span class="method-name">{{ m.name }}</span>
+                </button>
+              </div>
+            </div>
+
+            <!-- Fields (for search_read, read) -->
+            <div class="builder-row" v-if="['search_read', 'read'].includes(customMethod)">
+              <label class="builder-label">Fields</label>
+              <div class="fields-wrapper">
+                <div class="fields-chips">
+                  <span
+                    v-for="(field, idx) in customFields"
+                    :key="field"
+                    class="field-chip"
+                  >
+                    {{ field }}
+                    <button class="remove-chip" @click="removeField(idx)">×</button>
+                  </span>
+                  <input
+                    class="field-input"
+                    placeholder="+ Add field"
+                    @keydown.enter.prevent="(e: Event) => { addField((e.target as HTMLInputElement).value); (e.target as HTMLInputElement).value = '' }"
+                  />
+                </div>
+                <div class="quick-fields">
+                  <button
+                    v-for="f in ['id', 'name', 'create_date', 'write_date', 'active']"
+                    :key="f"
+                    class="quick-field-btn"
+                    :class="{ selected: customFields.includes(f) }"
+                    @click="addField(f)"
+                  >{{ f }}</button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Record IDs (for read, write, unlink) -->
+            <div class="builder-row" v-if="['read', 'write', 'unlink'].includes(customMethod)">
+              <label class="builder-label">Record IDs</label>
+              <input
+                v-model="customRecordIds"
+                class="builder-input"
+                placeholder="e.g., 1, 2, 3"
+              />
+              <span class="builder-hint">Comma-separated list of record IDs</span>
+            </div>
+
+            <!-- Domain Filters -->
+            <div class="builder-row" v-if="['search_read', 'search_count', 'name_search'].includes(customMethod)">
+              <label class="builder-label">
+                Filters
+                <button class="add-filter-btn" @click="addDomainFilter">+ Add</button>
+              </label>
+              <div class="domain-filters">
+                <div v-if="customDomain.length === 0" class="no-filters">
+                  No filters - will return all records (up to limit)
+                </div>
+                <div
+                  v-for="(filter, idx) in customDomain"
+                  :key="idx"
+                  class="domain-filter"
+                >
+                  <input
+                    v-model="filter[0]"
+                    class="filter-field"
+                    placeholder="field"
+                  />
+                  <select v-model="filter[1]" class="filter-operator">
+                    <option v-for="op in domainOperators" :key="op.value" :value="op.value">
+                      {{ op.label }}
+                    </option>
+                  </select>
+                  <input
+                    v-model="filter[2]"
+                    class="filter-value"
+                    placeholder="value"
+                  />
+                  <button class="remove-filter-btn" @click="removeDomainFilter(idx)">🗑️</button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Limit -->
+            <div class="builder-row" v-if="['search_read', 'name_search'].includes(customMethod)">
+              <label class="builder-label">Limit</label>
+              <input
+                v-model.number="customLimit"
+                type="number"
+                class="builder-input limit-input"
+                min="1"
+                max="1000"
+              />
+            </div>
+
+            <!-- Apply Button -->
+            <button class="apply-builder-btn" @click="applyCustomBuilder">
+              <span>🎯 Apply to Editor</span>
+            </button>
+          </div>
         </div>
       </div>
 
@@ -666,7 +998,7 @@ function disconnect() {
         <div class="response-content">
           <div v-if="isLoading" class="loading-state">
             <div class="loading-spinner"></div>
-            <span>Sending request...</span>
+            <span class="loading-message">{{ loadingMessage }}</span>
           </div>
 
           <div v-else-if="error" class="error-state">
@@ -682,8 +1014,11 @@ function disconnect() {
           </div>
 
           <div v-else class="empty-state">
-            <span class="empty-icon">📭</span>
-            <span>Execute a request to see the response</span>
+            <div class="empty-animation">
+              <span class="empty-icon bounce">🎮</span>
+            </div>
+            <span class="empty-text">Pick a template or build a custom query!</span>
+            <span class="empty-hint">Hit Execute to see the magic ✨</span>
           </div>
         </div>
       </div>
@@ -713,9 +1048,17 @@ function disconnect() {
     <!-- Not Connected State -->
     <div class="not-connected-state" v-else>
       <div class="not-connected-content">
-        <span class="not-connected-icon">🔐</span>
-        <h3>Connect to Start Testing</h3>
-        <p>Enter your Odoo URL and API key above to start making API calls.</p>
+        <div class="not-connected-animation">
+          <span class="not-connected-icon float">🎪</span>
+        </div>
+        <h3>Welcome to the API Playground!</h3>
+        <p>Enter your Odoo URL and API key above to start the fun.</p>
+        <div class="features-preview">
+          <div class="feature">🔍 Search Records</div>
+          <div class="feature">➕ Create Data</div>
+          <div class="feature">✏️ Update Records</div>
+          <div class="feature">🛠️ Build Custom Queries</div>
+        </div>
         <div class="security-note">
           <strong>🛡️ Security:</strong> Your credentials are stored only in your browser's session.
           In proxy mode, requests go through our server to your Odoo. API keys are not stored.
@@ -730,6 +1073,78 @@ function disconnect() {
   max-width: 1000px;
   margin: 2rem auto;
   font-family: var(--vp-font-family-base);
+  position: relative;
+}
+
+/* Success pulse animation */
+.api-playground.success-pulse {
+  animation: success-pulse 0.6s ease;
+}
+
+@keyframes success-pulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.005); }
+}
+
+/* Confetti */
+.confetti-container {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 9999;
+  overflow: hidden;
+}
+
+.confetti {
+  position: absolute;
+  width: 10px;
+  height: 10px;
+  background: linear-gradient(135deg, #ff6b6b, #feca57, #48dbfb, #ff9ff3, #54a0ff);
+  opacity: 0;
+  animation: confetti-fall 2s ease-out forwards;
+  animation-delay: calc(var(--i) * 0.02s);
+  left: calc(var(--i) * 2%);
+  transform: rotate(calc(var(--i) * 15deg));
+}
+
+.confetti:nth-child(odd) {
+  background: #feca57;
+  border-radius: 50%;
+}
+
+.confetti:nth-child(even) {
+  background: #ff6b6b;
+}
+
+.confetti:nth-child(3n) {
+  background: #48dbfb;
+  width: 8px;
+  height: 8px;
+}
+
+.confetti:nth-child(4n) {
+  background: #ff9ff3;
+}
+
+.confetti:nth-child(5n) {
+  background: #54a0ff;
+  border-radius: 2px;
+}
+
+@keyframes confetti-fall {
+  0% {
+    opacity: 1;
+    top: -10%;
+    transform: translateX(0) rotate(0deg);
+  }
+  100% {
+    opacity: 0;
+    top: 100%;
+    transform: translateX(calc((var(--i) - 25) * 10px)) rotate(720deg);
+  }
 }
 
 /* Header */
@@ -739,9 +1154,27 @@ function disconnect() {
   align-items: flex-start;
   margin-bottom: 1.5rem;
   padding: 1.5rem;
-  background: linear-gradient(135deg, rgba(99, 102, 241, 0.1), rgba(139, 92, 246, 0.1));
+  background: linear-gradient(135deg, rgba(99, 102, 241, 0.15), rgba(139, 92, 246, 0.15), rgba(236, 72, 153, 0.1));
   border-radius: 16px;
   border: 1px solid rgba(99, 102, 241, 0.2);
+  position: relative;
+  overflow: hidden;
+}
+
+.playground-header::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  right: -50%;
+  width: 100%;
+  height: 200%;
+  background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+  animation: shimmer 3s infinite;
+}
+
+@keyframes shimmer {
+  0%, 100% { transform: rotate(0deg); }
+  50% { transform: rotate(5deg); }
 }
 
 .playground-title {
@@ -755,6 +1188,31 @@ function disconnect() {
 
 .title-icon {
   font-size: 1.5rem;
+}
+
+.animated-rocket {
+  display: inline-block;
+  animation: rocket-float 2s ease-in-out infinite;
+}
+
+@keyframes rocket-float {
+  0%, 100% { transform: translateY(0) rotate(-10deg); }
+  50% { transform: translateY(-5px) rotate(10deg); }
+}
+
+.beta-badge {
+  font-size: 0.6rem;
+  padding: 0.2rem 0.5rem;
+  background: linear-gradient(135deg, #f59e0b, #d97706);
+  color: white;
+  border-radius: 4px;
+  font-weight: 700;
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.7; }
 }
 
 .playground-subtitle {
@@ -781,6 +1239,20 @@ function disconnect() {
 
 .stat.success .stat-value {
   color: #10b981;
+}
+
+.stat.streak .stat-value {
+  color: #f59e0b;
+  animation: flame 0.5s ease infinite;
+}
+
+@keyframes flame {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.1); }
+}
+
+.stat.best-streak .stat-value {
+  color: #8b5cf6;
 }
 
 .stat-label {
@@ -1004,7 +1476,7 @@ function disconnect() {
 
 .test-connection-btn {
   padding: 0.75rem 1.5rem;
-  background: var(--vp-c-brand-1);
+  background: linear-gradient(135deg, var(--vp-c-brand-1), #8b5cf6);
   color: white;
   border: none;
   border-radius: 8px;
@@ -1018,7 +1490,8 @@ function disconnect() {
 }
 
 .test-connection-btn:hover:not(:disabled) {
-  background: var(--vp-c-brand-2);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(99, 102, 241, 0.4);
 }
 
 .test-connection-btn:disabled {
@@ -1073,6 +1546,7 @@ function disconnect() {
 
 .category-tab:hover {
   border-color: var(--vp-c-brand-1);
+  transform: translateY(-1px);
 }
 
 .category-tab.active {
@@ -1123,6 +1597,259 @@ function disconnect() {
   font-size: 0.8rem;
   font-weight: 500;
   text-align: center;
+}
+
+/* Custom Builder */
+.custom-builder {
+  background: linear-gradient(135deg, rgba(139, 92, 246, 0.1), rgba(236, 72, 153, 0.05));
+  border: 1px solid rgba(139, 92, 246, 0.2);
+  border-radius: 12px;
+  padding: 1.25rem;
+}
+
+.builder-title {
+  margin: 0 0 1rem;
+  font-size: 1.1rem;
+  font-weight: 600;
+}
+
+.builder-section {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.builder-row {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.builder-label {
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: var(--vp-c-text-2);
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.builder-input {
+  padding: 0.5rem 0.75rem;
+  border: 1px solid var(--vp-c-border);
+  border-radius: 6px;
+  background: var(--vp-c-bg);
+  font-family: var(--vp-font-family-mono);
+  font-size: 0.9rem;
+}
+
+.builder-input:focus {
+  outline: none;
+  border-color: var(--vp-c-brand-1);
+}
+
+.builder-hint {
+  font-size: 0.75rem;
+  color: var(--vp-c-text-3);
+}
+
+.limit-input {
+  width: 100px;
+}
+
+/* Method Grid */
+.method-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+  gap: 0.5rem;
+}
+
+.method-chip {
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+  padding: 0.5rem 0.75rem;
+  background: var(--vp-c-bg);
+  border: 1px solid var(--vp-c-border);
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.8rem;
+  transition: all 0.2s;
+}
+
+.method-chip:hover {
+  border-color: var(--vp-c-brand-1);
+}
+
+.method-chip.active {
+  background: var(--vp-c-brand-soft);
+  border-color: var(--vp-c-brand-1);
+  color: var(--vp-c-brand-1);
+}
+
+.method-icon {
+  font-size: 1rem;
+}
+
+/* Fields */
+.fields-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.fields-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.375rem;
+  padding: 0.5rem;
+  background: var(--vp-c-bg);
+  border: 1px solid var(--vp-c-border);
+  border-radius: 6px;
+  min-height: 40px;
+}
+
+.field-chip {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.25rem 0.5rem;
+  background: var(--vp-c-brand-soft);
+  border-radius: 4px;
+  font-size: 0.8rem;
+  font-family: var(--vp-font-family-mono);
+}
+
+.remove-chip {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 1rem;
+  line-height: 1;
+  opacity: 0.7;
+  padding: 0;
+}
+
+.remove-chip:hover {
+  opacity: 1;
+}
+
+.field-input {
+  border: none;
+  background: transparent;
+  font-size: 0.85rem;
+  min-width: 80px;
+  flex: 1;
+}
+
+.field-input:focus {
+  outline: none;
+}
+
+.quick-fields {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.375rem;
+}
+
+.quick-field-btn {
+  padding: 0.2rem 0.5rem;
+  background: var(--vp-c-bg-soft);
+  border: 1px solid var(--vp-c-border);
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.75rem;
+  font-family: var(--vp-font-family-mono);
+  transition: all 0.2s;
+}
+
+.quick-field-btn:hover {
+  border-color: var(--vp-c-brand-1);
+}
+
+.quick-field-btn.selected {
+  background: var(--vp-c-brand-soft);
+  border-color: var(--vp-c-brand-1);
+}
+
+/* Domain Filters */
+.add-filter-btn {
+  padding: 0.2rem 0.5rem;
+  background: var(--vp-c-brand-soft);
+  border: 1px solid var(--vp-c-brand-1);
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.75rem;
+  color: var(--vp-c-brand-1);
+}
+
+.domain-filters {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.no-filters {
+  padding: 0.75rem;
+  background: var(--vp-c-bg);
+  border: 1px dashed var(--vp-c-border);
+  border-radius: 6px;
+  font-size: 0.85rem;
+  color: var(--vp-c-text-3);
+  text-align: center;
+}
+
+.domain-filter {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.filter-field,
+.filter-value {
+  flex: 1;
+  padding: 0.4rem 0.5rem;
+  border: 1px solid var(--vp-c-border);
+  border-radius: 4px;
+  font-size: 0.85rem;
+  font-family: var(--vp-font-family-mono);
+}
+
+.filter-operator {
+  padding: 0.4rem;
+  border: 1px solid var(--vp-c-border);
+  border-radius: 4px;
+  font-size: 0.85rem;
+  background: var(--vp-c-bg);
+}
+
+.remove-filter-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 1rem;
+  opacity: 0.7;
+}
+
+.remove-filter-btn:hover {
+  opacity: 1;
+}
+
+.apply-builder-btn {
+  padding: 0.75rem 1.5rem;
+  background: linear-gradient(135deg, #8b5cf6, #ec4899);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  margin-top: 0.5rem;
+}
+
+.apply-builder-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(139, 92, 246, 0.4);
 }
 
 /* Editor Section */
@@ -1358,6 +2085,39 @@ function disconnect() {
   font-size: 2rem;
 }
 
+.empty-animation {
+  margin-bottom: 0.5rem;
+}
+
+.bounce {
+  display: inline-block;
+  animation: bounce 1s ease infinite;
+}
+
+@keyframes bounce {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-10px); }
+}
+
+.empty-text {
+  font-size: 1rem;
+  color: var(--vp-c-text-2);
+}
+
+.empty-hint {
+  font-size: 0.85rem;
+}
+
+.loading-message {
+  font-style: italic;
+  animation: fade-pulse 1.5s ease infinite;
+}
+
+@keyframes fade-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.6; }
+}
+
 .error-state {
   color: #ef4444;
 }
@@ -1453,19 +2213,59 @@ function disconnect() {
   padding: 4rem 2rem;
 }
 
-.not-connected-icon {
-  font-size: 4rem;
-  display: block;
+.not-connected-animation {
   margin-bottom: 1rem;
+}
+
+.float {
+  display: inline-block;
+  font-size: 4rem;
+  animation: float 3s ease-in-out infinite;
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0) rotate(-5deg); }
+  50% { transform: translateY(-20px) rotate(5deg); }
+}
+
+.not-connected-icon {
+  display: block;
 }
 
 .not-connected-content h3 {
   margin: 0 0 0.5rem;
+  font-size: 1.5rem;
 }
 
 .not-connected-content p {
   color: var(--vp-c-text-2);
   margin: 0 0 1.5rem;
+}
+
+.features-preview {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.75rem;
+  margin-bottom: 1.5rem;
+}
+
+.feature {
+  padding: 0.5rem 1rem;
+  background: var(--vp-c-brand-soft);
+  border-radius: 20px;
+  font-size: 0.9rem;
+  animation: pop-in 0.5s ease backwards;
+}
+
+.feature:nth-child(1) { animation-delay: 0.1s; }
+.feature:nth-child(2) { animation-delay: 0.2s; }
+.feature:nth-child(3) { animation-delay: 0.3s; }
+.feature:nth-child(4) { animation-delay: 0.4s; }
+
+@keyframes pop-in {
+  from { transform: scale(0); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
 }
 
 .security-note {
@@ -1527,6 +2327,20 @@ function disconnect() {
 
   .template-grid {
     grid-template-columns: repeat(2, 1fr);
+  }
+
+  .method-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .domain-filter {
+    flex-wrap: wrap;
+  }
+
+  .filter-field,
+  .filter-operator,
+  .filter-value {
+    min-width: 0;
   }
 }
 </style>
