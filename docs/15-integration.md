@@ -181,6 +181,41 @@ Content-Type: application/json
 }
 ```
 
+### Method Accessibility Rules
+
+Only **public methods** can be called via API. Odoo enforces these rules:
+
+| Method Type | Example | Callable via API? |
+|-------------|---------|-------------------|
+| Public method | `action_confirm()` | Yes |
+| Private method (underscore prefix) | `_compute_total()` | No - raises `AccessError` |
+| Private decorator | `@api.private` methods | No - raises `AccessError` |
+| Helper/internal methods | `_get_default_values()` | No - raises `AccessError` |
+
+::: danger Private Methods Are Blocked
+Any method starting with `_` (underscore) is considered private and **cannot be called remotely**. This includes:
+- Computed field methods: `_compute_*`, `_inverse_*`, `_search_*`
+- Constraint methods: `_check_*`
+- Onchange methods: `_onchange_*`
+- Internal helpers: `_get_*`, `_prepare_*`, `_create_*`
+
+Attempting to call a private method returns:
+```json
+{
+  "message": "Private methods (such as 'sale.order._compute_amount') cannot be called remotely."
+}
+```
+:::
+
+::: tip Finding Callable Methods
+To discover which methods you can call on a model:
+1. Use the API Documentation Browser at `/doc` (requires admin login - "Technical Documentation" group)
+2. Look for methods in the source code that:
+   - Don't start with `_`
+   - Are not decorated with `@api.private`
+   - Common patterns: `action_*`, `button_*`, `create`, `write`, `read`, `search`, `unlink`
+:::
+
 ### Using Context
 
 Pass context to modify behavior (language, company, etc.):
@@ -273,6 +308,7 @@ Errors are returned as JSON with a `message` field:
 |-------|-------|----------|
 | `the model 'X' does not exist` | Invalid model name | Check spelling, use technical name |
 | `cannot call X.Y with ids` | Called @api.model method with ids | Remove `ids` from request |
+| `Private methods cannot be called remotely` | Called method starting with `_` | Use public methods only (no underscore prefix) |
 | `AccessError` | User lacks permission | Check access rights for API user |
 | `ValidationError` | Constraint violated | Check required fields, constraints |
 
