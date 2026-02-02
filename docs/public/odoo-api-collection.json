@@ -1,0 +1,421 @@
+{
+  "info": {
+    "name": "Odoo JSON/2 API",
+    "description": "Complete collection for Odoo 19+ JSON/2 API endpoints.\n\nSetup:\n1. Set `baseUrl` to your Odoo instance URL\n2. Set `apiKey` to your Bearer token\n\nGenerate API key: Settings > Users > Your Profile > API Keys",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "https://your-odoo.com",
+      "type": "string"
+    },
+    {
+      "key": "apiKey",
+      "value": "odoo_api_xxxxxxxxxxxxxxxxxxxxxxxx",
+      "type": "string"
+    }
+  ],
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{apiKey}}",
+        "type": "string"
+      }
+    ]
+  },
+  "item": [
+    {
+      "name": "Partners (Customers/Vendors)",
+      "item": [
+        {
+          "name": "Search Partners",
+          "request": {
+            "method": "POST",
+            "header": [
+              {"key": "Content-Type", "value": "application/json"}
+            ],
+            "url": "{{baseUrl}}/json/2/res.partner/search_read",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"domain\": [[\"is_company\", \"=\", true]],\n  \"fields\": [\"name\", \"email\", \"phone\", \"city\", \"country_id\"],\n  \"limit\": 10,\n  \"offset\": 0,\n  \"order\": \"name asc\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Read Partner by ID",
+          "request": {
+            "method": "POST",
+            "header": [
+              {"key": "Content-Type", "value": "application/json"}
+            ],
+            "url": "{{baseUrl}}/json/2/res.partner/read",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"ids\": [1],\n  \"fields\": [\"name\", \"email\", \"phone\", \"street\", \"city\", \"country_id\", \"vat\"]\n}"
+            }
+          }
+        },
+        {
+          "name": "Create Partner",
+          "request": {
+            "method": "POST",
+            "header": [
+              {"key": "Content-Type", "value": "application/json"}
+            ],
+            "url": "{{baseUrl}}/json/2/res.partner/create",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"vals_list\": {\n    \"name\": \"New Customer\",\n    \"email\": \"customer@example.com\",\n    \"phone\": \"+1 555-1234\",\n    \"is_company\": true,\n    \"customer_rank\": 1\n  }\n}"
+            }
+          }
+        },
+        {
+          "name": "Update Partner",
+          "request": {
+            "method": "POST",
+            "header": [
+              {"key": "Content-Type", "value": "application/json"}
+            ],
+            "url": "{{baseUrl}}/json/2/res.partner/write",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"ids\": [42],\n  \"vals\": {\n    \"phone\": \"+1 555-9999\",\n    \"email\": \"updated@example.com\"\n  }\n}"
+            }
+          }
+        },
+        {
+          "name": "Delete Partner",
+          "request": {
+            "method": "POST",
+            "header": [
+              {"key": "Content-Type", "value": "application/json"}
+            ],
+            "url": "{{baseUrl}}/json/2/res.partner/unlink",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"ids\": [42]\n}"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Products",
+      "item": [
+        {
+          "name": "Search Products",
+          "request": {
+            "method": "POST",
+            "header": [
+              {"key": "Content-Type", "value": "application/json"}
+            ],
+            "url": "{{baseUrl}}/json/2/product.product/search_read",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"domain\": [[\"sale_ok\", \"=\", true]],\n  \"fields\": [\"name\", \"default_code\", \"list_price\", \"qty_available\", \"categ_id\"],\n  \"limit\": 20\n}"
+            }
+          }
+        },
+        {
+          "name": "Get Product Stock",
+          "request": {
+            "method": "POST",
+            "header": [
+              {"key": "Content-Type", "value": "application/json"}
+            ],
+            "url": "{{baseUrl}}/json/2/product.product/read",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"ids\": [25],\n  \"fields\": [\"name\", \"qty_available\", \"virtual_available\", \"incoming_qty\", \"outgoing_qty\"]\n}"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Sale Orders",
+      "item": [
+        {
+          "name": "Search Sale Orders",
+          "request": {
+            "method": "POST",
+            "header": [
+              {"key": "Content-Type", "value": "application/json"}
+            ],
+            "url": "{{baseUrl}}/json/2/sale.order/search_read",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"domain\": [[\"state\", \"in\", [\"draft\", \"sent\"]]],\n  \"fields\": [\"name\", \"partner_id\", \"date_order\", \"amount_total\", \"state\"],\n  \"limit\": 20,\n  \"order\": \"date_order desc\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Create Sale Order with Lines",
+          "request": {
+            "method": "POST",
+            "header": [
+              {"key": "Content-Type", "value": "application/json"}
+            ],
+            "url": "{{baseUrl}}/json/2/sale.order/create",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"vals_list\": {\n    \"partner_id\": 15,\n    \"client_order_ref\": \"PO-12345\",\n    \"order_line\": [\n      [0, 0, {\n        \"product_id\": 25,\n        \"product_uom_qty\": 2,\n        \"price_unit\": 99.99\n      }],\n      [0, 0, {\n        \"product_id\": 31,\n        \"product_uom_qty\": 1,\n        \"price_unit\": 249.00\n      }]\n    ]\n  }\n}"
+            }
+          }
+        },
+        {
+          "name": "Confirm Sale Order",
+          "request": {
+            "method": "POST",
+            "header": [
+              {"key": "Content-Type", "value": "application/json"}
+            ],
+            "url": "{{baseUrl}}/json/2/sale.order/action_confirm",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"ids\": [42]\n}"
+            }
+          }
+        },
+        {
+          "name": "Cancel Sale Order",
+          "request": {
+            "method": "POST",
+            "header": [
+              {"key": "Content-Type", "value": "application/json"}
+            ],
+            "url": "{{baseUrl}}/json/2/sale.order/action_cancel",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"ids\": [42]\n}"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Invoices",
+      "item": [
+        {
+          "name": "Search Invoices",
+          "request": {
+            "method": "POST",
+            "header": [
+              {"key": "Content-Type", "value": "application/json"}
+            ],
+            "url": "{{baseUrl}}/json/2/account.move/search_read",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"domain\": [[\"move_type\", \"=\", \"out_invoice\"], [\"state\", \"=\", \"posted\"]],\n  \"fields\": [\"name\", \"partner_id\", \"invoice_date\", \"amount_total\", \"payment_state\"],\n  \"limit\": 20\n}"
+            }
+          }
+        },
+        {
+          "name": "Create Invoice",
+          "request": {
+            "method": "POST",
+            "header": [
+              {"key": "Content-Type", "value": "application/json"}
+            ],
+            "url": "{{baseUrl}}/json/2/account.move/create",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"vals_list\": {\n    \"move_type\": \"out_invoice\",\n    \"partner_id\": 15,\n    \"invoice_date\": \"2024-01-15\",\n    \"invoice_line_ids\": [\n      [0, 0, {\n        \"name\": \"Consulting Services\",\n        \"quantity\": 10,\n        \"price_unit\": 150.00\n      }]\n    ]\n  }\n}"
+            }
+          }
+        },
+        {
+          "name": "Post Invoice",
+          "request": {
+            "method": "POST",
+            "header": [
+              {"key": "Content-Type", "value": "application/json"}
+            ],
+            "url": "{{baseUrl}}/json/2/account.move/action_post",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"ids\": [15]\n}"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Purchase Orders",
+      "item": [
+        {
+          "name": "Search Purchase Orders",
+          "request": {
+            "method": "POST",
+            "header": [
+              {"key": "Content-Type", "value": "application/json"}
+            ],
+            "url": "{{baseUrl}}/json/2/purchase.order/search_read",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"domain\": [[\"state\", \"=\", \"draft\"]],\n  \"fields\": [\"name\", \"partner_id\", \"date_order\", \"amount_total\"],\n  \"limit\": 20\n}"
+            }
+          }
+        },
+        {
+          "name": "Create Purchase Order",
+          "request": {
+            "method": "POST",
+            "header": [
+              {"key": "Content-Type", "value": "application/json"}
+            ],
+            "url": "{{baseUrl}}/json/2/purchase.order/create",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"vals_list\": {\n    \"partner_id\": 8,\n    \"order_line\": [\n      [0, 0, {\n        \"product_id\": 25,\n        \"name\": \"Raw Material\",\n        \"product_qty\": 100,\n        \"price_unit\": 12.50\n      }]\n    ]\n  }\n}"
+            }
+          }
+        },
+        {
+          "name": "Confirm Purchase Order",
+          "request": {
+            "method": "POST",
+            "header": [
+              {"key": "Content-Type", "value": "application/json"}
+            ],
+            "url": "{{baseUrl}}/json/2/purchase.order/button_confirm",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"ids\": [10]\n}"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Inventory",
+      "item": [
+        {
+          "name": "Get Stock Quants",
+          "request": {
+            "method": "POST",
+            "header": [
+              {"key": "Content-Type", "value": "application/json"}
+            ],
+            "url": "{{baseUrl}}/json/2/stock.quant/search_read",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"domain\": [[\"product_id\", \"=\", 25], [\"location_id.usage\", \"=\", \"internal\"]],\n  \"fields\": [\"product_id\", \"location_id\", \"quantity\", \"reserved_quantity\"]\n}"
+            }
+          }
+        },
+        {
+          "name": "Update Inventory Quantity",
+          "request": {
+            "method": "POST",
+            "header": [
+              {"key": "Content-Type", "value": "application/json"}
+            ],
+            "url": "{{baseUrl}}/json/2/stock.quant/write",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"ids\": [123],\n  \"vals\": {\n    \"inventory_quantity\": 50\n  }\n}"
+            }
+          }
+        },
+        {
+          "name": "Apply Inventory Adjustment",
+          "request": {
+            "method": "POST",
+            "header": [
+              {"key": "Content-Type", "value": "application/json"}
+            ],
+            "url": "{{baseUrl}}/json/2/stock.quant/action_apply_inventory",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"ids\": [123]\n}"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Bulk Operations",
+      "item": [
+        {
+          "name": "Bulk Create Partners",
+          "request": {
+            "method": "POST",
+            "header": [
+              {"key": "Content-Type", "value": "application/json"}
+            ],
+            "url": "{{baseUrl}}/json/2/res.partner/create",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"vals_list\": [\n    {\"name\": \"Customer 1\", \"email\": \"c1@example.com\"},\n    {\"name\": \"Customer 2\", \"email\": \"c2@example.com\"},\n    {\"name\": \"Customer 3\", \"email\": \"c3@example.com\"}\n  ]\n}"
+            }
+          }
+        },
+        {
+          "name": "Bulk Update",
+          "request": {
+            "method": "POST",
+            "header": [
+              {"key": "Content-Type", "value": "application/json"}
+            ],
+            "url": "{{baseUrl}}/json/2/res.partner/write",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"ids\": [1, 2, 3, 4, 5],\n  \"vals\": {\n    \"active\": false\n  }\n}"
+            }
+          }
+        },
+        {
+          "name": "Bulk Delete",
+          "request": {
+            "method": "POST",
+            "header": [
+              {"key": "Content-Type", "value": "application/json"}
+            ],
+            "url": "{{baseUrl}}/json/2/res.partner/unlink",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"ids\": [10, 11, 12, 13]\n}"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "With Context",
+      "item": [
+        {
+          "name": "Search with Language",
+          "request": {
+            "method": "POST",
+            "header": [
+              {"key": "Content-Type", "value": "application/json"}
+            ],
+            "url": "{{baseUrl}}/json/2/product.product/search_read",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"domain\": [[\"sale_ok\", \"=\", true]],\n  \"fields\": [\"name\", \"description\"],\n  \"limit\": 10,\n  \"context\": {\n    \"lang\": \"fr_FR\"\n  }\n}"
+            }
+          }
+        },
+        {
+          "name": "Multi-Company Context",
+          "request": {
+            "method": "POST",
+            "header": [
+              {"key": "Content-Type", "value": "application/json"}
+            ],
+            "url": "{{baseUrl}}/json/2/sale.order/search_read",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"domain\": [],\n  \"fields\": [\"name\", \"company_id\"],\n  \"limit\": 10,\n  \"context\": {\n    \"allowed_company_ids\": [1, 2]\n  }\n}"
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

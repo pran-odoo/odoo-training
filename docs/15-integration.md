@@ -948,14 +948,143 @@ def sync_customer(external_id, customer_data):
         return odoo_api("res.partner", "create", vals_list=vals)
 ```
 
+## Postman / Insomnia Collection
+
+Download a ready-to-use API collection for testing:
+
+<a href="/odoo-api-collection.json" download class="download-btn">Download Postman Collection</a>
+
+**Setup:**
+1. Import the JSON file into Postman or Insomnia
+2. Set `baseUrl` variable to your Odoo instance URL
+3. Set `apiKey` variable to your Bearer token
+4. Start testing!
+
+The collection includes requests for Partners, Products, Sale Orders, Invoices, Purchase Orders, Inventory, and Bulk Operations.
+
 ## Performance Considerations
 
-### No Built-in Rate Limiting
+### Rate Limiting Strategies
 
-Odoo does **not** have built-in API rate limiting. Consider:
-- Implementing rate limiting at the reverse proxy level (nginx, Cloudflare)
-- Using connection pooling in your clients
-- Batching operations where possible
+Odoo does **not** have built-in API rate limiting. Implement protection at the infrastructure level:
+
+#### Option 1: Nginx Rate Limiting
+
+```nginx
+# /etc/nginx/conf.d/odoo-api.conf
+
+# Define rate limit zone (10 requests/second per IP)
+limit_req_zone $binary_remote_addr zone=odoo_api:10m rate=10r/s;
+
+# Apply to API endpoints
+location /json/2/ {
+    limit_req zone=odoo_api burst=20 nodelay;
+    limit_req_status 429;
+
+    proxy_pass http://odoo_backend;
+}
+```
+
+#### Option 2: Cloudflare Rate Limiting
+
+1. Go to **Security > WAF > Rate limiting rules**
+2. Create rule:
+   - **If:** URI Path contains `/json/2/`
+   - **Then:** Block for 60 seconds
+   - **When rate exceeds:** 100 requests per minute
+
+#### Option 3: Application-Level (Python Client)
+
+```python
+import time
+from functools import wraps
+
+class RateLimiter:
+    def __init__(self, calls_per_second=5):
+        self.calls_per_second = calls_per_second
+        self.last_call = 0
+
+    def wait(self):
+        elapsed = time.time() - self.last_call
+        wait_time = (1 / self.calls_per_second) - elapsed
+        if wait_time > 0:
+            time.sleep(wait_time)
+        self.last_call = time.time()
+
+limiter = RateLimiter(calls_per_second=5)
+
+def odoo_api(model, method, **kwargs):
+    limiter.wait()  # Enforce rate limit
+    response = requests.post(
+        f"{ODOO_URL}/json/2/{model}/{method}",
+        headers={"Authorization": f"Bearer {API_KEY}"},
+        json=kwargs,
+    )
+    return response.json()
+```
+
+#### Option 4: Token Bucket with Retry
+
+```python
+import time
+from collections import deque
+
+class TokenBucket:
+    def __init__(self, tokens_per_second=10, max_tokens=50):
+        self.tokens_per_second = tokens_per_second
+        self.max_tokens = max_tokens
+        self.tokens = max_tokens
+        self.last_update = time.time()
+
+    def acquire(self):
+        now = time.time()
+        # Add tokens based on time elapsed
+        self.tokens = min(
+            self.max_tokens,
+            self.tokens + (now - self.last_update) * self.tokens_per_second
+        )
+        self.last_update = now
+
+        if self.tokens >= 1:
+            self.tokens -= 1
+            return True
+        return False
+
+    def wait_for_token(self):
+        while not self.acquire():
+            time.sleep(0.1)
+
+bucket = TokenBucket(tokens_per_second=10, max_tokens=50)
+
+def odoo_api_with_retry(model, method, max_retries=3, **kwargs):
+    for attempt in range(max_retries):
+        bucket.wait_for_token()
+        try:
+            response = requests.post(
+                f"{ODOO_URL}/json/2/{model}/{method}",
+                headers={"Authorization": f"Bearer {API_KEY}"},
+                json=kwargs,
+                timeout=30
+            )
+            if response.status_code == 429:
+                time.sleep(2 ** attempt)  # Exponential backoff
+                continue
+            response.raise_for_status()
+            return response.json()
+        except requests.exceptions.RequestException as e:
+            if attempt == max_retries - 1:
+                raise
+            time.sleep(2 ** attempt)
+```
+
+### Rate Limiting Recommendations
+
+| Scenario | Recommended Limit | Why |
+|----------|-------------------|-----|
+| **Mobile app** | 5-10 req/s per user | Protect against runaway clients |
+| **Batch sync** | 20-50 req/s | Higher throughput for server-to-server |
+| **Webhooks** | 100 req/min | Prevent webhook storms |
+| **Public API** | 1000 req/hour | Prevent abuse |
 
 ### Connection Timeouts
 
@@ -971,3 +1100,5 @@ Default HTTP timeout is typically 60 seconds. For long operations:
 3. **Use domains efficiently** - Filter server-side, not client-side
 4. **Cache static data** - Products, categories don't change often
 5. **Handle errors gracefully** - Implement retry logic for transient failures
+6. **Use connection pooling** - Reuse HTTP connections for multiple requests
+7. **Implement circuit breakers** - Stop calling failing endpoints temporarily

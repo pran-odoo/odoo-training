@@ -1462,3 +1462,42 @@ kbd {
     display: flex !important;
   }
 }
+
+
+/* ============================================
+   37. DOWNLOAD BUTTON
+   ============================================ */
+
+.download-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 24px;
+  background: linear-gradient(135deg, var(--vp-c-brand-1), var(--vp-c-brand-2));
+  color: white !important;
+  font-weight: 600;
+  border-radius: 8px;
+  text-decoration: none !important;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 8px rgba(67, 56, 202, 0.25);
+}
+
+.download-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 16px rgba(67, 56, 202, 0.35);
+  background: linear-gradient(135deg, var(--vp-c-brand-2), var(--vp-c-brand-3));
+}
+
+.download-btn::before {
+  content: "⬇";
+  font-size: 1.1em;
+}
+
+.dark .download-btn {
+  background: linear-gradient(135deg, var(--vp-c-brand-2), var(--vp-c-brand-3));
+  box-shadow: 0 2px 8px rgba(99, 102, 241, 0.3);
+}
+
+.dark .download-btn:hover {
+  box-shadow: 0 4px 16px rgba(99, 102, 241, 0.4);
+}
