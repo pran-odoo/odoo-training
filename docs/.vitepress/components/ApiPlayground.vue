@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed, onMounted, watch } from 'vue'
+import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
 
 // Connection state
 const baseUrl = ref('')
@@ -7,6 +7,7 @@ const apiKey = ref('')
 const showApiKey = ref(false)
 const isConnected = ref(false)
 const connectionStatus = ref<'idle' | 'testing' | 'success' | 'error'>('idle')
+const copyFeedback = ref('')
 
 // Request state
 const selectedCategory = ref('partners')
@@ -187,21 +188,49 @@ const categories = [
 
 const currentTemplates = computed(() => templates[selectedCategory.value as keyof typeof templates] || [])
 
-// Load saved connection from sessionStorage
+// Load saved connection from sessionStorage (client-side only)
 onMounted(() => {
+  if (typeof window === 'undefined') return // SSR guard
+
   const savedUrl = sessionStorage.getItem('odoo_playground_url')
   const savedKey = sessionStorage.getItem('odoo_playground_key')
   if (savedUrl) baseUrl.value = savedUrl
-  if (savedKey) {
-    apiKey.value = savedKey
-    isConnected.value = true
-  }
+  if (savedKey) apiKey.value = savedKey
+  // Don't auto-set isConnected - user must test connection to verify
+
+  // Add keyboard shortcut listener
+  window.addEventListener('keydown', handleKeydown)
 })
+
+onUnmounted(() => {
+  if (typeof window === 'undefined') return
+  window.removeEventListener('keydown', handleKeydown)
+})
+
+// Handle Ctrl+Enter keyboard shortcut
+function handleKeydown(e: KeyboardEvent) {
+  if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+    if (isConnected.value && !isLoading.value) {
+      e.preventDefault()
+      executeRequest()
+    }
+  }
+}
 
 // Save connection to sessionStorage
 watch([baseUrl, apiKey], () => {
-  if (baseUrl.value) sessionStorage.setItem('odoo_playground_url', baseUrl.value)
-  if (apiKey.value) sessionStorage.setItem('odoo_playground_key', apiKey.value)
+  if (typeof window === 'undefined') return // SSR guard
+
+  if (baseUrl.value) {
+    sessionStorage.setItem('odoo_playground_url', baseUrl.value)
+  } else {
+    sessionStorage.removeItem('odoo_playground_url')
+  }
+  if (apiKey.value) {
+    sessionStorage.setItem('odoo_playground_key', apiKey.value)
+  } else {
+    sessionStorage.removeItem('odoo_playground_key')
+  }
 })
 
 function selectTemplate(template: typeof templates.partners[0]) {
@@ -251,6 +280,16 @@ async function executeRequest() {
     return
   }
 
+  // Validate model and method
+  if (!model.value || !model.value.includes('.')) {
+    error.value = 'Invalid model format. Use format: module.model (e.g., res.partner)'
+    return
+  }
+  if (!method.value || !/^[a-zA-Z_][a-zA-Z0-9_]*$/.test(method.value)) {
+    error.value = 'Invalid method name'
+    return
+  }
+
   error.value = ''
   response.value = null
   isLoading.value = true
@@ -265,7 +304,10 @@ async function executeRequest() {
       throw new Error('Invalid JSON in request body')
     }
 
-    const url = `${baseUrl.value.replace(/\/$/, '')}/json/2/${model.value}/${method.value}`
+    // Sanitize model/method to prevent path traversal
+    const safeModel = model.value.replace(/[^a-zA-Z0-9_.]/g, '')
+    const safeMethod = method.value.replace(/[^a-zA-Z0-9_]/g, '')
+    const url = `${baseUrl.value.replace(/\/$/, '')}/json/2/${safeModel}/${safeMethod}`
 
     const res = await fetch(url, {
       method: 'POST',
@@ -280,14 +322,22 @@ async function executeRequest() {
     responseTime.value = elapsed
     responseStatus.value = res.status
 
-    const data = await res.json()
+    // Handle non-JSON responses gracefully
+    let data: any
+    const contentType = res.headers.get('content-type') || ''
+    if (contentType.includes('application/json')) {
+      data = await res.json()
+    } else {
+      const text = await res.text()
+      data = { _raw_response: text, _note: 'Response was not JSON' }
+    }
     response.value = data
 
     // Update stats
     stats.value.calls++
     if (res.ok) {
       stats.value.successful++
-      if (!stats.value.fastest || elapsed < stats.value.fastest) {
+      if (stats.value.fastest === 0 || elapsed < stats.value.fastest) {
         stats.value.fastest = elapsed
       }
     }
@@ -313,8 +363,15 @@ async function executeRequest() {
   }
 }
 
-function copyToClipboard(text: string) {
-  navigator.clipboard.writeText(text)
+async function copyToClipboard(text: string) {
+  try {
+    await navigator.clipboard.writeText(text)
+    copyFeedback.value = 'Copied!'
+    setTimeout(() => { copyFeedback.value = '' }, 2000)
+  } catch (e) {
+    copyFeedback.value = 'Copy failed'
+    setTimeout(() => { copyFeedback.value = '' }, 2000)
+  }
 }
 
 function formatJson(obj: any): string {
@@ -327,8 +384,12 @@ function clearHistory() {
 }
 
 function disconnect() {
-  sessionStorage.removeItem('odoo_playground_key')
+  if (typeof window !== 'undefined') {
+    sessionStorage.removeItem('odoo_playground_key')
+    sessionStorage.removeItem('odoo_playground_url')
+  }
   apiKey.value = ''
+  baseUrl.value = ''
   isConnected.value = false
   connectionStatus.value = 'idle'
 }
@@ -458,7 +519,7 @@ function disconnect() {
 
           <div class="editor-actions">
             <button class="copy-btn" @click="copyToClipboard(requestBody)" title="Copy request">
-              📋
+              {{ copyFeedback || '📋' }}
             </button>
           </div>
         </div>
@@ -648,7 +709,6 @@ function disconnect() {
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  margin-bottom: 1rem;
 }
 
 .connection-icon {
@@ -679,6 +739,7 @@ function disconnect() {
   display: flex;
   flex-direction: column;
   gap: 1rem;
+  margin-top: 1rem;
 }
 
 .form-row {
