@@ -9,6 +9,7 @@ const isOpen = ref(false)
 const isSubmitting = ref(false)
 const isSuccess = ref(false)
 const hasError = ref(false)
+const errorMessage = ref('')
 
 // Timeout refs for cleanup
 let closeTimeoutId: ReturnType<typeof setTimeout> | null = null
@@ -20,9 +21,8 @@ const message = ref('')
 const discordUsername = ref('')
 const email = ref('')
 
-// Discord webhook URL (you'll need to replace this with your actual webhook)
-// For production, move this to a Vercel serverless function
-const DISCORD_WEBHOOK = import.meta.env.VITE_DISCORD_WEBHOOK || ''
+// API endpoint for secure feedback submission (webhook URL kept server-side)
+const FEEDBACK_API = '/api/feedback'
 
 const feedbackTypes = [
   { value: 'question', label: 'Question', icon: '?' , color: '#6366F1' },
@@ -70,6 +70,7 @@ function reset() {
   feedbackType.value = 'question'
   isSuccess.value = false
   hasError.value = false
+  errorMessage.value = ''
 }
 
 async function submit() {
@@ -78,57 +79,26 @@ async function submit() {
   isSubmitting.value = true
   hasError.value = false
 
-  // Build description - use message if provided, otherwise note Discord contact
-  const description = message.value.trim()
-    ? message.value
-    : `User provided Discord contact: ${discordUsername.value}`
-
-  // Get current site URL dynamically
-  const siteUrl = typeof window !== 'undefined' ? window.location.origin : ''
-  const pageUrl = `${siteUrl}${route.path}`
-
+  // Prepare secure payload (server handles Discord formatting)
   const payload = {
-    embeds: [{
-      title: `${currentType.value?.icon} New ${currentType.value?.label}`,
-      description,
-      color: parseInt(currentType.value?.color?.replace('#', '') || '6366F1', 16),
-      fields: [
-        {
-          name: '📄 Page',
-          value: `[${route.path}](${pageUrl})`,
-          inline: true
-        },
-        ...(discordUsername.value ? [{
-          name: '🎮 Discord',
-          value: discordUsername.value,
-          inline: true
-        }] : []),
-        ...(email.value ? [{
-          name: '📧 Email',
-          value: email.value,
-          inline: true
-        }] : [])
-      ],
-      timestamp: new Date().toISOString(),
-      footer: {
-        text: 'Odoo Training Feedback'
-      }
-    }]
+    type: feedbackType.value,
+    message: message.value.trim(),
+    discordUsername: discordUsername.value.trim(),
+    email: email.value.trim(),
+    page: route.path
   }
 
   try {
-    if (DISCORD_WEBHOOK) {
-      const response = await fetch(DISCORD_WEBHOOK, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload)
-      })
+    const response = await fetch(FEEDBACK_API, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    })
 
-      if (!response.ok) throw new Error('Failed to send')
-    } else {
-      // Demo mode - just simulate success
-      await new Promise(resolve => setTimeout(resolve, 1000))
-      console.log('Feedback (demo mode):', payload)
+    const data = await response.json()
+
+    if (!response.ok) {
+      throw new Error(data.error || 'Failed to send feedback')
     }
 
     isSuccess.value = true
@@ -143,6 +113,7 @@ async function submit() {
   } catch (err) {
     console.error('Feedback error:', err)
     hasError.value = true
+    errorMessage.value = err instanceof Error ? err.message : 'Failed to send feedback'
   } finally {
     isSubmitting.value = false
   }
@@ -315,7 +286,7 @@ onUnmounted(() => {
                   <line x1="12" y1="8" x2="12" y2="12"/>
                   <line x1="12" y1="16" x2="12.01" y2="16"/>
                 </svg>
-                <span>Something went wrong. Please try again.</span>
+                <span>{{ errorMessage || 'Something went wrong. Please try again.' }}</span>
               </div>
 
               <!-- Submit -->
