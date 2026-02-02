@@ -17,6 +17,7 @@ import SearchHighlights from '../components/SearchHighlights.vue'
 import BookmarkButton from '../components/BookmarkButton.vue'
 import BookmarksPanel from '../components/BookmarksPanel.vue'
 import QuizProgress from '../components/QuizProgress.vue'
+import ReadingTime from '../components/ReadingTime.vue'
 
 // Lazy load heavy WebGL effects - they're decorative and can load after main content
 const GalaxyBackground = defineAsyncComponent(() => import('../components/GalaxyBackground.vue'))
@@ -161,6 +162,10 @@ onUnmounted(() => {
     <template #sidebar-nav-before>
       <BookmarksPanel />
       <QuizProgress />
+    </template>
+
+    <template #doc-before>
+      <ReadingTime v-if="!isHomePage()" />
     </template>
 
     <template #layout-bottom>

@@ -1272,3 +1272,190 @@ kbd {
 :root .vp-doc h1::after {
   background: linear-gradient(90deg, #4338CA, #C2410C);
 }
+
+/* ============================================
+   33. PREMIUM CODE BLOCK LANGUAGE BADGES
+   ============================================ */
+
+/* Language badge styling */
+.vp-doc div[class*="language-"]::before {
+  position: absolute;
+  top: 0;
+  right: 0;
+  z-index: 3;
+  padding: 0.35rem 0.75rem;
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  border-radius: 0 var(--radius-lg) 0 var(--radius-md);
+  background: linear-gradient(135deg, var(--vp-c-brand-1), var(--vp-c-brand-2));
+  color: white;
+  box-shadow: var(--shadow-sm);
+}
+
+/* Language-specific colors */
+.vp-doc div.language-python::before {
+  background: linear-gradient(135deg, #3776AB, #FFD43B);
+  color: #1a1a1a;
+}
+
+.vp-doc div.language-javascript::before,
+.vp-doc div.language-js::before {
+  background: linear-gradient(135deg, #F7DF1E, #F0DB4F);
+  color: #1a1a1a;
+}
+
+.vp-doc div.language-typescript::before,
+.vp-doc div.language-ts::before {
+  background: linear-gradient(135deg, #3178C6, #235A97);
+  color: white;
+}
+
+.vp-doc div.language-http::before {
+  background: linear-gradient(135deg, #6366F1, #8B5CF6);
+  color: white;
+}
+
+.vp-doc div.language-json::before {
+  background: linear-gradient(135deg, #292929, #4a4a4a);
+  color: #F5F5F5;
+}
+
+.vp-doc div.language-bash::before,
+.vp-doc div.language-shell::before,
+.vp-doc div.language-sh::before {
+  background: linear-gradient(135deg, #4EAA25, #2E7D17);
+  color: white;
+}
+
+.vp-doc div.language-xml::before {
+  background: linear-gradient(135deg, #F16529, #E44D26);
+  color: white;
+}
+
+.vp-doc div.language-html::before {
+  background: linear-gradient(135deg, #E34F26, #F06529);
+  color: white;
+}
+
+.vp-doc div.language-css::before {
+  background: linear-gradient(135deg, #264DE4, #2965F1);
+  color: white;
+}
+
+.vp-doc div.language-sql::before {
+  background: linear-gradient(135deg, #336791, #4479A1);
+  color: white;
+}
+
+.vp-doc div.language-yaml::before,
+.vp-doc div.language-yml::before {
+  background: linear-gradient(135deg, #CB171E, #FF5733);
+  color: white;
+}
+
+/* ============================================
+   34. SMOOTH PAGE TRANSITIONS
+   ============================================ */
+
+/* Page content fade transition */
+.VPContent {
+  transition: opacity var(--duration-normal) var(--ease-out-expo);
+}
+
+/* Main content area transition */
+.vp-doc {
+  animation: fadeSlideIn var(--duration-slow) var(--ease-out-expo);
+}
+
+@keyframes fadeSlideIn {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Staggered animation for headings */
+.vp-doc h1 {
+  animation: fadeSlideIn var(--duration-slow) var(--ease-out-expo);
+  animation-delay: 0ms;
+}
+
+.vp-doc h2 {
+  animation: fadeSlideIn var(--duration-slow) var(--ease-out-expo);
+  animation-delay: 50ms;
+  animation-fill-mode: both;
+}
+
+/* Code blocks slide in */
+.vp-doc div[class*="language-"] {
+  animation: fadeSlideIn var(--duration-slow) var(--ease-out-expo);
+  animation-delay: 100ms;
+  animation-fill-mode: both;
+}
+
+/* Tables slide in */
+.vp-doc table {
+  animation: fadeSlideIn var(--duration-slow) var(--ease-out-expo);
+  animation-delay: 100ms;
+  animation-fill-mode: both;
+}
+
+/* Custom blocks slide in */
+.vp-doc .custom-block {
+  animation: fadeSlideIn var(--duration-slow) var(--ease-out-expo);
+  animation-delay: 150ms;
+  animation-fill-mode: both;
+}
+
+/* Respect reduced motion preference */
+@media (prefers-reduced-motion: reduce) {
+  .vp-doc,
+  .vp-doc h1,
+  .vp-doc h2,
+  .vp-doc div[class*="language-"],
+  .vp-doc table,
+  .vp-doc .custom-block {
+    animation: none;
+  }
+}
+
+/* ============================================
+   35. READING TIME BADGE
+   ============================================ */
+
+.reading-time {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.3rem 0.75rem;
+  margin-top: 0.75rem;
+  font-size: 0.8rem;
+  font-weight: 500;
+  color: var(--vp-c-text-3);
+  background: var(--vp-c-bg-soft);
+  border: 1px solid var(--vp-c-border);
+  border-radius: var(--radius-full);
+  transition: all var(--duration-fast) var(--ease-out-expo);
+}
+
+.reading-time:hover {
+  background: var(--vp-c-bg-mute);
+  color: var(--vp-c-text-2);
+}
+
+.reading-time svg {
+  width: 14px;
+  height: 14px;
+  opacity: 0.7;
+}
+
+.dark .reading-time {
+  background: var(--vp-c-bg-soft);
+  border-color: var(--vp-c-border);
+}
