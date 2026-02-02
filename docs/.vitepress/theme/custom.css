@@ -1277,14 +1277,19 @@ kbd {
    33. PREMIUM CODE BLOCK LANGUAGE BADGES
    ============================================ */
 
-/* Language badge styling */
-.vp-doc div[class*="language-"]::before {
+/*
+ * VitePress uses span.lang for language labels.
+ * We style that element instead of creating a ::before pseudo-element.
+ */
+
+/* Base language badge styling */
+.vp-doc [class*='language-'] > span.lang {
   position: absolute;
   top: 0;
   right: 0;
   z-index: 3;
   padding: 0.35rem 0.75rem;
-  font-size: 0.7rem;
+  font-size: 0.65rem;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.05em;
@@ -1292,65 +1297,66 @@ kbd {
   background: linear-gradient(135deg, var(--vp-c-brand-1), var(--vp-c-brand-2));
   color: white;
   box-shadow: var(--shadow-sm);
+  transition: opacity var(--duration-fast) var(--ease-out-expo);
 }
 
 /* Language-specific colors */
-.vp-doc div.language-python::before {
+.vp-doc .language-python > span.lang {
   background: linear-gradient(135deg, #3776AB, #FFD43B);
   color: #1a1a1a;
 }
 
-.vp-doc div.language-javascript::before,
-.vp-doc div.language-js::before {
+.vp-doc .language-javascript > span.lang,
+.vp-doc .language-js > span.lang {
   background: linear-gradient(135deg, #F7DF1E, #F0DB4F);
   color: #1a1a1a;
 }
 
-.vp-doc div.language-typescript::before,
-.vp-doc div.language-ts::before {
+.vp-doc .language-typescript > span.lang,
+.vp-doc .language-ts > span.lang {
   background: linear-gradient(135deg, #3178C6, #235A97);
   color: white;
 }
 
-.vp-doc div.language-http::before {
+.vp-doc .language-http > span.lang {
   background: linear-gradient(135deg, #6366F1, #8B5CF6);
   color: white;
 }
 
-.vp-doc div.language-json::before {
+.vp-doc .language-json > span.lang {
   background: linear-gradient(135deg, #292929, #4a4a4a);
   color: #F5F5F5;
 }
 
-.vp-doc div.language-bash::before,
-.vp-doc div.language-shell::before,
-.vp-doc div.language-sh::before {
+.vp-doc .language-bash > span.lang,
+.vp-doc .language-shell > span.lang,
+.vp-doc .language-sh > span.lang {
   background: linear-gradient(135deg, #4EAA25, #2E7D17);
   color: white;
 }
 
-.vp-doc div.language-xml::before {
+.vp-doc .language-xml > span.lang {
   background: linear-gradient(135deg, #F16529, #E44D26);
   color: white;
 }
 
-.vp-doc div.language-html::before {
+.vp-doc .language-html > span.lang {
   background: linear-gradient(135deg, #E34F26, #F06529);
   color: white;
 }
 
-.vp-doc div.language-css::before {
+.vp-doc .language-css > span.lang {
   background: linear-gradient(135deg, #264DE4, #2965F1);
   color: white;
 }
 
-.vp-doc div.language-sql::before {
+.vp-doc .language-sql > span.lang {
   background: linear-gradient(135deg, #336791, #4479A1);
   color: white;
 }
 
-.vp-doc div.language-yaml::before,
-.vp-doc div.language-yml::before {
+.vp-doc .language-yaml > span.lang,
+.vp-doc .language-yml > span.lang {
   background: linear-gradient(135deg, #CB171E, #FF5733);
   color: white;
 }
@@ -1359,70 +1365,41 @@ kbd {
    34. SMOOTH PAGE TRANSITIONS
    ============================================ */
 
-/* Page content fade transition */
-.VPContent {
-  transition: opacity var(--duration-normal) var(--ease-out-expo);
-}
+/*
+ * Simple fade-in for main content area only.
+ * Avoids complex staggered animations that can:
+ * - Cause layout shifts
+ * - Feel jarring on back-navigation
+ * - Impact performance with many animated elements
+ */
 
-/* Main content area transition */
-.vp-doc {
-  animation: fadeSlideIn var(--duration-slow) var(--ease-out-expo);
-}
-
-@keyframes fadeSlideIn {
+@keyframes contentFadeIn {
   from {
-    opacity: 0;
-    transform: translateY(12px);
+    opacity: 0.4;
   }
   to {
     opacity: 1;
-    transform: translateY(0);
   }
 }
 
-/* Staggered animation for headings */
-.vp-doc h1 {
-  animation: fadeSlideIn var(--duration-slow) var(--ease-out-expo);
-  animation-delay: 0ms;
-}
-
-.vp-doc h2 {
-  animation: fadeSlideIn var(--duration-slow) var(--ease-out-expo);
-  animation-delay: 50ms;
-  animation-fill-mode: both;
-}
-
-/* Code blocks slide in */
-.vp-doc div[class*="language-"] {
-  animation: fadeSlideIn var(--duration-slow) var(--ease-out-expo);
-  animation-delay: 100ms;
-  animation-fill-mode: both;
-}
-
-/* Tables slide in */
-.vp-doc table {
-  animation: fadeSlideIn var(--duration-slow) var(--ease-out-expo);
-  animation-delay: 100ms;
-  animation-fill-mode: both;
-}
-
-/* Custom blocks slide in */
-.vp-doc .custom-block {
-  animation: fadeSlideIn var(--duration-slow) var(--ease-out-expo);
-  animation-delay: 150ms;
-  animation-fill-mode: both;
+/* Single subtle animation on the content wrapper */
+.vp-doc {
+  animation: contentFadeIn var(--duration-normal) var(--ease-out-expo);
 }
 
 /* Respect reduced motion preference */
 @media (prefers-reduced-motion: reduce) {
-  .vp-doc,
-  .vp-doc h1,
-  .vp-doc h2,
-  .vp-doc div[class*="language-"],
-  .vp-doc table,
-  .vp-doc .custom-block {
+  .vp-doc {
     animation: none;
   }
+}
+
+/* Smooth transitions for interactive elements */
+.vp-doc .custom-block,
+.vp-doc table,
+.vp-doc div[class*="language-"] {
+  transition: transform var(--duration-fast) var(--ease-out-expo),
+              box-shadow var(--duration-fast) var(--ease-out-expo);
 }
 
 /* ============================================

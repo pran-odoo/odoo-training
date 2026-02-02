@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, onMounted, watch } from 'vue'
+import { ref, onMounted, onUnmounted, watch, nextTick } from 'vue'
 import { useRoute } from 'vitepress'
 
 const route = useRoute()
@@ -9,27 +9,53 @@ const wordCount = ref(0)
 // Average reading speed (words per minute)
 const WORDS_PER_MINUTE = 200
 
+// Track timeout for cleanup
+let timeoutId: ReturnType<typeof setTimeout> | null = null
+
 function calculateReadingTime() {
-  // Wait for content to be rendered
-  setTimeout(() => {
-    const content = document.querySelector('.vp-doc')
-    if (!content) return
+  // Clear any pending timeout to prevent race conditions
+  if (timeoutId) {
+    clearTimeout(timeoutId)
+    timeoutId = null
+  }
 
-    // Get text content, excluding code blocks for more accurate estimation
-    const text = content.textContent || ''
-    const words = text.trim().split(/\s+/).filter(word => word.length > 0).length
+  // Use nextTick to ensure DOM is updated, then small delay for VitePress hydration
+  nextTick(() => {
+    timeoutId = setTimeout(() => {
+      const content = document.querySelector('.vp-doc')
+      if (!content) return
 
-    wordCount.value = words
-    readingTime.value = Math.max(1, Math.ceil(words / WORDS_PER_MINUTE))
-  }, 100)
+      // Clone content and remove code blocks for accurate reading time
+      const clone = content.cloneNode(true) as HTMLElement
+      clone.querySelectorAll('pre, code, .line-numbers').forEach(el => el.remove())
+
+      const text = clone.textContent || ''
+      const words = text.trim().split(/\s+/).filter(word => word.length > 0).length
+
+      wordCount.value = words
+      readingTime.value = Math.max(1, Math.ceil(words / WORDS_PER_MINUTE))
+      timeoutId = null
+    }, 50)
+  })
 }
 
 onMounted(() => {
   calculateReadingTime()
 })
 
+onUnmounted(() => {
+  // Cleanup timeout on unmount to prevent memory leaks
+  if (timeoutId) {
+    clearTimeout(timeoutId)
+    timeoutId = null
+  }
+})
+
 // Recalculate when route changes
 watch(() => route.path, () => {
+  // Reset values immediately for better UX
+  readingTime.value = 0
+  wordCount.value = 0
   calculateReadingTime()
 })
 </script>
