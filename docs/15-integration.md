@@ -625,7 +625,8 @@ Content-Type: application/json
 
 **Step 3: Create Invoice from Sales Order**
 
-Use the invoicing wizard to create an invoice:
+Use the invoicing wizard to create an invoice. This is a two-step process:
+
 ```http
 POST /json/2/sale.advance.payment.inv/create
 Authorization: Bearer your-api-key
@@ -642,20 +643,29 @@ Content-Type: application/json
 }
 ```
 
-Then call the wizard's action:
+**Response:** `7` (the wizard ID)
+
+Then call the wizard's action using the returned wizard ID:
 ```http
 POST /json/2/sale.advance.payment.inv/create_invoices
 Authorization: Bearer your-api-key
 Content-Type: application/json
 
 {
-  "ids": [1],
+  "ids": [7],
   "context": {
     "active_ids": [42],
     "active_model": "sale.order"
   }
 }
 ```
+
+::: tip Wizard Pattern
+Many Odoo operations use transient models (wizards). The pattern is:
+1. **Create** the wizard with context specifying target records
+2. **Call the action** method on the created wizard ID
+3. The wizard is automatically cleaned up after some time
+:::
 
 **Step 4: Post the Invoice**
 ```http
@@ -707,7 +717,7 @@ Content-Type: application/json
 
 ### Use Case 4: Register a Payment
 
-Record a customer payment against an invoice:
+Record a customer payment against an invoice using the payment wizard:
 
 ```http
 POST /json/2/account.payment.register/create
@@ -727,20 +737,24 @@ Content-Type: application/json
 }
 ```
 
-Then execute the payment:
+**Response:** `3` (the wizard ID)
+
+Then execute the payment using the wizard ID:
 ```http
 POST /json/2/account.payment.register/action_create_payments
 Authorization: Bearer your-api-key
 Content-Type: application/json
 
 {
-  "ids": [1],
+  "ids": [3],
   "context": {
     "active_model": "account.move",
     "active_ids": [15]
   }
 }
 ```
+
+This creates an `account.payment` record and automatically reconciles it with the invoice.
 
 ### Use Case 5: Update Inventory Quantities
 
@@ -798,8 +812,6 @@ Content-Type: application/json
 {
   "vals_list": {
     "partner_id": 8,
-    "date_order": "2024-01-15",
-    "date_planned": "2024-01-25",
     "order_line": [
       [0, 0, {
         "product_id": 25,
