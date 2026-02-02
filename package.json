@@ -34,5 +34,8 @@
   "dependencies": {
     "gl-matrix": "^3.4.4",
     "three": "^0.182.0"
+  },
+  "overrides": {
+    "sourcemap-codec": "npm:@jridgewell/sourcemap-codec@^1.5.0"
   }
 }
