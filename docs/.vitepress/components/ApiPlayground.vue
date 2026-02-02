@@ -253,23 +253,33 @@ function normalizeOdooUrl(url: string): string {
   return normalized
 }
 
+// Call Odoo API directly (requires CORS to be configured)
+async function callOdooApi(model: string, method: string, body: any = {}) {
+  const url = `${normalizeOdooUrl(baseUrl.value)}/json/2/${model}/${method}`
+  const res = await fetch(url, {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${apiKey.value}`,
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify(body)
+  })
+  return res
+}
+
 async function testConnection() {
   if (!baseUrl.value || !apiKey.value) return
 
   connectionStatus.value = 'testing'
+  error.value = ''
 
   try {
-    const normalizedUrl = normalizeOdooUrl(baseUrl.value)
-    const url = `${normalizedUrl}/json/2/res.users/search_read`
     const start = performance.now()
 
-    const res = await fetch(url, {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${apiKey.value}`,
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({ domain: [["id", "=", 1]], fields: ["name"], limit: 1 })
+    const res = await callOdooApi('res.users', 'search_read', {
+      domain: [["id", "=", 1]],
+      fields: ["name"],
+      limit: 1
     })
 
     const elapsed = performance.now() - start
@@ -280,10 +290,18 @@ async function testConnection() {
       responseTime.value = Math.round(elapsed)
     } else {
       connectionStatus.value = 'error'
+      const data = await res.json().catch(() => ({}))
+      error.value = data.message || `HTTP ${res.status}`
       isConnected.value = false
     }
-  } catch (e) {
+  } catch (e: any) {
     connectionStatus.value = 'error'
+    // Detect CORS error
+    if (e.message?.includes('fetch') || e.name === 'TypeError') {
+      error.value = 'CORS blocked - enable a CORS extension or check the setup guide below'
+    } else {
+      error.value = e.message || 'Connection failed'
+    }
     isConnected.value = false
   }
 }
@@ -318,33 +336,21 @@ async function executeRequest() {
       throw new Error('Invalid JSON in request body')
     }
 
-    // Sanitize model/method to prevent path traversal
-    const safeModel = model.value.replace(/[^a-zA-Z0-9_.]/g, '')
-    const safeMethod = method.value.replace(/[^a-zA-Z0-9_]/g, '')
-    const normalizedUrl = normalizeOdooUrl(baseUrl.value)
-    const url = `${normalizedUrl}/json/2/${safeModel}/${safeMethod}`
-
-    const res = await fetch(url, {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${apiKey.value}`,
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify(body)
-    })
+    // Call Odoo API directly
+    const res = await callOdooApi(model.value, method.value, body)
 
     const elapsed = Math.round(performance.now() - start)
     responseTime.value = elapsed
     responseStatus.value = res.status
 
-    // Handle non-JSON responses gracefully
-    let data: any
+    // Parse response
     const contentType = res.headers.get('content-type') || ''
+    let data: any
     if (contentType.includes('application/json')) {
       data = await res.json()
     } else {
       const text = await res.text()
-      data = { _raw_response: text, _note: 'Response was not JSON' }
+      data = { _raw_response: text.slice(0, 500), _note: 'Response was not JSON' }
     }
     response.value = data
 
@@ -491,9 +497,24 @@ function disconnect() {
           <span v-else>Test Connection</span>
         </button>
 
-        <div class="cors-warning">
-          <strong>⚠️ CORS Required:</strong> Browser security blocks cross-origin requests.
-          Use a CORS browser extension (e.g., "CORS Unblock") or configure your Odoo server.
+        <div class="cors-setup">
+          <details>
+            <summary><strong>⚠️ CORS Setup Required</strong> (click to expand)</summary>
+            <div class="cors-content">
+              <p>Browser security blocks cross-origin API calls. Choose one option:</p>
+              <p><strong>Option 1: Browser Extension</strong> (quickest for testing)</p>
+              <ul>
+                <li>Install <a href="https://chrome.google.com/webstore/detail/cors-unblock/lfhmikememgdcahcdlaciloancbhjino" target="_blank">CORS Unblock</a> (Chrome) or similar</li>
+                <li>Enable it for your Odoo domain only</li>
+              </ul>
+              <p><strong>Option 2: Odoo Server Config</strong> (for production)</p>
+              <ul>
+                <li>Add CORS headers in nginx/Apache config</li>
+                <li>Or use Odoo's web.cors module</li>
+              </ul>
+            </div>
+          </details>
+          <p class="security-note">🔒 Your API key stays in your browser and goes directly to your Odoo instance.</p>
         </div>
       </form>
     </div>
@@ -869,13 +890,51 @@ function disconnect() {
   background: #ef4444;
 }
 
-.cors-warning {
-  font-size: 0.8rem;
-  color: var(--vp-c-text-3);
+.cors-setup {
+  font-size: 0.85rem;
+  background: var(--vp-c-bg);
+  border-radius: 8px;
+  border: 1px solid var(--vp-c-border);
+}
+
+.cors-setup summary {
   padding: 0.75rem;
+  cursor: pointer;
   background: rgba(251, 191, 36, 0.1);
-  border-radius: 6px;
+  border-radius: 8px;
   border-left: 3px solid #fbbf24;
+}
+
+.cors-setup details[open] summary {
+  border-radius: 8px 8px 0 0;
+}
+
+.cors-content {
+  padding: 0.75rem;
+  font-size: 0.8rem;
+  line-height: 1.5;
+}
+
+.cors-content p {
+  margin: 0.5rem 0;
+}
+
+.cors-content ul {
+  margin: 0.25rem 0 0.5rem 1.25rem;
+  padding: 0;
+}
+
+.cors-content a {
+  color: var(--vp-c-brand-1);
+}
+
+.security-note {
+  margin: 0.5rem 0.75rem 0.75rem;
+  padding: 0.5rem;
+  font-size: 0.75rem;
+  color: var(--vp-c-text-2);
+  background: rgba(16, 185, 129, 0.1);
+  border-radius: 4px;
 }
 
 /* Template Section */
