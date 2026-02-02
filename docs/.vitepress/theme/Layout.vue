@@ -18,6 +18,7 @@ import BookmarkButton from '../components/BookmarkButton.vue'
 import BookmarksPanel from '../components/BookmarksPanel.vue'
 import QuizProgress from '../components/QuizProgress.vue'
 import ReadingTime from '../components/ReadingTime.vue'
+import FeedbackWidget from '../components/FeedbackWidget.vue'
 
 // Lazy load heavy WebGL effects - they're decorative and can load after main content
 const GalaxyBackground = defineAsyncComponent(() => import('../components/GalaxyBackground.vue'))
@@ -176,6 +177,7 @@ onUnmounted(() => {
       <ResumeReading />
       <GlossaryProvider />
       <SearchHighlights />
+      <FeedbackWidget />
     </template>
   </Layout>
 </template>
