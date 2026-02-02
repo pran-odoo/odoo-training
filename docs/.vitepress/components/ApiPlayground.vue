@@ -8,6 +8,7 @@ const showApiKey = ref(false)
 const isConnected = ref(false)
 const connectionStatus = ref<'idle' | 'testing' | 'success' | 'error'>('idle')
 const copyFeedback = ref('')
+const useProxy = ref(true) // Default to proxy for Odoo.com compatibility
 
 // Request state
 const selectedCategory = ref('partners')
@@ -194,8 +195,10 @@ onMounted(() => {
 
   const savedUrl = sessionStorage.getItem('odoo_playground_url')
   const savedKey = sessionStorage.getItem('odoo_playground_key')
+  const savedProxy = sessionStorage.getItem('odoo_playground_proxy')
   if (savedUrl) baseUrl.value = savedUrl
   if (savedKey) apiKey.value = savedKey
+  if (savedProxy !== null) useProxy.value = savedProxy === 'true'
   // Don't auto-set isConnected - user must test connection to verify
 
   // Add keyboard shortcut listener
@@ -218,7 +221,7 @@ function handleKeydown(e: KeyboardEvent) {
 }
 
 // Save connection to sessionStorage
-watch([baseUrl, apiKey], () => {
+watch([baseUrl, apiKey, useProxy], () => {
   if (typeof window === 'undefined') return // SSR guard
 
   if (baseUrl.value) {
@@ -231,6 +234,7 @@ watch([baseUrl, apiKey], () => {
   } else {
     sessionStorage.removeItem('odoo_playground_key')
   }
+  sessionStorage.setItem('odoo_playground_proxy', String(useProxy.value))
 })
 
 function selectTemplate(template: typeof templates.partners[0]) {
@@ -253,18 +257,63 @@ function normalizeOdooUrl(url: string): string {
   return normalized
 }
 
-// Call Odoo API directly (requires CORS to be configured)
-async function callOdooApi(model: string, method: string, body: any = {}) {
-  const url = `${normalizeOdooUrl(baseUrl.value)}/json/2/${model}/${method}`
-  const res = await fetch(url, {
-    method: 'POST',
-    headers: {
-      'Authorization': `Bearer ${apiKey.value}`,
-      'Content-Type': 'application/json'
-    },
-    body: JSON.stringify(body)
-  })
-  return res
+// Call Odoo API (via proxy or direct) with timeout
+async function callOdooApi(model: string, method: string, body: any = {}): Promise<{ ok: boolean; status: number; data: any; time?: number }> {
+  // Create AbortController for 30s timeout
+  const controller = new AbortController()
+  const timeoutId = setTimeout(() => controller.abort(), 30000)
+
+  try {
+    if (useProxy.value) {
+      // Use serverless proxy to avoid CORS issues
+      const res = await fetch('/api/odoo-proxy', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          odooUrl: normalizeOdooUrl(baseUrl.value),
+          apiKey: apiKey.value,
+          model,
+          method,
+          body
+        }),
+        signal: controller.signal
+      })
+
+      const result = await res.json()
+
+      return {
+        ok: result._status >= 200 && result._status < 300,
+        status: result._status || res.status,
+        data: result.data || { error: 'Unexpected response format' },
+        time: result._time
+      }
+    } else {
+      // Direct call (requires CORS extension or server config)
+      const url = `${normalizeOdooUrl(baseUrl.value)}/json/2/${model}/${method}`
+      const res = await fetch(url, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${apiKey.value}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(body),
+        signal: controller.signal
+      })
+
+      const contentType = res.headers.get('content-type') || ''
+      let data: any
+      if (contentType.includes('application/json')) {
+        data = await res.json()
+      } else {
+        const text = await res.text()
+        data = { _raw: text.slice(0, 500), _note: 'Non-JSON response' }
+      }
+
+      return { ok: res.ok, status: res.status, data }
+    }
+  } finally {
+    clearTimeout(timeoutId)
+  }
 }
 
 async function testConnection() {
@@ -276,33 +325,35 @@ async function testConnection() {
   try {
     const start = performance.now()
 
-    const res = await callOdooApi('res.users', 'search_read', {
+    const result = await callOdooApi('res.users', 'search_read', {
       domain: [["id", "=", 1]],
       fields: ["name"],
       limit: 1
     })
 
-    const elapsed = performance.now() - start
+    const elapsed = result.time || Math.round(performance.now() - start)
 
-    if (res.ok) {
+    if (result.ok) {
       connectionStatus.value = 'success'
       isConnected.value = true
-      responseTime.value = Math.round(elapsed)
+      responseTime.value = elapsed
     } else {
       connectionStatus.value = 'error'
-      const data = await res.json().catch(() => ({}))
-      error.value = data.message || `HTTP ${res.status}`
+      error.value = result.data?.message || result.data?.error || `HTTP ${result.status}`
       isConnected.value = false
     }
   } catch (e: any) {
     connectionStatus.value = 'error'
-    // Detect CORS error
-    if (e.message?.includes('fetch') || e.name === 'TypeError') {
-      error.value = 'CORS blocked - enable a CORS extension or check the setup guide below'
+    isConnected.value = false
+
+    // Handle specific error types
+    if (e.name === 'AbortError') {
+      error.value = 'Request timed out. Check your Odoo URL and try again.'
+    } else if (!useProxy.value && (e.message?.includes('fetch') || e.name === 'TypeError')) {
+      error.value = 'CORS blocked - enable proxy mode or use a CORS extension'
     } else {
       error.value = e.message || 'Connection failed'
     }
-    isConnected.value = false
   }
 }
 
@@ -313,12 +364,12 @@ async function executeRequest() {
   }
 
   // Validate model and method
-  if (!model.value || !model.value.includes('.')) {
-    error.value = 'Invalid model format. Use format: module.model (e.g., res.partner)'
+  if (!model.value || !/^[a-z_]+(\.[a-z_]+)+$/.test(model.value)) {
+    error.value = 'Invalid model format. Use: module.model (e.g., res.partner)'
     return
   }
-  if (!method.value || !/^[a-zA-Z_][a-zA-Z0-9_]*$/.test(method.value)) {
-    error.value = 'Invalid method name'
+  if (!method.value || !/^[a-zA-Z][a-zA-Z0-9_]*$/.test(method.value)) {
+    error.value = 'Invalid method. Must start with a letter (no underscore prefix).'
     return
   }
 
@@ -336,27 +387,17 @@ async function executeRequest() {
       throw new Error('Invalid JSON in request body')
     }
 
-    // Call Odoo API directly
-    const res = await callOdooApi(model.value, method.value, body)
+    // Call Odoo API
+    const result = await callOdooApi(model.value, method.value, body)
 
-    const elapsed = Math.round(performance.now() - start)
+    const elapsed = result.time || Math.round(performance.now() - start)
     responseTime.value = elapsed
-    responseStatus.value = res.status
-
-    // Parse response
-    const contentType = res.headers.get('content-type') || ''
-    let data: any
-    if (contentType.includes('application/json')) {
-      data = await res.json()
-    } else {
-      const text = await res.text()
-      data = { _raw_response: text.slice(0, 500), _note: 'Response was not JSON' }
-    }
-    response.value = data
+    responseStatus.value = result.status
+    response.value = result.data
 
     // Update stats
     stats.value.calls++
-    if (res.ok) {
+    if (result.ok) {
       stats.value.successful++
       if (stats.value.fastest === 0 || elapsed < stats.value.fastest) {
         stats.value.fastest = elapsed
@@ -368,7 +409,7 @@ async function executeRequest() {
       id: Date.now(),
       model: model.value,
       method: method.value,
-      status: res.status,
+      status: result.status,
       time: elapsed,
       timestamp: new Date()
     })
@@ -377,7 +418,11 @@ async function executeRequest() {
     if (history.value.length > 10) history.value.pop()
 
   } catch (e: any) {
-    error.value = e.message || 'Request failed'
+    if (e.name === 'AbortError') {
+      error.value = 'Request timed out after 30 seconds'
+    } else {
+      error.value = e.message || 'Request failed'
+    }
     responseStatus.value = 0
   } finally {
     isLoading.value = false
@@ -408,6 +453,7 @@ function disconnect() {
   if (typeof window !== 'undefined') {
     sessionStorage.removeItem('odoo_playground_key')
     sessionStorage.removeItem('odoo_playground_url')
+    // Keep proxy preference - user might want to reconnect with same mode
   }
   apiKey.value = ''
   baseUrl.value = ''
@@ -485,6 +531,17 @@ function disconnect() {
           </div>
         </div>
 
+        <div class="proxy-toggle">
+          <label class="toggle-label">
+            <input type="checkbox" v-model="useProxy" class="toggle-input" />
+            <span class="toggle-switch"></span>
+            <span class="toggle-text">
+              <strong>{{ useProxy ? 'Proxy Mode' : 'Direct Mode' }}</strong>
+              <span class="toggle-hint">{{ useProxy ? '(Works with Odoo.com)' : '(Requires CORS)' }}</span>
+            </span>
+          </label>
+        </div>
+
         <button
           type="submit"
           class="test-connection-btn"
@@ -497,24 +554,22 @@ function disconnect() {
           <span v-else>Test Connection</span>
         </button>
 
-        <div class="cors-setup">
-          <details>
-            <summary><strong>⚠️ CORS Setup Required</strong> (click to expand)</summary>
-            <div class="cors-content">
-              <p>Browser security blocks cross-origin API calls. Choose one option:</p>
-              <p><strong>Option 1: Browser Extension</strong> (quickest for testing)</p>
-              <ul>
-                <li>Install <a href="https://chrome.google.com/webstore/detail/cors-unblock/lfhmikememgdcahcdlaciloancbhjino" target="_blank">CORS Unblock</a> (Chrome) or similar</li>
-                <li>Enable it for your Odoo domain only</li>
-              </ul>
-              <p><strong>Option 2: Odoo Server Config</strong> (for production)</p>
-              <ul>
-                <li>Add CORS headers in nginx/Apache config</li>
-                <li>Or use Odoo's web.cors module</li>
-              </ul>
+        <div class="connection-info">
+          <div v-if="useProxy" class="info-box proxy-info">
+            <span class="info-icon">🔄</span>
+            <div>
+              <strong>Proxy Mode</strong> - Requests go through our server to bypass CORS.
+              <br><small>Works with Odoo.com sandboxes and any Odoo instance.</small>
             </div>
-          </details>
-          <p class="security-note">🔒 Your API key stays in your browser and goes directly to your Odoo instance.</p>
+          </div>
+          <div v-else class="info-box direct-info">
+            <span class="info-icon">⚡</span>
+            <div>
+              <strong>Direct Mode</strong> - Requests go straight to your Odoo.
+              <br><small>Requires CORS extension or server configuration.</small>
+            </div>
+          </div>
+          <p class="security-note">🔒 Your API key is sent {{ useProxy ? 'through our proxy' : 'directly' }} to your Odoo instance.</p>
         </div>
       </form>
     </div>
@@ -662,8 +717,8 @@ function disconnect() {
         <h3>Connect to Start Testing</h3>
         <p>Enter your Odoo URL and API key above to start making API calls.</p>
         <div class="security-note">
-          <strong>🛡️ Security:</strong> Your credentials are stored only in your browser's session
-          and are sent directly to your Odoo instance. We never see or store your API keys.
+          <strong>🛡️ Security:</strong> Your credentials are stored only in your browser's session.
+          In proxy mode, requests go through our server to your Odoo. API keys are not stored.
         </div>
       </div>
     </div>
@@ -858,6 +913,95 @@ function disconnect() {
   opacity: 1;
 }
 
+/* Proxy Toggle */
+.proxy-toggle {
+  margin-bottom: 0.5rem;
+}
+
+.toggle-label {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  cursor: pointer;
+}
+
+.toggle-input {
+  display: none;
+}
+
+.toggle-switch {
+  position: relative;
+  width: 44px;
+  height: 24px;
+  background: var(--vp-c-border);
+  border-radius: 12px;
+  transition: background 0.2s;
+}
+
+.toggle-switch::after {
+  content: '';
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 20px;
+  height: 20px;
+  background: white;
+  border-radius: 50%;
+  transition: transform 0.2s;
+}
+
+.toggle-input:checked + .toggle-switch {
+  background: var(--vp-c-brand-1);
+}
+
+.toggle-input:checked + .toggle-switch::after {
+  transform: translateX(20px);
+}
+
+.toggle-text {
+  display: flex;
+  flex-direction: column;
+  font-size: 0.85rem;
+}
+
+.toggle-hint {
+  font-size: 0.75rem;
+  color: var(--vp-c-text-3);
+}
+
+/* Connection Info */
+.connection-info {
+  margin-top: 0.75rem;
+}
+
+.info-box {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  padding: 0.75rem;
+  border-radius: 8px;
+  font-size: 0.85rem;
+  line-height: 1.4;
+}
+
+.info-box small {
+  color: var(--vp-c-text-3);
+}
+
+.proxy-info {
+  background: rgba(99, 102, 241, 0.1);
+  border: 1px solid rgba(99, 102, 241, 0.2);
+}
+
+.direct-info {
+  background: rgba(251, 191, 36, 0.1);
+  border: 1px solid rgba(251, 191, 36, 0.2);
+}
+
+.info-icon {
+  font-size: 1.25rem;
+}
+
 .test-connection-btn {
   padding: 0.75rem 1.5rem;
   background: var(--vp-c-brand-1);
@@ -890,46 +1034,8 @@ function disconnect() {
   background: #ef4444;
 }
 
-.cors-setup {
-  font-size: 0.85rem;
-  background: var(--vp-c-bg);
-  border-radius: 8px;
-  border: 1px solid var(--vp-c-border);
-}
-
-.cors-setup summary {
-  padding: 0.75rem;
-  cursor: pointer;
-  background: rgba(251, 191, 36, 0.1);
-  border-radius: 8px;
-  border-left: 3px solid #fbbf24;
-}
-
-.cors-setup details[open] summary {
-  border-radius: 8px 8px 0 0;
-}
-
-.cors-content {
-  padding: 0.75rem;
-  font-size: 0.8rem;
-  line-height: 1.5;
-}
-
-.cors-content p {
-  margin: 0.5rem 0;
-}
-
-.cors-content ul {
-  margin: 0.25rem 0 0.5rem 1.25rem;
-  padding: 0;
-}
-
-.cors-content a {
-  color: var(--vp-c-brand-1);
-}
-
-.security-note {
-  margin: 0.5rem 0.75rem 0.75rem;
+.connection-info .security-note {
+  margin: 0.5rem 0 0;
   padding: 0.5rem;
   font-size: 0.75rem;
   color: var(--vp-c-text-2);
