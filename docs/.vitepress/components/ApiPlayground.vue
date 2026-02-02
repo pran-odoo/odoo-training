@@ -240,13 +240,27 @@ function selectTemplate(template: typeof templates.partners[0]) {
   requestBody.value = JSON.stringify(template.body, null, 2)
 }
 
+// Normalize Odoo URL: strip trailing paths like /web, /odoo, /web/login, etc.
+function normalizeOdooUrl(url: string): string {
+  let normalized = url.trim().replace(/\/+$/, '') // Remove trailing slashes
+  // Strip common Odoo paths that users might accidentally include
+  const pathsToStrip = ['/web/login', '/web', '/odoo', '/jsonrpc', '/xmlrpc']
+  for (const path of pathsToStrip) {
+    if (normalized.endsWith(path)) {
+      normalized = normalized.slice(0, -path.length)
+    }
+  }
+  return normalized
+}
+
 async function testConnection() {
   if (!baseUrl.value || !apiKey.value) return
 
   connectionStatus.value = 'testing'
 
   try {
-    const url = `${baseUrl.value.replace(/\/$/, '')}/json/2/res.users/search_read`
+    const normalizedUrl = normalizeOdooUrl(baseUrl.value)
+    const url = `${normalizedUrl}/json/2/res.users/search_read`
     const start = performance.now()
 
     const res = await fetch(url, {
@@ -307,7 +321,8 @@ async function executeRequest() {
     // Sanitize model/method to prevent path traversal
     const safeModel = model.value.replace(/[^a-zA-Z0-9_.]/g, '')
     const safeMethod = method.value.replace(/[^a-zA-Z0-9_]/g, '')
-    const url = `${baseUrl.value.replace(/\/$/, '')}/json/2/${safeModel}/${safeMethod}`
+    const normalizedUrl = normalizeOdooUrl(baseUrl.value)
+    const url = `${normalizedUrl}/json/2/${safeModel}/${safeMethod}`
 
     const res = await fetch(url, {
       method: 'POST',
@@ -430,37 +445,42 @@ function disconnect() {
         <button v-if="isConnected" class="disconnect-btn" @click="disconnect">Disconnect</button>
       </div>
 
-      <div class="connection-form" v-if="!isConnected">
+      <form class="connection-form" v-if="!isConnected" @submit.prevent="testConnection" autocomplete="on">
         <div class="form-row">
-          <label class="form-label">Odoo URL</label>
+          <label class="form-label" for="odoo-url">Odoo URL</label>
           <input
+            id="odoo-url"
             v-model="baseUrl"
             type="url"
             class="form-input"
             placeholder="https://your-odoo.com"
+            autocomplete="url"
           />
+          <span class="form-hint">Just the domain, no /web or /odoo path</span>
         </div>
 
         <div class="form-row">
-          <label class="form-label">API Key</label>
+          <label class="form-label" for="api-key">API Key</label>
           <div class="input-with-toggle">
             <input
+              id="api-key"
               v-model="apiKey"
               :type="showApiKey ? 'text' : 'password'"
               class="form-input"
               placeholder="odoo_api_xxxxxxxx..."
+              autocomplete="current-password"
             />
-            <button class="toggle-visibility" @click="showApiKey = !showApiKey">
+            <button type="button" class="toggle-visibility" @click="showApiKey = !showApiKey">
               {{ showApiKey ? '🙈' : '👁️' }}
             </button>
           </div>
         </div>
 
         <button
+          type="submit"
           class="test-connection-btn"
           :class="connectionStatus"
           :disabled="!baseUrl || !apiKey || connectionStatus === 'testing'"
-          @click="testConnection"
         >
           <span v-if="connectionStatus === 'testing'" class="spinner"></span>
           <span v-else-if="connectionStatus === 'success'">✓ Connected</span>
@@ -469,10 +489,10 @@ function disconnect() {
         </button>
 
         <div class="cors-warning">
-          <strong>Note:</strong> Your Odoo instance must allow CORS from this domain,
-          or use a browser extension to bypass CORS for testing.
+          <strong>⚠️ CORS Required:</strong> Browser security blocks cross-origin requests.
+          Use a CORS browser extension (e.g., "CORS Unblock") or configure your Odoo server.
         </div>
-      </div>
+      </form>
     </div>
 
     <!-- Main Content -->
@@ -752,6 +772,12 @@ function disconnect() {
   font-size: 0.85rem;
   font-weight: 500;
   color: var(--vp-c-text-2);
+}
+
+.form-hint {
+  font-size: 0.75rem;
+  color: var(--vp-c-text-3);
+  margin-top: 0.25rem;
 }
 
 .form-input {
