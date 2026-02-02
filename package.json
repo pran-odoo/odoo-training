@@ -37,6 +37,10 @@
     "three": "^0.182.0"
   },
   "overrides": {
-    "sourcemap-codec": "npm:@jridgewell/sourcemap-codec@^1.5.0"
+    "sourcemap-codec": "npm:@jridgewell/sourcemap-codec@^1.5.0",
+    "path-to-regexp": "^8.0.0",
+    "undici": "^7.0.0",
+    "tar": "^7.0.0",
+    "esbuild": "^0.25.0"
   }
 }
