@@ -540,6 +540,366 @@ partners = response.json()
 | Custom BI dashboard | JSON/2 API | Dashboard pulls data on demand |
 | Middleware syncing two systems | JSON/2 API | Full control over sync logic |
 
+## Real-World Use Cases
+
+These examples show complete business operations you can perform via API **without any custom Odoo development**.
+
+### Use Case 1: Create a Sale Order with Lines
+
+Create a complete quotation with multiple product lines from an external system (e-commerce, mobile app, etc.):
+
+```http
+POST /json/2/sale.order/create
+Authorization: Bearer your-api-key
+Content-Type: application/json
+
+{
+  "vals_list": {
+    "partner_id": 15,
+    "partner_invoice_id": 15,
+    "partner_shipping_id": 16,
+    "date_order": "2024-01-15 10:30:00",
+    "client_order_ref": "ECOM-2024-0042",
+    "note": "Please deliver before noon",
+    "order_line": [
+      [0, 0, {
+        "product_id": 25,
+        "product_uom_qty": 2,
+        "price_unit": 99.99,
+        "discount": 10.0
+      }],
+      [0, 0, {
+        "product_id": 31,
+        "product_uom_qty": 1,
+        "price_unit": 249.00
+      }],
+      [0, 0, {
+        "product_id": 42,
+        "name": "Custom engraving service",
+        "product_uom_qty": 1,
+        "price_unit": 25.00
+      }]
+    ]
+  }
+}
+```
+
+**Response:** `42` (the new sale order ID)
+
+::: info Relationship Commands
+The `[0, 0, {...}]` syntax creates new related records. This is the ORM command format:
+- `[0, 0, {values}]` - Create a new record
+- `[1, id, {values}]` - Update existing record with ID
+- `[2, id]` - Delete the record
+- `[3, id]` - Unlink (remove from relation, don't delete)
+- `[4, id]` - Link existing record
+- `[6, 0, [ids]]` - Replace all with these IDs
+:::
+
+### Use Case 2: Complete Sales Workflow
+
+Process a quote through the entire sales cycle:
+
+**Step 1: Confirm the Quotation → Sales Order**
+```http
+POST /json/2/sale.order/action_confirm
+Authorization: Bearer your-api-key
+Content-Type: application/json
+
+{
+  "ids": [42]
+}
+```
+
+**Step 2: Check Delivery Status**
+```http
+POST /json/2/stock.picking/search_read
+Authorization: Bearer your-api-key
+Content-Type: application/json
+
+{
+  "domain": [["sale_id", "=", 42]],
+  "fields": ["name", "state", "scheduled_date", "move_ids_without_package"]
+}
+```
+
+**Step 3: Create Invoice from Sales Order**
+
+Use the invoicing wizard to create an invoice:
+```http
+POST /json/2/sale.advance.payment.inv/create
+Authorization: Bearer your-api-key
+Content-Type: application/json
+
+{
+  "vals_list": {
+    "advance_payment_method": "delivered"
+  },
+  "context": {
+    "active_ids": [42],
+    "active_model": "sale.order"
+  }
+}
+```
+
+Then call the wizard's action:
+```http
+POST /json/2/sale.advance.payment.inv/create_invoices
+Authorization: Bearer your-api-key
+Content-Type: application/json
+
+{
+  "ids": [1],
+  "context": {
+    "active_ids": [42],
+    "active_model": "sale.order"
+  }
+}
+```
+
+**Step 4: Post the Invoice**
+```http
+POST /json/2/account.move/action_post
+Authorization: Bearer your-api-key
+Content-Type: application/json
+
+{
+  "ids": [15]
+}
+```
+
+### Use Case 3: Create a Customer Invoice Directly
+
+Create an invoice without a sales order (service billing, manual invoice):
+
+```http
+POST /json/2/account.move/create
+Authorization: Bearer your-api-key
+Content-Type: application/json
+
+{
+  "vals_list": {
+    "move_type": "out_invoice",
+    "partner_id": 15,
+    "invoice_date": "2024-01-15",
+    "invoice_date_due": "2024-02-15",
+    "ref": "Consulting Services - January 2024",
+    "invoice_line_ids": [
+      [0, 0, {
+        "name": "Strategy Consulting - 40 hours",
+        "quantity": 40,
+        "price_unit": 150.00
+      }],
+      [0, 0, {
+        "name": "Technical Implementation",
+        "quantity": 1,
+        "price_unit": 2500.00
+      }],
+      [0, 0, {
+        "name": "Travel Expenses",
+        "quantity": 1,
+        "price_unit": 450.00
+      }]
+    ]
+  }
+}
+```
+
+### Use Case 4: Register a Payment
+
+Record a customer payment against an invoice:
+
+```http
+POST /json/2/account.payment.register/create
+Authorization: Bearer your-api-key
+Content-Type: application/json
+
+{
+  "vals_list": {
+    "payment_date": "2024-01-20",
+    "amount": 8450.00,
+    "journal_id": 7
+  },
+  "context": {
+    "active_model": "account.move",
+    "active_ids": [15]
+  }
+}
+```
+
+Then execute the payment:
+```http
+POST /json/2/account.payment.register/action_create_payments
+Authorization: Bearer your-api-key
+Content-Type: application/json
+
+{
+  "ids": [1],
+  "context": {
+    "active_model": "account.move",
+    "active_ids": [15]
+  }
+}
+```
+
+### Use Case 5: Update Inventory Quantities
+
+Adjust stock levels (e.g., after physical count):
+
+**Step 1: Find the Quant**
+```http
+POST /json/2/stock.quant/search_read
+Authorization: Bearer your-api-key
+Content-Type: application/json
+
+{
+  "domain": [
+    ["product_id", "=", 25],
+    ["location_id", "=", 8]
+  ],
+  "fields": ["id", "quantity", "inventory_quantity"]
+}
+```
+
+**Step 2: Set the Inventory Quantity**
+```http
+POST /json/2/stock.quant/write
+Authorization: Bearer your-api-key
+Content-Type: application/json
+
+{
+  "ids": [123],
+  "vals": {
+    "inventory_quantity": 50
+  }
+}
+```
+
+**Step 3: Apply the Adjustment**
+```http
+POST /json/2/stock.quant/action_apply_inventory
+Authorization: Bearer your-api-key
+Content-Type: application/json
+
+{
+  "ids": [123]
+}
+```
+
+### Use Case 6: Create a Purchase Order
+
+Order products from a supplier:
+
+```http
+POST /json/2/purchase.order/create
+Authorization: Bearer your-api-key
+Content-Type: application/json
+
+{
+  "vals_list": {
+    "partner_id": 8,
+    "date_order": "2024-01-15",
+    "date_planned": "2024-01-25",
+    "order_line": [
+      [0, 0, {
+        "product_id": 25,
+        "name": "Raw Material A",
+        "product_qty": 100,
+        "price_unit": 12.50
+      }],
+      [0, 0, {
+        "product_id": 26,
+        "name": "Raw Material B",
+        "product_qty": 50,
+        "price_unit": 8.00
+      }]
+    ]
+  }
+}
+```
+
+Confirm the purchase:
+```http
+POST /json/2/purchase.order/button_confirm
+Authorization: Bearer your-api-key
+Content-Type: application/json
+
+{
+  "ids": [10]
+}
+```
+
+### Use Case 7: Search with Complex Filters
+
+Find all draft sales orders over $1,000 from this month:
+
+```http
+POST /json/2/sale.order/search_read
+Authorization: Bearer your-api-key
+Content-Type: application/json
+
+{
+  "domain": [
+    ["state", "=", "draft"],
+    ["amount_total", ">=", 1000],
+    ["date_order", ">=", "2024-01-01"],
+    ["date_order", "<", "2024-02-01"]
+  ],
+  "fields": ["name", "partner_id", "amount_total", "date_order", "user_id"],
+  "order": "amount_total desc",
+  "limit": 50
+}
+```
+
+::: tip Domain Operators
+Available operators: `=`, `!=`, `>`, `>=`, `<`, `<=`, `in`, `not in`, `like`, `ilike`, `=like`, `=ilike`, `any`, `not any`
+
+Combine with `&` (AND), `|` (OR), `!` (NOT) in Polish notation:
+```json
+["|", ["state", "=", "draft"], ["state", "=", "sent"]]
+```
+:::
+
+### Use Case 8: Sync Customer Data
+
+Keep your CRM synchronized with Odoo:
+
+**Upsert Pattern (Create or Update):**
+```python
+import requests
+
+def sync_customer(external_id, customer_data):
+    """Sync a customer from external system to Odoo"""
+
+    # Search for existing customer by external reference
+    existing = odoo_api("res.partner", "search_read",
+        domain=[["ref", "=", external_id]],
+        fields=["id"],
+        limit=1
+    )
+
+    vals = {
+        "name": customer_data["name"],
+        "email": customer_data["email"],
+        "phone": customer_data["phone"],
+        "street": customer_data["address"],
+        "city": customer_data["city"],
+        "ref": external_id,  # Store external ID for future syncs
+        "customer_rank": 1,
+    }
+
+    if existing:
+        # Update existing
+        odoo_api("res.partner", "write",
+            ids=[existing[0]["id"]],
+            vals=vals
+        )
+        return existing[0]["id"]
+    else:
+        # Create new
+        return odoo_api("res.partner", "create", vals_list=vals)
+```
+
 ## Performance Considerations
 
 ### No Built-in Rate Limiting
