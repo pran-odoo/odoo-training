@@ -482,7 +482,7 @@ async function callOdooApi(model: string, method: string, body: any = {}): Promi
       return {
         ok: result._status >= 200 && result._status < 300,
         status: result._status || res.status,
-        data: result.data || { error: 'Unexpected response format' },
+        data: result.data !== undefined ? result.data : { error: 'Unexpected response format' },
         time: result._time
       }
     } else {
@@ -570,24 +570,47 @@ async function testConnection() {
 
 // Check if database is neutralized (sandbox mode)
 async function checkNeutralized() {
+  // Method 1: Try get_param (requires admin access to ir.config_parameter)
   try {
     const result = await callOdooApi('ir.config_parameter', 'get_param', {
       key: 'database.is_neutralized'
     })
 
     if (result.ok) {
-      // The value could be 'True', true, or '1' depending on Odoo version
+      // Odoo get_param returns 'True' (string) for neutralized, False (boolean→false) otherwise
       const value = result.data
       const isSandbox = value === true || value === 'True' || value === '1'
-      isNeutralized.value = isSandbox // true = sandbox, false = production
-    } else {
-      // API call succeeded but returned error - likely no access, keep as null
-      isNeutralized.value = null
+      isNeutralized.value = isSandbox
+      return
     }
   } catch {
-    // Silently ignore - user might not have access to ir.config_parameter
-    isNeutralized.value = null
+    // Silently continue to fallback
   }
+
+  // Method 2: Fallback - search ir.config_parameter directly
+  try {
+    const result = await callOdooApi('ir.config_parameter', 'search_read', {
+      domain: [['key', '=', 'database.is_neutralized']],
+      fields: ['value'],
+      limit: 1
+    })
+
+    if (result.ok && Array.isArray(result.data)) {
+      if (result.data.length > 0) {
+        const val = result.data[0].value
+        isNeutralized.value = val === 'True' || val === '1' || val === true
+      } else {
+        // Parameter doesn't exist → not neutralized (production)
+        isNeutralized.value = false
+      }
+      return
+    }
+  } catch {
+    // Silently continue
+  }
+
+  // Both methods failed - user likely doesn't have access to ir.config_parameter
+  isNeutralized.value = null
 }
 
 function getRandomLoadingMessage(): string {
