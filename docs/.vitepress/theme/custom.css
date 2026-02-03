@@ -1435,6 +1435,16 @@ kbd {
   display: none !important;
 }
 
+/* Hide default appearance toggle - NavDock handles theme switching */
+.VPNavBarAppearance {
+  display: none !important;
+}
+
+/* Hide default social links - NavDock has GitHub button */
+.VPNavBarSocialLinks {
+  display: none !important;
+}
+
 /* Give dock proper spacing in navbar */
 .VPNavBarExtra {
   margin-left: 8px;
@@ -1451,8 +1461,12 @@ kbd {
     display: none !important;
   }
 
-  /* Restore default menu on mobile */
+  /* Restore default nav items on mobile since NavDock is hidden */
   .VPNavBar .VPNavBarMenu {
+    display: flex !important;
+  }
+
+  .VPNavBarAppearance {
     display: flex !important;
   }
 }

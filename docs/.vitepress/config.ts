@@ -113,10 +113,6 @@ export default withPwa(defineConfig({
       }
     ],
 
-    socialLinks: [
-      { icon: 'github', link: 'https://github.com/pran-odoo/odoo-training' }
-    ],
-
     search: {
       provider: 'local',
       options: {
