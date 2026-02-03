@@ -70,8 +70,7 @@ const features: Feature[] = [
 }
 
 .feature-card {
-  background: rgba(15, 15, 20, 0.8);
-  backdrop-filter: blur(12px);
+  background: #111115;
   padding: 28px 24px;
   height: 100%;
   display: flex;

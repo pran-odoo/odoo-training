@@ -812,11 +812,9 @@ body {
   z-index: 1;
 }
 
-/* Feature cards - glass effect */
+/* Feature cards - solid dark background for contrast compliance */
 .VPFeature {
-  background: rgba(10, 10, 15, 0.7) !important;
-  backdrop-filter: blur(12px) saturate(150%) !important;
-  -webkit-backdrop-filter: blur(12px) saturate(150%) !important;
+  background: #111115 !important;
   border: 1px solid rgba(255, 255, 255, 0.1) !important;
   border-radius: var(--radius-lg) !important;
   transition: all var(--duration-normal) var(--ease-out-expo) !important;
@@ -832,7 +830,7 @@ body {
   transform: translateY(-4px) !important;
   box-shadow: var(--shadow-lg) !important;
   border-color: var(--vp-c-brand-1) !important;
-  background: rgba(10, 10, 15, 0.85) !important;
+  background: #161620 !important;
 }
 
 :root:not(.dark) .VPFeature:hover {
@@ -848,11 +846,9 @@ body {
   color: var(--vp-c-text-2) !important;
 }
 
-/* Home page markdown content - glass card */
+/* Home page markdown content - solid dark card for contrast compliance */
 .VPHome .vp-doc {
-  background: rgba(10, 10, 15, 0.7) !important;
-  backdrop-filter: blur(12px) !important;
-  -webkit-backdrop-filter: blur(12px) !important;
+  background: #0D0D12 !important;
   border-radius: var(--radius-lg);
   padding: 2rem !important;
   margin: 2rem auto !important;
@@ -870,12 +866,10 @@ body {
   z-index: 10 !important;
 }
 
-/* Custom footer on home page - glass effect */
+/* Custom footer on home page */
 .VPContent.is-home ~ .custom-footer,
 .is-home .custom-footer {
-  background: rgba(10, 10, 15, 0.8) !important;
-  backdrop-filter: blur(12px) saturate(150%) !important;
-  -webkit-backdrop-filter: blur(12px) saturate(150%) !important;
+  background: #111115 !important;
   border-top: 1px solid rgba(255, 255, 255, 0.1) !important;
   position: relative;
   z-index: 1;
