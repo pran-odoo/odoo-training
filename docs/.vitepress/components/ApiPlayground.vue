@@ -101,12 +101,39 @@ const domainOperators = [
   { value: 'not in', label: 'not in list' }
 ]
 
-// Popular Odoo models
-const popularModels = [
-  'res.partner', 'res.users', 'product.product', 'product.template',
-  'sale.order', 'sale.order.line', 'purchase.order', 'account.move',
-  'stock.picking', 'stock.quant', 'crm.lead', 'project.project', 'project.task'
-]
+// Popular Odoo models with verified fields per model
+const modelFieldMap: Record<string, { defaults: string[]; quick: string[] }> = {
+  'res.partner':       { defaults: ['name', 'email'],           quick: ['id', 'name', 'email', 'phone', 'is_company', 'active'] },
+  'res.users':         { defaults: ['name', 'login'],           quick: ['id', 'name', 'login', 'partner_id', 'active'] },
+  'product.product':   { defaults: ['name', 'list_price'],      quick: ['id', 'name', 'default_code', 'list_price', 'active'] },
+  'product.template':  { defaults: ['name', 'list_price'],      quick: ['id', 'name', 'list_price', 'categ_id', 'active'] },
+  'sale.order':        { defaults: ['name', 'partner_id', 'amount_total', 'state'], quick: ['id', 'name', 'partner_id', 'state', 'amount_total'] },
+  'sale.order.line':   { defaults: ['order_id', 'product_id', 'product_uom_qty', 'price_subtotal'], quick: ['id', 'order_id', 'product_id', 'product_uom_qty', 'price_unit'] },
+  'purchase.order':    { defaults: ['name', 'partner_id', 'amount_total', 'state'], quick: ['id', 'name', 'partner_id', 'state', 'amount_total'] },
+  'account.move':      { defaults: ['name', 'partner_id', 'amount_total', 'payment_state'], quick: ['id', 'name', 'partner_id', 'move_type', 'state'] },
+  'stock.picking':     { defaults: ['name', 'state', 'partner_id'], quick: ['id', 'name', 'state', 'location_id', 'location_dest_id'] },
+  'stock.quant':       { defaults: ['product_id', 'location_id', 'quantity'], quick: ['id', 'product_id', 'location_id', 'quantity', 'lot_id'] },
+  'crm.lead':          { defaults: ['name', 'partner_id', 'stage_id'], quick: ['id', 'name', 'partner_id', 'stage_id', 'expected_revenue', 'active'] },
+  'project.project':   { defaults: ['name', 'partner_id'],      quick: ['id', 'name', 'partner_id', 'user_id', 'active'] },
+  'project.task':      { defaults: ['name', 'project_id', 'stage_id'], quick: ['id', 'name', 'project_id', 'stage_id', 'user_ids', 'active'] }
+}
+
+const popularModels = Object.keys(modelFieldMap)
+
+// Get verified quick-field suggestions for the current model
+const currentQuickFields = computed(() => {
+  const mapping = modelFieldMap[customModel.value]
+  return mapping ? mapping.quick : ['id', 'name', 'create_date', 'write_date']
+})
+
+// Reset fields to verified defaults when model changes
+watch(customModel, (newModel) => {
+  const mapping = modelFieldMap[newModel]
+  if (mapping) {
+    customFields.value = [...mapping.defaults]
+  }
+  customDomain.value = []
+})
 
 // Templates organized by category
 const templates = {
@@ -416,9 +443,11 @@ function applyCustomBuilder() {
 }
 
 function addDomainFilter() {
+  const mapping = modelFieldMap[customModel.value]
+  const defaultField = mapping ? mapping.defaults[0] : 'name'
   customDomain.value.push({
     id: ++domainFilterId,
-    field: 'name',
+    field: defaultField,
     operator: 'ilike',
     value: ''
   })
@@ -1148,7 +1177,7 @@ function disconnect() {
                 </div>
                 <div class="quick-fields">
                   <button
-                    v-for="f in ['id', 'name', 'create_date', 'write_date', 'active']"
+                    v-for="f in currentQuickFields"
                     :key="f"
                     type="button"
                     class="quick-field-btn"
