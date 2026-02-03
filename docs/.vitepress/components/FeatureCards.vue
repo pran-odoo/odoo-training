@@ -11,26 +11,26 @@ interface Feature {
 const features: Feature[] = [
   {
     icon: '📚',
-    title: '29 In-Depth Sections',
-    details: 'From models and fields to AI features and Enterprise modules',
+    title: '30+ In-Depth Sections',
+    details: 'Models, views, security, workflows, APIs, AI, EDI, Studio, and more',
     color: '#7df9ff' // cyan
   },
   {
-    icon: '🎯',
-    title: 'Real-World Examples',
-    details: 'Practical scenarios from actual Odoo implementations',
+    icon: '🔌',
+    title: 'Live API Playground',
+    details: 'Test Odoo JSON/2 API calls in your browser with real responses',
     color: '#ff6b6b' // coral
   },
   {
-    icon: '🧪',
-    title: 'Interactive Quizzes',
-    details: 'Test your knowledge with built-in assessments',
+    icon: '🎯',
+    title: 'Odoo 19 Focused',
+    details: 'Covers JSON/2 API, AI agents, webhooks, and the latest features',
     color: '#9b59b6' // purple
   },
   {
     icon: '📱',
     title: 'Works Offline',
-    details: 'Install as a PWA for offline access anywhere',
+    details: 'Install as a PWA — read on the go, even without internet',
     color: '#2ecc71' // green
   }
 ]

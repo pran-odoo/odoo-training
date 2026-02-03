@@ -79,6 +79,7 @@ export default withPwa(defineConfig({
         text: 'Advanced',
         items: [
           { text: '15. Integration', link: '/15-integration' },
+          { text: 'API Playground', link: '/api-playground' },
           { text: '16. Odoo Studio', link: '/16-studio' },
           { text: '17. Performance', link: '/17-performance' },
           { text: '18. Decision Matrix', link: '/18-decision-matrix' },

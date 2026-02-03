@@ -2,12 +2,16 @@
 layout: home
 
 hero:
-  name: "Odoo Functional Training"
-  tagline: Free, comprehensive training for functional consultants
+  name: "Odoo 19 Training"
+  text: "For Functional Consultants"
+  tagline: Free, comprehensive guide covering models, views, security, APIs, AI, and more
   actions:
     - theme: brand
       text: Start Learning
       link: /introduction
+    - theme: alt
+      text: API Playground
+      link: /api-playground
     - theme: alt
       text: View on GitHub
       link: https://github.com/pran-odoo/odoo-training
@@ -19,22 +23,32 @@ hero:
 
 <InfiniteMenu />
 
-## Welcome to Odoo Training
+## What's Inside
 
-This guide covers everything a functional consultant needs to know about configuring Odoo 19, from basic concepts to advanced features.
+This guide covers everything a functional consultant needs to configure and integrate Odoo 19 — from core concepts to production-ready API integrations.
 
-### What You'll Learn
+### Core Framework
 
-- **Core Concepts**: Models, fields, relationships, and how data flows in Odoo
-- **Views & UI**: Form, list, kanban views and how to customize them
-- **Security**: Access rights, record rules, and multi-company setups
-- **Automation**: Workflows, actions, and scheduled tasks
-- **Integration**: APIs, EDI, and connecting external systems
-- **AI Features**: New in Odoo 19 - AI agents, document digitization, and more
-- **Enterprise Modules**: Databases app for managing client fleets
+- **Models & Fields** — How Odoo structures data: models, field types, relationships, computed fields, and storage
+- **Views & UI** — Form, list, kanban, calendar, pivot views, widgets, and domain filters
+- **Security** — Access rights, record rules, field-level access, and multi-company setups
+- **Workflows & Automation** — Status bars, automated actions, scheduled tasks, and server actions
 
-### Getting Started
+### Integration & APIs
 
-Press <kbd>Ctrl</kbd>+<kbd>K</kbd> to open the command palette and navigate quickly.
+- **JSON/2 API** — Odoo 19's modern RESTful API: authentication, CRUD operations, domains, and error handling
+- **API Playground** — [Test API calls live](/api-playground) against your Odoo instance, with pre-built templates and custom queries
+- **Webhooks & EDI** — Outgoing webhooks, electronic data interchange, and B2B document exchange
+- **Legacy APIs** — XML-RPC and JSON-RPC migration guide for existing integrations
 
-Use the ⚙️ button in the navigation bar to customize your reading experience.
+### Advanced Topics
+
+- **Odoo Studio** — No-code customization: when to use it and when to avoid it
+- **Performance** — Optimization strategies, stored vs non-stored fields, and batch operations
+- **AI in Odoo 19** — AI agents, document digitization, predictive analytics
+- **Odoo.sh** — Cloud platform: branches, staging, backups, and deployment
+- **Real-World Examples** — Complete business scenarios from actual implementations
+
+### Quick Navigation
+
+Press <kbd>Ctrl</kbd>+<kbd>K</kbd> to search across all sections. Use the sidebar to browse by topic.
