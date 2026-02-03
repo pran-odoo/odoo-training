@@ -579,8 +579,13 @@ async function checkNeutralized() {
     if (result.ok) {
       // Odoo get_param returns 'True' (string) for neutralized, False (boolean→false) otherwise
       const value = result.data
-      const isSandbox = value === true || value === 'True' || value === '1'
-      isNeutralized.value = isSandbox
+      if (value === true || value === 'True' || value === '1') {
+        isNeutralized.value = true // Confirmed neutralized
+      } else {
+        // Parameter is False or doesn't exist - not neutralized, but could be trial/test
+        // Only flag as production for non-trial domains
+        isNeutralized.value = isLikelyTrialDomain() ? null : false
+      }
       return
     }
   } catch {
@@ -598,10 +603,14 @@ async function checkNeutralized() {
     if (result.ok && Array.isArray(result.data)) {
       if (result.data.length > 0) {
         const val = result.data[0].value
-        isNeutralized.value = val === 'True' || val === '1' || val === true
+        if (val === 'True' || val === '1' || val === true) {
+          isNeutralized.value = true
+        } else {
+          isNeutralized.value = isLikelyTrialDomain() ? null : false
+        }
       } else {
-        // Parameter doesn't exist → not neutralized (production)
-        isNeutralized.value = false
+        // Parameter doesn't exist entirely
+        isNeutralized.value = isLikelyTrialDomain() ? null : false
       }
       return
     }
@@ -609,8 +618,14 @@ async function checkNeutralized() {
     // Silently continue
   }
 
-  // Both methods failed - user likely doesn't have access to ir.config_parameter
+  // Both methods failed - user likely doesn't have access
   isNeutralized.value = null
+}
+
+// Check if the Odoo URL looks like a trial/sandbox domain
+function isLikelyTrialDomain(): boolean {
+  const url = baseUrl.value.toLowerCase()
+  return url.includes('.odoo.com') || url.includes('.runbot') || url.includes('localhost') || url.includes('127.0.0.1')
 }
 
 function getRandomLoadingMessage(): string {
@@ -926,6 +941,7 @@ function disconnect() {
           <span v-if="isConnected && connectedUserName" class="connected-user">as {{ connectedUserName }}</span>
         </span>
         <span v-if="isNeutralized === true" class="neutralized-badge" title="This is a neutralized database (sandbox mode)">🧪 Sandbox</span>
+        <span v-else-if="isConnected && isNeutralized === null && isLikelyTrialDomain()" class="trial-badge" title="Odoo Online trial/demo instance">☁️ Trial</span>
         <span v-else-if="isNeutralized === false" class="production-badge" title="This is a production database - be careful!">⚠️ Production</span>
         <button v-if="isConnected" class="disconnect-btn" @click="disconnect">Disconnect</button>
       </div>
@@ -936,6 +952,15 @@ function disconnect() {
         <div>
           <strong>Sandbox Mode</strong> - This database is neutralized.
           <br><small>Scheduled actions, emails, and webhooks are disabled. Perfect for testing!</small>
+        </div>
+      </div>
+
+      <!-- Trial instance notice -->
+      <div v-if="isConnected && isNeutralized === null && isLikelyTrialDomain()" class="trial-notice">
+        <span class="notice-icon">☁️</span>
+        <div>
+          <strong>Odoo Online Trial</strong>
+          <br><small>This is a shared trial instance. Data may be reset periodically. Safe for testing!</small>
         </div>
       </div>
 
@@ -1879,6 +1904,17 @@ function disconnect() {
   margin-left: 0.5rem;
 }
 
+/* Trial badge */
+.trial-badge {
+  font-size: 0.75rem;
+  padding: 0.2rem 0.5rem;
+  background: linear-gradient(135deg, #6366f1, #8b5cf6);
+  color: white;
+  border-radius: 12px;
+  font-weight: 600;
+  margin-left: 0.5rem;
+}
+
 /* Production badge */
 .production-badge {
   font-size: 0.75rem;
@@ -1898,6 +1934,7 @@ function disconnect() {
 
 /* Environment notices */
 .neutralized-notice,
+.trial-notice,
 .production-warning {
   display: flex;
   align-items: flex-start;
@@ -1912,6 +1949,11 @@ function disconnect() {
 .neutralized-notice {
   background: rgba(16, 185, 129, 0.1);
   border: 1px solid rgba(16, 185, 129, 0.3);
+}
+
+.trial-notice {
+  background: rgba(99, 102, 241, 0.1);
+  border: 1px solid rgba(99, 102, 241, 0.3);
 }
 
 .production-warning {
@@ -1929,6 +1971,7 @@ function disconnect() {
 }
 
 .neutralized-notice small,
+.trial-notice small,
 .production-warning small {
   color: var(--vp-c-text-2);
 }
