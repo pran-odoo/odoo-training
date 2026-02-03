@@ -9,6 +9,8 @@ const isConnected = ref(false)
 const connectionStatus = ref<'idle' | 'testing' | 'success' | 'error'>('idle')
 const copyFeedback = ref('')
 const useProxy = ref(true) // Default to proxy for Odoo.com compatibility
+const isNeutralized = ref<boolean | null>(null) // null = unknown, true = sandbox, false = production
+const connectedUserName = ref('') // Name of connected user
 
 // Request state
 const selectedCategory = ref('partners')
@@ -23,6 +25,7 @@ const response = ref<any>(null)
 const responseTime = ref(0)
 const responseStatus = ref(0)
 const error = ref('')
+const showDebugTraceback = ref(false)
 
 // Fun stuff!
 const showConfetti = ref(false)
@@ -516,10 +519,13 @@ async function testConnection() {
 
   connectionStatus.value = 'testing'
   error.value = ''
+  isNeutralized.value = null // Reset to unknown while testing
+  connectedUserName.value = ''
 
   try {
     const start = performance.now()
 
+    // Test connection by getting current user info
     const result = await callOdooApi('res.users', 'search_read', {
       domain: [["id", "=", 1]],
       fields: ["name"],
@@ -532,6 +538,15 @@ async function testConnection() {
       connectionStatus.value = 'success'
       isConnected.value = true
       responseTime.value = elapsed
+
+      // Store the user name if available
+      if (Array.isArray(result.data) && result.data.length > 0) {
+        connectedUserName.value = result.data[0].name || ''
+      }
+
+      // Check if database is neutralized (in background, don't block connection)
+      checkNeutralized()
+
       triggerConfetti()
     } else {
       connectionStatus.value = 'error'
@@ -550,6 +565,28 @@ async function testConnection() {
     } else {
       error.value = e.message || 'Connection failed'
     }
+  }
+}
+
+// Check if database is neutralized (sandbox mode)
+async function checkNeutralized() {
+  try {
+    const result = await callOdooApi('ir.config_parameter', 'get_param', {
+      key: 'database.is_neutralized'
+    })
+
+    if (result.ok) {
+      // The value could be 'True', true, or '1' depending on Odoo version
+      const value = result.data
+      const isSandbox = value === true || value === 'True' || value === '1'
+      isNeutralized.value = isSandbox // true = sandbox, false = production
+    } else {
+      // API call succeeded but returned error - likely no access, keep as null
+      isNeutralized.value = null
+    }
+  } catch {
+    // Silently ignore - user might not have access to ir.config_parameter
+    isNeutralized.value = null
   }
 }
 
@@ -581,6 +618,7 @@ async function executeRequest() {
   error.value = ''
   response.value = null
   loadingMessage.value = getRandomLoadingMessage()
+  showDebugTraceback.value = false
 
   const start = performance.now()
 
@@ -648,7 +686,7 @@ async function executeRequest() {
 
 function triggerConfetti() {
   showConfetti.value = true
-  setTimeout(() => { showConfetti.value = false }, 2000)
+  setTimeout(() => { showConfetti.value = false }, 2500)
 }
 
 function triggerSuccessAnimation() {
@@ -671,6 +709,111 @@ function formatJson(obj: any): string {
   return JSON.stringify(obj, null, 2)
 }
 
+// Format response JSON, stripping debug tracebacks for cleaner display
+function formatResponseJson(obj: any): string {
+  if (!obj || typeof obj !== 'object') {
+    return JSON.stringify(obj, null, 2)
+  }
+
+  // Deep clone and remove debug/traceback fields
+  const sanitized = JSON.parse(JSON.stringify(obj))
+  removeTracebacks(sanitized)
+  return JSON.stringify(sanitized, null, 2)
+}
+
+// Recursively remove debug/traceback fields from object
+function removeTracebacks(obj: any): void {
+  if (!obj || typeof obj !== 'object') return
+
+  // Remove traceback-containing fields
+  if ('debug' in obj && typeof obj.debug === 'string' && obj.debug.includes('Traceback')) {
+    delete obj.debug
+  }
+  if ('traceback' in obj) {
+    delete obj.traceback
+  }
+
+  // Recurse into nested objects/arrays
+  for (const key of Object.keys(obj)) {
+    if (typeof obj[key] === 'object') {
+      removeTracebacks(obj[key])
+    }
+  }
+}
+
+// Detect if response is an Odoo error
+function isOdooError(data: any): boolean {
+  if (!data || typeof data !== 'object') return false
+
+  // Standard Odoo error format
+  if ('message' in data && ('name' in data || 'debug' in data || 'code' in data)) {
+    return true
+  }
+
+  // Proxy error format
+  if ('error' in data && typeof data.error === 'string') {
+    return true
+  }
+
+  // Check for debug field containing traceback
+  if ('debug' in data && typeof data.debug === 'string' && data.debug.includes('Traceback')) {
+    return true
+  }
+
+  return false
+}
+
+// Extract clean error info from Odoo error response
+function parseOdooError(data: any): { type: string; message: string; hint: string; debug: string | null } {
+  // Handle proxy error format { error: "..." }
+  if ('error' in data && !('message' in data)) {
+    return {
+      type: 'Error',
+      message: data.error,
+      hint: '',
+      debug: null
+    }
+  }
+
+  const errorName = data.name || 'Error'
+  const message = data.message || data.error || 'Unknown error'
+  const debug = data.debug || null
+
+  // Extract the exception type (e.g., "ValueError", "AccessError")
+  const typeMatch = errorName.match(/\.(\w+)$/)
+  const type = typeMatch ? typeMatch[1] : errorName.split('.').pop() || 'Error'
+
+  // Generate helpful hints based on error type and message
+  let hint = ''
+  if (message.includes('Invalid field')) {
+    const fieldMatch = message.match(/Invalid field '(\w+)' on '([\w.]+)'/)
+    const conditionMatch = message.match(/Invalid field ([\w.]+)\.(\w+) in condition/)
+    if (fieldMatch) {
+      hint = `The field "${fieldMatch[1]}" doesn't exist on ${fieldMatch[2]}. Use fields_get to discover available fields.`
+    } else if (conditionMatch) {
+      hint = `The field "${conditionMatch[2]}" doesn't exist on ${conditionMatch[1]}. Check your domain filter — use fields_get to see valid field names.`
+    } else {
+      hint = 'One of the fields in your request doesn\'t exist on this model. Use fields_get to discover available fields.'
+    }
+  } else if (message.includes('does not exist')) {
+    hint = 'Check the model name spelling and ensure it uses the technical name (e.g., res.partner)'
+  } else if (type === 'AccessError' || message.includes('AccessError')) {
+    hint = 'Your API user may not have permission for this operation'
+  } else if (message.includes('cannot call') && message.includes('with ids')) {
+    hint = 'This method doesn\'t accept ids - remove the "ids" parameter'
+  } else if (message.includes('Private methods')) {
+    hint = 'Methods starting with _ are private and cannot be called via API'
+  } else if (message.includes('ValidationError')) {
+    hint = 'Check required fields and data format'
+  } else if (message.includes('MissingError') || message.includes('Record does not exist')) {
+    hint = 'The record ID may not exist or may have been deleted'
+  } else if (message.includes('UserError')) {
+    hint = 'This is a business logic error - check the operation requirements'
+  }
+
+  return { type, message, hint, debug }
+}
+
 function clearHistory() {
   history.value = []
   stats.value = { calls: 0, successful: 0, fastest: 0 }
@@ -688,6 +831,8 @@ function disconnect() {
   baseUrl.value = ''
   isConnected.value = false
   connectionStatus.value = 'idle'
+  isNeutralized.value = null // Reset to unknown
+  connectedUserName.value = ''
 
   // Clear session data (history, stats, response)
   history.value = []
@@ -702,9 +847,17 @@ function disconnect() {
 
 <template>
   <div class="api-playground" :class="{ 'success-pulse': showSuccessAnimation }">
-    <!-- Confetti -->
-    <div class="confetti-container" v-if="showConfetti">
-      <div class="confetti" v-for="i in 50" :key="i" :style="{ '--i': i }"></div>
+    <!-- Celebration -->
+    <div class="celebration-container" v-if="showConfetti">
+      <div class="celebration-burst"></div>
+      <div class="celebration-particle" v-for="i in 30" :key="'p'+i"
+        :style="{ '--angle': (i * 12) + 'deg', '--dist': (60 + (i % 5) * 20) + 'vh', '--size': (4 + (i % 4) * 3) + 'px', '--delay': (i * 0.015) + 's', '--hue': (i * 12) % 360 }">
+      </div>
+      <div class="celebration-sparkle" v-for="j in 15" :key="'s'+j"
+        :style="{ '--sx': (Math.random() * 100) + '%', '--sy': (Math.random() * 100) + '%', '--sdelay': (j * 0.08) + 's', '--ssize': (2 + (j % 3) * 2) + 'px' }">
+      </div>
+      <div class="celebration-ring"></div>
+      <div class="celebration-ring ring-2"></div>
     </div>
 
     <!-- Header -->
@@ -745,8 +898,31 @@ function disconnect() {
     <div class="connection-panel" :class="{ connected: isConnected }">
       <div class="connection-header">
         <span class="connection-icon">{{ isConnected ? '🔗' : '🔌' }}</span>
-        <span class="connection-title">{{ isConnected ? 'Connected' : 'Connect to Odoo' }}</span>
+        <span class="connection-title">
+          {{ isConnected ? 'Connected' : 'Connect to Odoo' }}
+          <span v-if="isConnected && connectedUserName" class="connected-user">as {{ connectedUserName }}</span>
+        </span>
+        <span v-if="isNeutralized === true" class="neutralized-badge" title="This is a neutralized database (sandbox mode)">🧪 Sandbox</span>
+        <span v-else-if="isNeutralized === false" class="production-badge" title="This is a production database - be careful!">⚠️ Production</span>
         <button v-if="isConnected" class="disconnect-btn" @click="disconnect">Disconnect</button>
+      </div>
+
+      <!-- Neutralized database notice -->
+      <div v-if="isConnected && isNeutralized === true" class="neutralized-notice">
+        <span class="notice-icon">🧪</span>
+        <div>
+          <strong>Sandbox Mode</strong> - This database is neutralized.
+          <br><small>Scheduled actions, emails, and webhooks are disabled. Perfect for testing!</small>
+        </div>
+      </div>
+
+      <!-- Production environment warning -->
+      <div v-if="isConnected && isNeutralized === false" class="production-warning">
+        <span class="notice-icon">⚠️</span>
+        <div>
+          <strong>Production Environment Detected</strong>
+          <br><small>This is a live database. Be careful with create, write, and delete operations as they will affect real data. Consider using a neutralized copy for testing.</small>
+        </div>
       </div>
 
       <form class="connection-form" v-if="!isConnected" @submit.prevent="testConnection" autocomplete="on">
@@ -1070,11 +1246,31 @@ function disconnect() {
             <span class="error-message">{{ error }}</span>
           </div>
 
+          <div v-else-if="response && isOdooError(response)" class="odoo-error-display">
+            <div class="odoo-error-header">
+              <span class="odoo-error-icon">⚠️</span>
+              <div class="odoo-error-info">
+                <span class="odoo-error-type">{{ parseOdooError(response).type }}</span>
+                <span class="odoo-error-message">{{ parseOdooError(response).message }}</span>
+              </div>
+            </div>
+            <div v-if="parseOdooError(response).hint" class="odoo-error-hint">
+              <span class="hint-icon">💡</span>
+              <span>{{ parseOdooError(response).hint }}</span>
+            </div>
+            <div v-if="parseOdooError(response).debug" class="odoo-error-debug">
+              <button class="toggle-debug-btn" @click="showDebugTraceback = !showDebugTraceback">
+                {{ showDebugTraceback ? '🔽 Hide' : '▶️ Show' }} Technical Details
+              </button>
+              <pre v-if="showDebugTraceback" class="debug-traceback">{{ parseOdooError(response).debug }}</pre>
+            </div>
+          </div>
+
           <div v-else-if="response" class="response-data">
-            <button class="copy-btn floating" @click="copyToClipboard(formatJson(response))">
+            <button class="copy-btn floating" @click="copyToClipboard(formatResponseJson(response))">
               📋 Copy
             </button>
-            <pre class="json-output">{{ formatJson(response) }}</pre>
+            <pre class="json-output">{{ formatResponseJson(response) }}</pre>
           </div>
 
           <div v-else class="empty-state">
@@ -1150,8 +1346,8 @@ function disconnect() {
   50% { transform: scale(1.005); }
 }
 
-/* Confetti */
-.confetti-container {
+/* Celebration */
+.celebration-container {
   position: fixed;
   top: 0;
   left: 0;
@@ -1160,55 +1356,103 @@ function disconnect() {
   pointer-events: none;
   z-index: 9999;
   overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
-.confetti {
+.celebration-burst {
   position: absolute;
-  width: 10px;
-  height: 10px;
-  background: linear-gradient(135deg, #ff6b6b, #feca57, #48dbfb, #ff9ff3, #54a0ff);
-  opacity: 0;
-  animation: confetti-fall 2s ease-out forwards;
-  animation-delay: calc(var(--i) * 0.02s);
-  left: calc(var(--i) * 2%);
-  transform: rotate(calc(var(--i) * 15deg));
-}
-
-.confetti:nth-child(odd) {
-  background: #feca57;
+  top: 50%;
+  left: 50%;
+  width: 0;
+  height: 0;
   border-radius: 50%;
+  background: radial-gradient(circle, rgba(99, 102, 241, 0.4), rgba(139, 92, 246, 0.2), transparent 70%);
+  animation: burst-expand 1.2s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+  transform: translate(-50%, -50%);
 }
 
-.confetti:nth-child(even) {
-  background: #ff6b6b;
+.celebration-particle {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: var(--size);
+  height: var(--size);
+  border-radius: 50%;
+  background: radial-gradient(circle, hsl(var(--hue), 85%, 65%), hsl(var(--hue), 90%, 50%));
+  box-shadow: 0 0 8px 2px hsla(var(--hue), 90%, 60%, 0.6);
+  opacity: 0;
+  animation: particle-burst 1.6s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+  animation-delay: var(--delay);
 }
 
-.confetti:nth-child(3n) {
-  background: #48dbfb;
-  width: 8px;
-  height: 8px;
+.celebration-sparkle {
+  position: absolute;
+  left: var(--sx);
+  top: var(--sy);
+  width: var(--ssize);
+  height: var(--ssize);
+  border-radius: 50%;
+  background: white;
+  box-shadow: 0 0 6px 2px rgba(255, 255, 255, 0.8), 0 0 12px 4px rgba(139, 92, 246, 0.4);
+  opacity: 0;
+  animation: sparkle-pop 1s ease-out forwards;
+  animation-delay: var(--sdelay);
 }
 
-.confetti:nth-child(4n) {
-  background: #ff9ff3;
+.celebration-ring {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 0;
+  height: 0;
+  border-radius: 50%;
+  border: 2px solid rgba(99, 102, 241, 0.5);
+  box-shadow: 0 0 20px 4px rgba(99, 102, 241, 0.15);
+  transform: translate(-50%, -50%);
+  animation: ring-expand 1.4s cubic-bezier(0.22, 1, 0.36, 1) forwards;
 }
 
-.confetti:nth-child(5n) {
-  background: #54a0ff;
-  border-radius: 2px;
+.celebration-ring.ring-2 {
+  border-color: rgba(139, 92, 246, 0.4);
+  box-shadow: 0 0 20px 4px rgba(139, 92, 246, 0.1);
+  animation-delay: 0.15s;
 }
 
-@keyframes confetti-fall {
+@keyframes burst-expand {
+  0% { width: 0; height: 0; opacity: 1; }
+  60% { opacity: 0.6; }
+  100% { width: 120vmax; height: 120vmax; opacity: 0; }
+}
+
+@keyframes particle-burst {
   0% {
+    transform: translate(-50%, -50%) rotate(var(--angle)) translateY(0);
     opacity: 1;
-    top: -10%;
-    transform: translateX(0) rotate(0deg);
+    filter: blur(0);
+  }
+  30% {
+    opacity: 1;
   }
   100% {
+    transform: translate(-50%, -50%) rotate(var(--angle)) translateY(calc(var(--dist) * -1));
     opacity: 0;
-    top: 100%;
-    transform: translateX(calc((var(--i) - 25) * 10px)) rotate(720deg);
+    filter: blur(1px);
   }
+}
+
+@keyframes sparkle-pop {
+  0% { transform: scale(0); opacity: 0; }
+  30% { transform: scale(1.8); opacity: 1; }
+  50% { transform: scale(0.8); opacity: 0.9; }
+  70% { transform: scale(1.2); opacity: 0.6; }
+  100% { transform: scale(0); opacity: 0; }
+}
+
+@keyframes ring-expand {
+  0% { width: 0; height: 0; opacity: 1; border-width: 3px; }
+  100% { width: 80vmin; height: 80vmin; opacity: 0; border-width: 1px; }
 }
 
 /* Header */
@@ -1592,6 +1836,78 @@ function disconnect() {
 
 .connection-error .error-text {
   word-break: break-word;
+}
+
+/* Connected user display */
+.connected-user {
+  font-weight: 400;
+  color: var(--vp-c-text-2);
+  font-size: 0.9em;
+}
+
+/* Neutralized/Sandbox badge */
+.neutralized-badge {
+  font-size: 0.75rem;
+  padding: 0.2rem 0.5rem;
+  background: linear-gradient(135deg, #10b981, #059669);
+  color: white;
+  border-radius: 12px;
+  font-weight: 600;
+  margin-left: 0.5rem;
+}
+
+/* Production badge */
+.production-badge {
+  font-size: 0.75rem;
+  padding: 0.2rem 0.5rem;
+  background: linear-gradient(135deg, #f59e0b, #d97706);
+  color: white;
+  border-radius: 12px;
+  font-weight: 600;
+  margin-left: 0.5rem;
+  animation: pulse-warning 2s ease-in-out infinite;
+}
+
+@keyframes pulse-warning {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.8; }
+}
+
+/* Environment notices */
+.neutralized-notice,
+.production-warning {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  padding: 0.75rem 1rem;
+  border-radius: 8px;
+  margin-top: 0.75rem;
+  font-size: 0.85rem;
+  line-height: 1.4;
+}
+
+.neutralized-notice {
+  background: rgba(16, 185, 129, 0.1);
+  border: 1px solid rgba(16, 185, 129, 0.3);
+}
+
+.production-warning {
+  background: rgba(245, 158, 11, 0.15);
+  border: 1px solid rgba(245, 158, 11, 0.4);
+}
+
+.production-warning strong {
+  color: #d97706;
+}
+
+.notice-icon {
+  font-size: 1.25rem;
+  flex-shrink: 0;
+}
+
+.neutralized-notice small,
+.production-warning small {
+  color: var(--vp-c-text-2);
 }
 
 .connection-info .security-note {
@@ -2223,6 +2539,101 @@ function disconnect() {
   overflow-x: auto;
   max-height: 400px;
   overflow-y: auto;
+}
+
+/* Odoo Error Display */
+.odoo-error-display {
+  padding: 1.25rem;
+  background: var(--vp-c-bg);
+}
+
+.odoo-error-header {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+}
+
+.odoo-error-icon {
+  font-size: 1.5rem;
+  flex-shrink: 0;
+}
+
+.odoo-error-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.odoo-error-type {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #ef4444;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.odoo-error-message {
+  font-size: 1rem;
+  color: var(--vp-c-text-1);
+  font-weight: 500;
+  line-height: 1.4;
+}
+
+.odoo-error-hint {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+  padding: 0.75rem 1rem;
+  background: rgba(59, 130, 246, 0.1);
+  border: 1px solid rgba(59, 130, 246, 0.2);
+  border-radius: 8px;
+  margin-bottom: 1rem;
+  font-size: 0.9rem;
+  color: var(--vp-c-text-2);
+}
+
+.hint-icon {
+  font-size: 1rem;
+  flex-shrink: 0;
+}
+
+.odoo-error-debug {
+  border-top: 1px solid var(--vp-c-border);
+  padding-top: 0.75rem;
+}
+
+.toggle-debug-btn {
+  background: none;
+  border: 1px solid var(--vp-c-border);
+  border-radius: 6px;
+  padding: 0.4rem 0.75rem;
+  font-size: 0.8rem;
+  color: var(--vp-c-text-2);
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.toggle-debug-btn:hover {
+  background: var(--vp-c-bg-soft);
+  border-color: var(--vp-c-text-3);
+}
+
+.debug-traceback {
+  margin: 0.75rem 0 0;
+  padding: 0.75rem;
+  background: rgba(239, 68, 68, 0.05);
+  border: 1px solid rgba(239, 68, 68, 0.1);
+  border-radius: 6px;
+  font-family: var(--vp-font-family-mono);
+  font-size: 0.75rem;
+  line-height: 1.5;
+  color: var(--vp-c-text-2);
+  overflow-x: auto;
+  max-height: 300px;
+  overflow-y: auto;
+  white-space: pre-wrap;
+  word-break: break-word;
 }
 
 /* History Section */
