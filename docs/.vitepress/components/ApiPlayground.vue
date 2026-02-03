@@ -2904,18 +2904,48 @@ function disconnect() {
 
 /* Responsive */
 @media (max-width: 640px) {
+  .api-playground {
+    margin: 1rem auto;
+  }
+
   .playground-header {
     flex-direction: column;
     gap: 1rem;
+    padding: 1rem;
+  }
+
+  .playground-title {
+    font-size: 1.35rem;
+  }
+
+  .playground-subtitle {
+    font-size: 0.85rem;
   }
 
   .stats-bar {
     width: 100%;
     justify-content: space-around;
+    gap: 0.75rem;
+  }
+
+  .stat-value {
+    font-size: 1rem;
   }
 
   .endpoint-display {
     flex-wrap: wrap;
+  }
+
+  .endpoint-input.model {
+    width: 90px;
+  }
+
+  .endpoint-input.method {
+    width: 80px;
+  }
+
+  .limit-input {
+    width: 70px;
   }
 
   .template-grid {
@@ -2934,6 +2964,34 @@ function disconnect() {
   .filter-operator,
   .filter-value {
     min-width: 0;
+  }
+
+  .not-connected-state {
+    padding: 2rem 1rem;
+  }
+
+  .float {
+    font-size: 2.5rem;
+  }
+
+  .not-connected-content h3 {
+    font-size: 1.2rem;
+  }
+}
+
+@media (max-width: 400px) {
+  .template-grid,
+  .method-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .playground-title {
+    font-size: 1.15rem;
+  }
+
+  .stats-bar {
+    flex-wrap: wrap;
+    gap: 0.5rem;
   }
 }
 </style>

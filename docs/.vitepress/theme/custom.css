@@ -411,12 +411,19 @@ body {
    7. PREMIUM TABLES
    ============================================ */
 
+/* Scrollable table wrapper for mobile */
+.vp-doc .vp-table {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  margin: 1.5rem 0;
+}
+
 .vp-doc table {
   border-radius: var(--radius-lg);
   overflow: hidden;
   border: 1px solid var(--vp-c-border);
   box-shadow: var(--shadow-sm);
-  margin: 1.5rem 0;
+  margin: 0;
   width: 100%;
   table-layout: auto;
 }
@@ -430,6 +437,7 @@ body {
   letter-spacing: 0.05em;
   padding: 0.875rem 1rem;
   border-bottom: 2px solid var(--vp-c-brand-1);
+  white-space: nowrap;
 }
 
 .vp-doc td {
@@ -996,6 +1004,82 @@ html {
 
   .vp-doc .custom-block {
     padding: 1rem 1.25rem;
+  }
+
+  /* Tables: remove fixed column widths, allow scroll */
+  .vp-doc table th:first-child,
+  .vp-doc table td:first-child {
+    min-width: auto;
+    max-width: none;
+    width: auto;
+  }
+
+  .vp-doc table th:nth-child(2),
+  .vp-doc table td:nth-child(2),
+  .vp-doc table th:nth-child(3),
+  .vp-doc table td:nth-child(3),
+  .vp-doc table th:nth-child(4),
+  .vp-doc table td:nth-child(4) {
+    width: auto;
+  }
+
+  .vp-doc th,
+  .vp-doc td {
+    padding: 0.625rem 0.75rem;
+    font-size: 0.875rem;
+  }
+
+  /* Mermaid diagrams: horizontal scroll */
+  .mermaid {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    padding: 1rem;
+  }
+
+  /* Home page card: reduce padding */
+  .VPHome .vp-doc {
+    padding: 1.25rem !important;
+    margin: 1rem !important;
+  }
+}
+
+@media (max-width: 480px) {
+  .vp-doc h1 {
+    font-size: 1.75rem;
+  }
+
+  .vp-doc h2 {
+    font-size: 1.25rem;
+    margin-top: 2em;
+  }
+
+  .vp-doc h3 {
+    font-size: 1.1rem;
+  }
+
+  .vp-doc th {
+    font-size: 0.65rem;
+    padding: 0.5rem;
+  }
+
+  .vp-doc td {
+    padding: 0.5rem;
+    font-size: 0.8rem;
+  }
+
+  .vp-doc .custom-block {
+    padding: 0.75rem 1rem;
+  }
+
+  /* Code blocks: smaller margin */
+  .vp-doc div[class*="language-"] {
+    margin: 1rem -0.5rem;
+    border-radius: var(--radius-md);
+  }
+
+  .VPHome .vp-doc {
+    padding: 1rem !important;
+    margin: 0.75rem !important;
   }
 }
 

@@ -109,11 +109,11 @@ const features: Feature[] = [
   .feature-cards {
     grid-template-columns: 1fr;
     padding: 0 16px;
-    gap: 20px;
+    gap: 16px;
   }
 
   .feature-card {
-    padding: 24px 20px;
+    padding: 20px 16px;
   }
 
   .feature-icon {
@@ -122,6 +122,17 @@ const features: Feature[] = [
 
   .feature-title {
     font-size: 1.1rem;
+  }
+
+  .feature-details {
+    font-size: 0.875rem;
+  }
+}
+
+@media (max-width: 400px) {
+  .feature-cards {
+    padding: 0 12px;
+    gap: 12px;
   }
 }
 </style>

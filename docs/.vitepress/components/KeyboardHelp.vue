@@ -185,4 +185,27 @@ defineExpose({ open, close })
   font-size: 12px;
   font-family: inherit;
 }
+
+@media (max-width: 480px) {
+  .keyboard-help {
+    max-width: calc(100vw - 32px);
+    max-height: 70vh;
+  }
+
+  .keyboard-help-content {
+    max-height: 50vh;
+  }
+
+  .keyboard-help-header {
+    padding: 12px 16px;
+  }
+
+  .keyboard-help-content {
+    padding: 12px 16px;
+  }
+
+  .keyboard-help-footer {
+    padding: 10px 16px;
+  }
+}
 </style>

@@ -241,6 +241,17 @@ onUnmounted(() => {
   line-height: 1.5;
   color: var(--vp-c-text-2);
 }
+
+@media (max-width: 480px) {
+  .glossary-popover {
+    max-width: calc(100vw - 32px);
+    padding: 10px 14px;
+  }
+
+  .glossary-definition {
+    font-size: 12px;
+  }
+}
 </style>
 
 <style>
