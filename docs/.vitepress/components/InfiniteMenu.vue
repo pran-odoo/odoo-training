@@ -76,7 +76,7 @@ const menuItems: MenuItem[] = [
   // Enterprise Modules
   { text: 'Databases', link: '/29-databases', category: 'Enterprise', icon: '🗄️' },
   // Interactive Tools
-  { text: 'API Playground', link: '/api-playground', category: 'Advanced', icon: '🔌' },
+  { text: 'API Playground', link: '/api-playground', category: 'Advanced', icon: '🧪' },
 ]
 
 // Category colors - optimized for visual distinction and accessibility
