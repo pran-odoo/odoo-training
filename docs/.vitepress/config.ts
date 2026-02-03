@@ -31,7 +31,7 @@ export default withPwa(defineConfig({
   appearance: 'dark',
 
   themeConfig: {
-    logo: '/icons/icon-192.png',
+    logo: '/icons/icon-32.png',
 
     nav: [
       { text: 'Home', link: '/' },
