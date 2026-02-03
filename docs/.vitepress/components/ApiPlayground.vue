@@ -471,9 +471,13 @@ function removeField(index: number) {
   customFields.value.splice(index, 1)
 }
 
-// Normalize Odoo URL: strip trailing paths like /web, /odoo, /web/login, etc.
+// Normalize Odoo URL: strip query strings, hashes, and trailing paths
 function normalizeOdooUrl(url: string): string {
-  let normalized = url.trim().replace(/\/+$/, '') // Remove trailing slashes
+  let normalized = url.trim()
+  // Remove query string and hash fragment first
+  normalized = normalized.split('?')[0].split('#')[0]
+  // Remove trailing slashes
+  normalized = normalized.replace(/\/+$/, '')
   // Strip common Odoo paths that users might accidentally include
   const pathsToStrip = ['/web/login', '/web', '/odoo', '/jsonrpc', '/xmlrpc']
   for (const path of pathsToStrip) {
