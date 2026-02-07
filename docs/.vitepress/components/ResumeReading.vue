@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted } from 'vue'
-import { useRoute, useRouter } from 'vitepress'
+import { useRoute, useRouter, withBase } from 'vitepress'
 import { safeGetItem, safeSetItem, STORAGE_KEYS } from '../utils/localStorage'
 
 const route = useRoute()
@@ -52,10 +52,9 @@ function loadProgress() {
 }
 
 function resumeReading() {
-  // Fix: Use direct navigation instead of router.go() which takes a delta number, not a path
   dismiss()
-  // Navigate and scroll after page loads
-  window.location.href = savedPath.value
+  // Navigate with proper base path handling
+  router.go(withBase(savedPath.value))
 }
 
 function dismiss() {

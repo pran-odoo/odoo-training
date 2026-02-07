@@ -1,11 +1,13 @@
 <script setup lang="ts">
 import ElectricBorder from './ElectricBorder.vue'
+import ShinyText from './ShinyText.vue'
 
 interface Feature {
   icon: string
   title: string
   details: string
   color?: string
+  shineColor?: string
 }
 
 const features: Feature[] = [
@@ -13,25 +15,29 @@ const features: Feature[] = [
     icon: '📚',
     title: '30+ In-Depth Sections',
     details: 'Models, views, security, workflows, APIs, AI, EDI, Studio, and more',
-    color: '#7df9ff' // cyan
+    color: '#7df9ff', // cyan
+    shineColor: '#E0FCFF'
   },
   {
     icon: '🔌',
     title: 'Live API Playground',
     details: 'Test Odoo JSON/2 API calls in your browser with real responses',
-    color: '#ff6b6b' // coral
+    color: '#ff6b6b', // coral
+    shineColor: '#FFD4D4'
   },
   {
     icon: '🎯',
     title: 'Odoo 19 Focused',
     details: 'Covers JSON/2 API, AI agents, webhooks, and the latest features',
-    color: '#9b59b6' // purple
+    color: '#9b59b6', // purple
+    shineColor: '#E9D5F5'
   },
   {
     icon: '📱',
     title: 'Works Offline',
     details: 'Install as a PWA — read on the go, even without internet',
-    color: '#2ecc71' // green
+    color: '#2ecc71', // green
+    shineColor: '#D5F5E3'
   }
 ]
 </script>
@@ -49,7 +55,17 @@ const features: Feature[] = [
     >
       <div class="feature-card">
         <div class="feature-icon">{{ feature.icon }}</div>
-        <h3 class="feature-title">{{ feature.title }}</h3>
+        <h3 class="feature-title">
+          <ShinyText
+            :text="feature.title"
+            :color="feature.color"
+            :shine-color="feature.shineColor"
+            :speed="3"
+            :spread="120"
+            :delay="0.5"
+            pause-on-hover
+          />
+        </h3>
         <p class="feature-details">{{ feature.details }}</p>
       </div>
     </ElectricBorder>

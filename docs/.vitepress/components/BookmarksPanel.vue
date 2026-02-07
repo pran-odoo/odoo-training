@@ -1,13 +1,13 @@
 <script setup lang="ts">
 import { useBookmarks } from '../composables/useBookmarks'
-import { useRouter } from 'vitepress'
+import { useRouter, withBase } from 'vitepress'
 
 const { bookmarks, removeBookmark, clearBookmarks } = useBookmarks()
 const router = useRouter()
 
 function navigateTo(path: string) {
-  // Fix: Use direct navigation instead of router.go() which takes a delta number
-  window.location.href = path
+  // Use withBase to handle the base path correctly
+  router.go(withBase(path))
 }
 
 function getPageTitle(path: string): string {

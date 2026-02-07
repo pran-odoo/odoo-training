@@ -5,6 +5,107 @@
  */
 
 /* ============================================
+   0. SHINY TEXT ANIMATION SYSTEM
+   Premium animated gradient shine effect
+   ============================================ */
+
+@keyframes shiny-slide {
+  0% {
+    background-position: 150% center;
+  }
+  100% {
+    background-position: -50% center;
+  }
+}
+
+@keyframes shiny-slide-reverse {
+  0% {
+    background-position: -50% center;
+  }
+  100% {
+    background-position: 150% center;
+  }
+}
+
+/* Base shiny text class - apply to any text element */
+.shiny-text-css {
+  background-image: linear-gradient(
+    120deg,
+    var(--shiny-base, #6366F1) 0%,
+    var(--shiny-base, #6366F1) 35%,
+    var(--shiny-highlight, #A5B4FC) 50%,
+    var(--shiny-base, #6366F1) 65%,
+    var(--shiny-base, #6366F1) 100%
+  );
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: shiny-slide 3s linear infinite;
+}
+
+/* Speed variants */
+.shiny-fast { animation-duration: 1.5s; }
+.shiny-slow { animation-duration: 5s; }
+.shiny-very-slow { animation-duration: 8s; }
+
+/* Direction variants */
+.shiny-reverse { animation-name: shiny-slide-reverse; }
+
+/* Pause on hover */
+.shiny-pause-hover:hover { animation-play-state: paused; }
+
+/* Color presets - Light mode */
+.shiny-brand {
+  --shiny-base: var(--vp-c-brand-1);
+  --shiny-highlight: var(--vp-c-brand-3);
+}
+
+.shiny-gold {
+  --shiny-base: #B45309;
+  --shiny-highlight: #FCD34D;
+}
+
+.shiny-silver {
+  --shiny-base: #6B7280;
+  --shiny-highlight: #F3F4F6;
+}
+
+.shiny-emerald {
+  --shiny-base: #047857;
+  --shiny-highlight: #6EE7B7;
+}
+
+/* Dark mode adjustments */
+.dark .shiny-text-css {
+  --shiny-base: var(--vp-c-brand-1);
+  --shiny-highlight: #E0E7FF;
+}
+
+.dark .shiny-gold {
+  --shiny-base: #F59E0B;
+  --shiny-highlight: #FEF3C7;
+}
+
+.dark .shiny-silver {
+  --shiny-base: #9CA3AF;
+  --shiny-highlight: #FFFFFF;
+}
+
+.dark .shiny-emerald {
+  --shiny-base: #10B981;
+  --shiny-highlight: #D1FAE5;
+}
+
+/* Reduce motion for accessibility */
+@media (prefers-reduced-motion: reduce) {
+  .shiny-text-css {
+    animation: none;
+    background-position: center;
+  }
+}
+
+/* ============================================
    1. PREMIUM COLOR PALETTE - LIGHT MODE
    Vibrant, professional design with rich colors
    ============================================ */
@@ -233,13 +334,30 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
-/* H1 */
+/* H1 - Article titles with shiny effect */
 .vp-doc h1 {
   font-weight: 800;
   letter-spacing: -0.03em;
-  color: var(--vp-c-text-1);
   position: relative;
   padding-bottom: 0.5em;
+  /* Shiny text animation */
+  background-image: linear-gradient(
+    120deg,
+    var(--vp-c-brand-1) 0%,
+    var(--vp-c-brand-1) 35%,
+    var(--vp-c-brand-3) 50%,
+    var(--vp-c-brand-1) 65%,
+    var(--vp-c-brand-1) 100%
+  );
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: shiny-slide 5s linear infinite;
+}
+
+.vp-doc h1:hover {
+  animation-play-state: paused;
 }
 
 .vp-doc h1::after {
@@ -253,21 +371,91 @@ body {
   border-radius: var(--radius-full);
 }
 
-/* H2 */
+/* Dark mode h1 - brighter shine */
+.dark .vp-doc h1 {
+  background-image: linear-gradient(
+    120deg,
+    var(--vp-c-brand-1) 0%,
+    var(--vp-c-brand-1) 35%,
+    #E0E7FF 50%,
+    var(--vp-c-brand-1) 65%,
+    var(--vp-c-brand-1) 100%
+  );
+}
+
+/* H2 - Section headings with subtle shine */
 .vp-doc h2 {
   font-weight: 700;
   letter-spacing: -0.02em;
-  color: var(--vp-c-text-1);
   margin-top: 2.5em;
   padding-bottom: 0.4em;
   border-bottom: 2px solid var(--vp-c-border);
+  /* Subtle shiny effect - slower, more professional */
+  background-image: linear-gradient(
+    120deg,
+    var(--vp-c-text-1) 0%,
+    var(--vp-c-text-1) 40%,
+    var(--vp-c-brand-2) 50%,
+    var(--vp-c-text-1) 60%,
+    var(--vp-c-text-1) 100%
+  );
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: shiny-slide 8s linear infinite;
 }
 
-/* H3 */
+.vp-doc h2:hover {
+  animation-play-state: paused;
+}
+
+/* Dark mode h2 */
+.dark .vp-doc h2 {
+  background-image: linear-gradient(
+    120deg,
+    var(--vp-c-text-1) 0%,
+    var(--vp-c-text-1) 40%,
+    var(--vp-c-brand-3) 50%,
+    var(--vp-c-text-1) 60%,
+    var(--vp-c-text-1) 100%
+  );
+}
+
+/* H3 - Subsection headings with very subtle shine */
 .vp-doc h3 {
   font-weight: 600;
   letter-spacing: -0.01em;
-  color: var(--vp-c-text-1);
+  /* Very subtle shiny effect - barely noticeable, premium touch */
+  background-image: linear-gradient(
+    120deg,
+    var(--vp-c-text-1) 0%,
+    var(--vp-c-text-1) 42%,
+    var(--vp-c-text-2) 50%,
+    var(--vp-c-text-1) 58%,
+    var(--vp-c-text-1) 100%
+  );
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: shiny-slide 12s linear infinite;
+}
+
+.vp-doc h3:hover {
+  animation-play-state: paused;
+}
+
+/* Dark mode h3 - slightly more visible */
+.dark .vp-doc h3 {
+  background-image: linear-gradient(
+    120deg,
+    var(--vp-c-text-1) 0%,
+    var(--vp-c-text-1) 42%,
+    var(--vp-c-brand-1) 50%,
+    var(--vp-c-text-1) 58%,
+    var(--vp-c-text-1) 100%
+  );
 }
 
 /* Paragraph */
@@ -791,14 +979,46 @@ body {
   z-index: 1;
 }
 
-/* Hero text needs good contrast on dark bg */
+/* Hero text with shiny animation */
 .VPHero .name {
   font-weight: 800 !important;
   letter-spacing: -0.03em;
-  background: linear-gradient(135deg, var(--vp-c-brand-1), var(--accent-primary)) !important;
+  background-image: linear-gradient(
+    120deg,
+    var(--vp-c-brand-1) 0%,
+    var(--vp-c-brand-1) 35%,
+    var(--vp-c-brand-3) 50%,
+    var(--vp-c-brand-1) 65%,
+    var(--vp-c-brand-1) 100%
+  ) !important;
+  background-size: 200% auto !important;
   -webkit-background-clip: text !important;
   background-clip: text !important;
   -webkit-text-fill-color: transparent !important;
+  animation: shiny-slide 4s linear infinite !important;
+}
+
+.VPHero .name:hover {
+  animation-play-state: paused !important;
+}
+
+/* Hero subtitle/text also gets subtle shine */
+.VPHero .text {
+  font-weight: 600 !important;
+  background-image: linear-gradient(
+    120deg,
+    var(--accent-primary) 0%,
+    var(--accent-primary) 35%,
+    #FB923C 50%,
+    var(--accent-primary) 65%,
+    var(--accent-primary) 100%
+  ) !important;
+  background-size: 200% auto !important;
+  -webkit-background-clip: text !important;
+  background-clip: text !important;
+  -webkit-text-fill-color: transparent !important;
+  animation: shiny-slide 5s linear infinite !important;
+  animation-delay: 1s !important;
 }
 
 .VPHero .tagline {
@@ -867,6 +1087,17 @@ body {
 :root:not(.dark) .VPHome .vp-doc {
   background: rgba(255, 255, 255, 0.85) !important;
   border: 1px solid var(--glass-border);
+}
+
+/* Home section titles with shiny effect */
+.home-section-title {
+  font-size: 1.75rem !important;
+  font-weight: 700 !important;
+  letter-spacing: -0.02em;
+  text-align: center;
+  margin: 3rem auto 1.5rem !important;
+  padding: 0 1rem;
+  border: none !important;
 }
 
 /* Ensure nav stays above galaxy */
@@ -1324,10 +1555,36 @@ kbd {
    ============================================ */
 
 .dark .VPHome .name {
-  background: linear-gradient(135deg, var(--vp-c-brand-1), var(--accent-primary)) !important;
+  background-image: linear-gradient(
+    120deg,
+    var(--vp-c-brand-1) 0%,
+    var(--vp-c-brand-1) 35%,
+    #E0E7FF 50%,
+    var(--vp-c-brand-1) 65%,
+    var(--vp-c-brand-1) 100%
+  ) !important;
+  background-size: 200% auto !important;
   -webkit-background-clip: text !important;
   background-clip: text !important;
   -webkit-text-fill-color: transparent !important;
+  animation: shiny-slide 4s linear infinite !important;
+}
+
+.dark .VPHome .text {
+  background-image: linear-gradient(
+    120deg,
+    #FB923C 0%,
+    #FB923C 35%,
+    #FED7AA 50%,
+    #FB923C 65%,
+    #FB923C 100%
+  ) !important;
+  background-size: 200% auto !important;
+  -webkit-background-clip: text !important;
+  background-clip: text !important;
+  -webkit-text-fill-color: transparent !important;
+  animation: shiny-slide 5s linear infinite !important;
+  animation-delay: 1s !important;
 }
 
 .dark .VPFeature:hover {

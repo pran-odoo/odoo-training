@@ -19,11 +19,11 @@ hero:
 
 <FeatureCards />
 
-## Explore Topics
+<h2 class="shiny-text-css shiny-brand shiny-slow shiny-pause-hover home-section-title">Explore Topics</h2>
 
 <InfiniteMenu />
 
-## What's Inside
+<h2 class="shiny-text-css shiny-emerald shiny-slow shiny-pause-hover home-section-title">What's Inside</h2>
 
 This guide covers everything a functional consultant needs to configure and integrate Odoo 19 — from core concepts to production-ready API integrations.
 

@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted, computed } from 'vue'
-import { useRouter } from 'vitepress'
+import { useRouter, withBase } from 'vitepress'
 import { mat4, quat, vec2, vec3 } from 'gl-matrix'
 
 interface MenuItem {
@@ -1330,7 +1330,7 @@ function handleClick(event: MouseEvent) {
   button?.blur()
 
   // Use VitePress router for smooth client-side navigation
-  router.go(activeItem.value.link)
+  router.go(withBase(activeItem.value.link))
 }
 
 function handleVisibilityChange() {

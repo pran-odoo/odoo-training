@@ -1,10 +1,15 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, onUnmounted } from 'vue'
-import { useRouter, useData } from 'vitepress'
+import { useRouter, useData, withBase } from 'vitepress'
 import { useBookmarks } from '../composables/useBookmarks'
 
 const router = useRouter()
 const { isDark, page } = useData()
+
+// Helper to navigate with base path
+const navigateTo = (path: string) => {
+  router.go(withBase(path))
+}
 const { isBookmarked, toggleBookmark } = useBookmarks()
 
 // Current page path for bookmarking
@@ -68,13 +73,13 @@ const items = computed<DockItem[]>(() => [
   {
     id: 'home',
     label: 'Home',
-    action: () => router.go('/'),
+    action: () => navigateTo('/'),
     iconPath: ICONS.home
   },
   {
     id: 'guide',
     label: 'Guide',
-    action: () => router.go('/01-introduction'),
+    action: () => navigateTo('/introduction'),
     iconPath: ICONS.guide
   },
   {
